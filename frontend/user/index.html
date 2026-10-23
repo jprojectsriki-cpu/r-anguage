@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R-anguage | JLPT N4〜N1 日本語学習システム</title>
+    <meta name="description" content="R-anguage（ランゲージ）は、JLPT N4〜N1に対応した日本語学習システムです。語彙・文法・聴解・模擬試験をスマホで。各レベル買い切り。ふりがな表示対応。">
+    <link rel="icon" href="img/favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/lp.css">
+    <script>
+        document.documentElement.classList.add('js');
+        try { if (localStorage.getItem('ranguage_furigana') === 'off') document.documentElement.classList.add('furigana-off'); } catch (e) {}
+    </script>
+</head>
+<body>
+
+    <!-- アイコン定義（線の太さをそろえたシンプルな線画） -->
+    <svg width="0" height="0" class="sprite" aria-hidden="true">
+        <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V11M10 20V5M16 20v-6M2 20h20"/></symbol>
+        <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5z"/><path d="M12 6v13"/></symbol>
+        <symbol id="i-cards" viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/></symbol>
+        <symbol id="i-headphones" viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="7" rx="1.5"/><rect x="17" y="14" width="4" height="7" rx="1.5"/></symbol>
+        <symbol id="i-exam" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/></symbol>
+        <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+        <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+        <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+        <symbol id="i-flip" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/></symbol>
+        <symbol id="i-volume" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 9a4 4 0 0 1 0 6M19 6.5a7.5 7.5 0 0 1 0 11"/></symbol>
+        <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"/></symbol>
+        <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8.5 5v14M15.5 5v14"/></symbol>
+        <symbol id="i-back5" viewBox="0 0 24 24"><path d="M11 6l-6 6 6 6M19 6l-6 6 6 6"/></symbol>
+        <symbol id="i-fwd5" viewBox="0 0 24 24"><path d="M13 6l6 6-6 6M5 6l6 6-6 6"/></symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+        <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+        <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+        <symbol id="i-login" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M13 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/></symbol>
+        <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 10h16v10H4z"/><path d="M3 10l2-5h14l2 5"/><path d="M10 20v-5h4v5"/></symbol>
+        <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></symbol>
+        <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M9 15l2 2 4-4"/></symbol>
+        <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6l8.5 7 8.5-7"/></symbol>
+        <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></symbol>
+        <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.3"/></symbol>
+        <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></symbol>
+        <symbol id="i-question" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 1 1 3.6 2.3c-.8.4-1.2 1-1.2 1.9M12 16.8h.01"/></symbol>
+        <symbol id="i-flow" viewBox="0 0 24 24"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h8a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h8"/></symbol>
+        <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    </svg>
+
+    <!-- ================= HEADER ================= -->
+    <header class="site-header" id="top">
+        <div class="header-inner">
+            <a href="#top" class="brand" aria-label="R-anguage トップへ">
+                <span class="brand-mark"><img src="img/logo.png" alt="" width="34" height="39"></span>
+                <span class="brand-text">
+                    <span class="brand-name">R-anguage</span>
+                </span>
+            </a>
+
+            <nav class="nav-desktop" aria-label="メインメニュー">
+                <a href="#features"><ruby>特長<rt>とくちょう</rt></ruby></a>
+                <a href="#demo"><ruby>体験<rt>たいけん</rt></ruby>デモ</a>
+                <a href="#curriculum">レベル</a>
+                <a href="#flow">ご<ruby>利用<rt>りよう</rt></ruby>の<ruby>流<rt>なが</rt></ruby>れ</a>
+                <a href="#pricing"><ruby>料金<rt>りょうきん</rt></ruby></a>
+                <a href="#faq">Q&amp;A</a>
+            </nav>
+
+            <div class="header-actions">
+                <button type="button" class="pop-btn btn-white btn-sm hide-sm" data-open="loginDialog">
+                    <svg class="icon"><use href="#i-login"/></svg><span>ログイン</span>
+                </button>
+                <button type="button" class="menu-btn" id="menuBtn" aria-label="メニューを開く" aria-expanded="false" aria-controls="mobileMenu">
+                    <svg class="icon icon-open"><use href="#i-menu"/></svg>
+                    <svg class="icon icon-close"><use href="#i-close"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- スマホ用メニュー -->
+        <nav class="mobile-menu" id="mobileMenu" aria-label="スマホ用メニュー" hidden>
+            <a href="#features"><span class="mm-icon bg-yellow"><svg class="icon"><use href="#i-layers"/></svg></span><span><ruby>特長<rt>とくちょう</rt></ruby></span></a>
+            <a href="#demo"><span class="mm-icon bg-mint"><svg class="icon"><use href="#i-cards"/></svg></span><span><ruby>体験<rt>たいけん</rt></ruby>デモ</span></a>
+            <a href="#curriculum"><span class="mm-icon bg-teal"><svg class="icon"><use href="#i-book"/></svg></span><span>レベル</span></a>
+            <a href="#flow"><span class="mm-icon bg-pink"><svg class="icon"><use href="#i-flow"/></svg></span><span>ご<ruby>利用<rt>りよう</rt></ruby>の<ruby>流<rt>なが</rt></ruby>れ</span></a>
+            <a href="#pricing"><span class="mm-icon bg-purple"><svg class="icon"><use href="#i-tag"/></svg></span><span><ruby>料金<rt>りょうきん</rt></ruby>プラン</span></a>
+            <a href="#faq"><span class="mm-icon bg-yellow"><svg class="icon"><use href="#i-question"/></svg></span><span>よくある<ruby>質問<rt>しつもん</rt></ruby></span></a>
+            <div class="mm-actions">
+                <button type="button" class="pop-btn btn-yellow" data-open="loginDialog"><svg class="icon"><use href="#i-login"/></svg><span>ログイン</span></button>
+                <a href="#pricing" class="pop-btn btn-pink"><span><ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>む</span><svg class="icon"><use href="#i-arrow-right"/></svg></a>
+            </div>
+        </nav>
+
+        <!-- ふりがな切り替え（ヘッダーの右下） -->
+        <div class="furigana-tab">
+            <span class="furigana-label" id="furiganaLabel">ふりがな</span>
+            <button type="button" class="switch" id="furiganaSwitch" role="switch" aria-checked="true" aria-labelledby="furiganaLabel">
+                <span class="switch-knob"></span><span class="switch-on">ON</span><span class="switch-off">OFF</span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+
+        <!-- ================= HERO ================= -->
+        <section class="hero">
+            <span class="deco deco-circle" aria-hidden="true"></span>
+            <span class="deco deco-square" aria-hidden="true"></span>
+            <span class="deco deco-ring" aria-hidden="true"></span>
+            <span class="deco deco-dots" aria-hidden="true"></span>
+
+            <div class="container hero-grid">
+                <div class="hero-copy reveal reveal-left">
+                    <span class="hero-badge">JLPT N4〜N1 <ruby>対応<rt>たいおう</rt></ruby>・<ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>り</span>
+                    <h1 class="hero-title">
+                        <ruby>日本語<rt>にほんご</rt></ruby>ができれば、<br><ruby>就職<rt>しゅうしょく</rt></ruby>につながる！<br>
+                        <span class="hero-name"><ruby>R-anguage<rt>ランゲージ</rt></ruby></span>
+                    </h1>
+                    <p class="hero-lead">
+                        ことば（Language）の<ruby>力<rt>ちから</rt></ruby>で、<ruby>未来<rt>みらい</rt></ruby>をひらこう。<br class="br-pc">
+                        <ruby>単語<rt>たんご</rt></ruby>・<ruby>文法<rt>ぶんぽう</rt></ruby>・<ruby>聴解<rt>ちょうかい</rt></ruby>・<ruby>模試<rt>もし</rt></ruby>までそろったキャリア<ruby>直結型<rt>ちょっけつがた</rt></ruby>レッスンで、<br class="br-pc">
+                        <ruby>楽<rt>たの</rt></ruby>しく<ruby>日本語<rt>にほんご</rt></ruby>をマスターして、<ruby>日本<rt>にほん</rt></ruby><ruby>企業<rt>きぎょう</rt></ruby>への<ruby>就職<rt>しゅうしょく</rt></ruby>をつかもう！
+                    </p>
+                    <div class="hero-cta">
+                        <a href="#demo" class="pop-btn btn-mint btn-lg"><span><ruby>体験<rt>たいけん</rt></ruby>してみる</span><svg class="icon"><use href="#i-arrow-right"/></svg></a>
+                        <a href="#features" class="pop-btn btn-white btn-lg"><span><ruby>機能<rt>きのう</rt></ruby>を<ruby>見<rt>み</rt></ruby>る</span></a>
+                    </div>
+                    <ul class="trust-badges">
+                        <li><span class="tb-icon bg-mint"><svg class="icon"><use href="#i-tag"/></svg></span><span><ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>りで<ruby>月額<rt>げつがく</rt></ruby><ruby>料金<rt>りょうきん</rt></ruby>なし</span></li>
+                        <li><span class="tb-icon bg-purple"><svg class="icon"><use href="#i-store"/></svg></span><span>コンビニ・<ruby>銀行<rt>ぎんこう</rt></ruby><ruby>振込<rt>ふりこみ</rt></ruby>OK</span></li>
+                        <li><span class="tb-icon bg-pink"><svg class="icon"><use href="#i-phone"/></svg></span><span>スマホ・PC<ruby>対応<rt>たいおう</rt></ruby></span></li>
+                    </ul>
+                </div>
+
+                <!-- ダッシュボードのイメージ -->
+                <div class="hero-mock reveal reveal-right" aria-hidden="true">
+                    <div class="pop-card mock">
+                        <div class="mock-bar">
+                            <span class="dots"><i class="bg-pink"></i><i class="bg-yellow"></i><i class="bg-mint"></i></span>
+                            <span class="mock-title">Dashboard</span>
+                            <span class="mock-status">ACTIVE</span>
+                        </div>
+                        <div class="mock-user">
+                            <span class="mock-avatar">A</span>
+                            <div>
+                                <p class="mock-hello">おかえり！Alexさん</p>
+                                <p class="mock-course">JLPT N2 <ruby>対策<rt>たいさく</rt></ruby>コース <span class="mock-days"><ruby>試験<rt>しけん</rt></ruby>まで 42<ruby>日<rt>にち</rt></ruby></span></p>
+                            </div>
+                            <span class="mock-streak"><svg class="icon"><use href="#i-calendar"/></svg><span>15<ruby>日<rt>にち</rt></ruby><ruby>連続<rt>れんぞく</rt></ruby></span></span>
+                        </div>
+                        <div class="mock-grid">
+                            <div class="mock-stat">
+                                <p class="ms-label"><ruby>総合<rt>そうごう</rt></ruby><ruby>学習<rt>がくしゅう</rt></ruby><ruby>進捗<rt>しんちょく</rt></ruby></p>
+                                <p class="ms-value c-pink">74<small>%</small></p>
+                                <div class="ms-bar"><span style="width:74%"></span></div>
+                            </div>
+                            <div class="mock-stat">
+                                <p class="ms-label"><ruby>語彙<rt>ごい</rt></ruby></p>
+                                <p class="ms-value c-blue">1,320<small>/1,800</small></p>
+                                <p class="ms-note c-mint"><ruby>今週<rt>こんしゅう</rt></ruby> +95<ruby>語<rt>ご</rt></ruby></p>
+                            </div>
+                            <div class="mock-stat">
+                                <p class="ms-label"><ruby>文法<rt>ぶんぽう</rt></ruby></p>
+                                <p class="ms-value c-mint">148<small>/180</small></p>
+                                <p class="ms-note">N2<ruby>文法<rt>ぶんぽう</rt></ruby> 82%</p>
+                            </div>
+                            <div class="mock-stat">
+                                <p class="ms-label"><ruby>模試<rt>もし</rt></ruby>スコア</p>
+                                <p class="ms-value c-yellow">152<small>/180</small></p>
+                                <p class="ms-note c-pink"><ruby>合格<rt>ごうかく</rt></ruby>ライン<ruby>突破<rt>とっぱ</rt></ruby></p>
+                            </div>
+                        </div>
+                        <div class="mock-next">
+                            <span><ruby>今日<rt>きょう</rt></ruby>のおすすめ：<ruby>聴解<rt>ちょうかい</rt></ruby>トレーニング</span>
+                            <svg class="icon"><use href="#i-arrow-right"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= FEATURES ================= -->
+        <section id="features" class="section">
+            <div class="container">
+                <div class="section-head reveal">
+                    <span class="label bg-teal">SYSTEM FEATURES</span>
+                    <h2 class="section-title"><ruby>合格<rt>ごうかく</rt></ruby>に<ruby>必要<rt>ひつよう</rt></ruby>な<ruby>機能<rt>きのう</rt></ruby>を<br><span class="title-mark bg-yellow">ぎゅっと<ruby>凝縮<rt>ぎょうしゅく</rt></ruby>！</span></h2>
+                    <p class="section-lead">6つの<ruby>機能<rt>きのう</rt></ruby>がつながって、<br><ruby>続<rt>つづ</rt></ruby>けやすい<ruby>学習<rt>がくしゅう</rt></ruby><ruby>環境<rt>かんきょう</rt></ruby>をつくります。</p>
+                </div>
+
+                <div class="grid-3">
+                    <article class="pop-card feature reveal reveal-flip">
+                        <div class="feature-icon bg-yellow"><svg class="icon"><use href="#i-chart"/></svg></div>
+                        <h3><ruby>学習<rt>がくしゅう</rt></ruby>ダッシュボード</h3>
+                        <p><ruby>学習<rt>がくしゅう</rt></ruby><ruby>時間<rt>じかん</rt></ruby>、<ruby>連続<rt>れんぞく</rt></ruby><ruby>日数<rt>にっすう</rt></ruby>、<ruby>苦手<rt>にがて</rt></ruby>な<ruby>分野<rt>ぶんや</rt></ruby>をひと<ruby>目<rt>め</rt></ruby>で<ruby>確認<rt>かくにん</rt></ruby>。<ruby>毎日<rt>まいにち</rt></ruby>のやる<ruby>気<rt>き</rt></ruby>を<ruby>支<rt>ささ</rt></ruby>えます。</p>
+                        <ul class="check-list">
+                            <li>レベルアップの<ruby>演出<rt>えんしゅつ</rt></ruby></li>
+                            <li><ruby>連続<rt>れんぞく</rt></ruby><ruby>日数<rt>にっすう</rt></ruby>の<ruby>自動<rt>じどう</rt></ruby><ruby>記録<rt>きろく</rt></ruby></li>
+                        </ul>
+                    </article>
+                    <article class="pop-card feature reveal reveal-flip">
+                        <div class="feature-icon bg-mint"><svg class="icon"><use href="#i-book"/></svg></div>
+                        <h3><ruby>文法<rt>ぶんぽう</rt></ruby>マスター</h3>
+                        <p>N4からN1まで、イラスト<ruby>解説<rt>かいせつ</rt></ruby>でスッキリ<ruby>理解<rt>りかい</rt></ruby>。<ruby>接続<rt>せつぞく</rt></ruby>のルールや<ruby>使<rt>つか</rt></ruby>い<ruby>分<rt>わ</rt></ruby>けもひと<ruby>目<rt>め</rt></ruby>でわかります。</p>
+                        <ul class="check-list">
+                            <li><ruby>接続<rt>せつぞく</rt></ruby>ルール<ruby>表<rt>ひょう</rt></ruby></li>
+                            <li><ruby>例文<rt>れいぶん</rt></ruby>の<ruby>音声<rt>おんせい</rt></ruby><ruby>再生<rt>さいせい</rt></ruby></li>
+                        </ul>
+                    </article>
+                    <article class="pop-card feature reveal reveal-flip">
+                        <div class="feature-icon bg-pink"><svg class="icon"><use href="#i-cards"/></svg></div>
+                        <h3><ruby>語彙<rt>ごい</rt></ruby>フラッシュカード</h3>
+                        <p><ruby>忘<rt>わす</rt></ruby>れかけたころにもう<ruby>一度<rt>いちど</rt></ruby><ruby>出題<rt>しゅつだい</rt></ruby>。めくれるカードで、ゲームのように<ruby>単語<rt>たんご</rt></ruby>を<ruby>覚<rt>おぼ</rt></ruby>えられます。</p>
+                        <ul class="check-list">
+                            <li><ruby>漢字<rt>かんじ</rt></ruby>・ふりがな・<ruby>英訳<rt>えいやく</rt></ruby>の<ruby>切<rt>き</rt></ruby>り<ruby>替<rt>か</rt></ruby>え</li>
+                            <li>くり<ruby>返<rt>かえ</rt></ruby>し<ruby>学習<rt>がくしゅう</rt></ruby>に<ruby>対応<rt>たいおう</rt></ruby></li>
+                        </ul>
+                    </article>
+                    <article class="pop-card feature reveal reveal-flip">
+                        <div class="feature-icon bg-teal"><svg class="icon"><use href="#i-headphones"/></svg></div>
+                        <h3><ruby>聴解<rt>ちょうかい</rt></ruby>トレーニング</h3>
+                        <p><ruby>本番<rt>ほんばん</rt></ruby>と<ruby>同<rt>おな</rt></ruby>じ<ruby>形式<rt>けいしき</rt></ruby>のリスニング<ruby>問題<rt>もんだい</rt></ruby>。<ruby>速度<rt>そくど</rt></ruby><ruby>変更<rt>へんこう</rt></ruby>や<ruby>字幕<rt>じまく</rt></ruby>ON/OFFで<ruby>耳<rt>みみ</rt></ruby>を<ruby>鍛<rt>きた</rt></ruby>えます。</p>
+                        <ul class="check-list">
+                            <li><ruby>倍速<rt>ばいそく</rt></ruby>・<ruby>巻<rt>ま</rt></ruby>き<ruby>戻<rt>もど</rt></ruby>し</li>
+                            <li>スクリプトの<ruby>表示<rt>ひょうじ</rt></ruby></li>
+                        </ul>
+                    </article>
+                    <article class="pop-card feature reveal reveal-flip">
+                        <div class="feature-icon bg-orange"><svg class="icon"><use href="#i-exam"/></svg></div>
+                        <h3><ruby>本番<rt>ほんばん</rt></ruby><ruby>仕様<rt>しよう</rt></ruby>の<ruby>模擬<rt>もぎ</rt></ruby><ruby>試験<rt>しけん</rt></ruby></h3>
+                        <p>タイマー<ruby>付<rt>つ</rt></ruby>きで<ruby>本番<rt>ほんばん</rt></ruby>の<ruby>緊張感<rt>きんちょうかん</rt></ruby>を<ruby>体験<rt>たいけん</rt></ruby>。<ruby>終了<rt>しゅうりょう</rt></ruby><ruby>後<rt>ご</rt></ruby>はすぐに<ruby>採点<rt>さいてん</rt></ruby>と<ruby>解説<rt>かいせつ</rt></ruby>を<ruby>確認<rt>かくにん</rt></ruby>できます。</p>
+                        <ul class="check-list">
+                            <li><ruby>見直<rt>みなお</rt></ruby>しマーク＆タイマー</li>
+                            <li><ruby>合格<rt>ごうかく</rt></ruby><ruby>判定<rt>はんてい</rt></ruby>と<ruby>弱点<rt>じゃくてん</rt></ruby>の<ruby>分析<rt>ぶんせき</rt></ruby></li>
+                        </ul>
+                    </article>
+                    <article class="pop-card feature reveal reveal-flip">
+                        <div class="feature-icon bg-purple"><svg class="icon"><use href="#i-user"/></svg></div>
+                        <h3>マイページ</h3>
+                        <p>メールアドレスとパスワードでかんたんログイン。スマホで<ruby>学習<rt>がくしゅう</rt></ruby>した<ruby>続<rt>つづ</rt></ruby>きを、PCからそのまま<ruby>再開<rt>さいかい</rt></ruby>できます。</p>
+                        <ul class="check-list">
+                            <li><ruby>学習<rt>がくしゅう</rt></ruby><ruby>記録<rt>きろく</rt></ruby>の<ruby>保存<rt>ほぞん</rt></ruby></li>
+                            <li><ruby>複数<rt>ふくすう</rt></ruby>レベルの<ruby>管理<rt>かんり</rt></ruby></li>
+                        </ul>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DEMO ================= -->
+        <section id="demo" class="section section-yellow">
+            <div class="container">
+                <div class="section-head reveal">
+                    <span class="label bg-pink">INTERACTIVE DEMO</span>
+                    <h2 class="section-title"><ruby>今<rt>いま</rt></ruby>すぐ<ruby>試<rt>ため</rt></ruby>してみよう！</h2>
+                    <p class="section-lead"><ruby>実際<rt>じっさい</rt></ruby>の<ruby>機能<rt>きのう</rt></ruby>に<ruby>近<rt>ちか</rt></ruby>いかたちで<ruby>操作<rt>そうさ</rt></ruby>を<ruby>体験<rt>たいけん</rt></ruby>できます。</p>
+                </div>
+
+                <div class="demo-grid">
+                    <!-- 単語カード -->
+                    <div class="pop-card demo-card reveal reveal-left">
+                        <div class="demo-head">
+                            <span class="chip chip-purple"><ruby>単語<rt>たんご</rt></ruby>カード</span>
+                            <span class="chip chip-pink">タップでめくる</span>
+                        </div>
+                        <div class="flash-wrap" id="flashWrap" role="button" tabindex="0" aria-label="カードをめくる">
+                            <div class="flash" id="flashcard">
+                                <div class="flash-face flash-front">
+                                    <div class="flash-top"><span id="fcId">No.1080</span><span class="flash-level" id="fcLevel">JLPT N4</span></div>
+                                    <div class="flash-main">
+                                        <p class="flash-kanji" id="fcKanji">約束</p>
+                                        <p class="flash-reading" id="fcReading">やくそく（yakusoku）</p>
+                                    </div>
+                                    <p class="flash-hint"><svg class="icon"><use href="#i-flip"/></svg><span>タップして<ruby>裏<rt>うら</rt></ruby>を<ruby>見<rt>み</rt></ruby>る</span></p>
+                                </div>
+                                <div class="flash-face flash-back">
+                                    <div class="flash-top"><span id="fcPos">［ <ruby>名詞<rt>めいし</rt></ruby>／する<ruby>動詞<rt>どうし</rt></ruby> ］</span><span id="fcEng">Promise</span></div>
+                                    <div class="flash-main">
+                                        <p class="flash-ex" id="fcEx"></p>
+                                        <p class="flash-ex-en" id="fcExEn"></p>
+                                    </div>
+                                    <button type="button" class="pop-btn btn-white btn-sm" id="fcSpeak"><svg class="icon"><use href="#i-volume"/></svg><span><ruby>音声<rt>おんせい</rt></ruby>を<ruby>聞<rt>き</rt></ruby>く</span></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="demo-controls">
+                            <button type="button" class="pop-btn btn-cream btn-sm" id="fcPrev"><svg class="icon"><use href="#i-arrow-left"/></svg><span><ruby>前<rt>まえ</rt></ruby>へ</span></button>
+                            <button type="button" class="pop-btn btn-yellow btn-sm" id="fcFlip"><svg class="icon"><use href="#i-flip"/></svg><span>めくる</span></button>
+                            <button type="button" class="pop-btn btn-mint btn-sm" id="fcNext"><span><ruby>次<rt>つぎ</rt></ruby>へ</span><svg class="icon"><use href="#i-arrow-right"/></svg></button>
+                        </div>
+                    </div>
+
+                    <div class="demo-col">
+                        <!-- クイズ -->
+                        <div class="pop-card demo-card reveal reveal-right">
+                            <div class="demo-head">
+                                <span class="chip chip-pink">クイズ</span>
+                                <span class="demo-meta">N3 <ruby>文法<rt>ぶんぽう</rt></ruby></span>
+                            </div>
+                            <h3 class="quiz-q"><ruby>問題<rt>もんだい</rt></ruby>：（　　）に<ruby>入<rt>はい</rt></ruby>るいちばんよい<ruby>言葉<rt>ことば</rt></ruby>を<ruby>選<rt>えら</rt></ruby>んでね！</h3>
+                            <p class="quiz-sentence">「<ruby>日本<rt>にほん</rt></ruby>に<ruby>来<rt>き</rt></ruby>た（　　）、<ruby>日本語<rt>にほんご</rt></ruby>が<ruby>話<rt>はな</rt></ruby>せるようになりたい。」</p>
+                            <div class="quiz-options" id="quizOptions">
+                                <button type="button" class="quiz-btn" data-correct="false">1. ばかりに</button>
+                                <button type="button" class="quiz-btn" data-correct="true">2. からには</button>
+                                <button type="button" class="quiz-btn" data-correct="false">3. とたんに</button>
+                                <button type="button" class="quiz-btn" data-correct="false">4. ものの</button>
+                            </div>
+                            <p class="quiz-feedback" id="quizFeedback" role="status" aria-live="polite" hidden></p>
+                        </div>
+
+                        <!-- 聴解プレーヤー -->
+                        <div class="pop-card demo-card reveal reveal-right">
+                            <div class="demo-head">
+                                <span class="chip chip-teal"><ruby>聴解<rt>ちょうかい</rt></ruby>プレーヤー</span>
+                                <span class="demo-meta">Track 02</span>
+                            </div>
+                            <div class="player">
+                                <div class="eq" id="eq" aria-hidden="true"><i class="bg-pink"></i><i class="bg-yellow"></i><i class="bg-mint"></i><i class="bg-purple"></i><i class="bg-blue"></i><i class="bg-pink"></i></div>
+                                <div class="player-time"><span id="audioTimer">00:08</span><span>00:35</span></div>
+                                <div class="player-bar"><span id="audioBar" style="width:25%"></span></div>
+                                <div class="player-controls">
+                                    <button type="button" class="pop-btn btn-white btn-xs" id="audioBack" aria-label="5秒戻す"><svg class="icon"><use href="#i-back5"/></svg><span>5<ruby>秒<rt>びょう</rt></ruby></span></button>
+                                    <button type="button" class="pop-btn btn-pink btn-round" id="audioPlay" aria-label="再生"><svg class="icon icon-play"><use href="#i-play"/></svg><svg class="icon icon-pause"><use href="#i-pause"/></svg></button>
+                                    <button type="button" class="pop-btn btn-white btn-xs" id="audioFwd" aria-label="5秒進める"><span>5<ruby>秒<rt>びょう</rt></ruby></span><svg class="icon"><use href="#i-fwd5"/></svg></button>
+                                </div>
+                            </div>
+                            <p class="player-script"><b>［スクリプト］</b>「まもなく2<ruby>番線<rt>ばんせん</rt></ruby>に<ruby>電車<rt>でんしゃ</rt></ruby>がまいります。」</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= CURRICULUM ================= -->
+        <section id="curriculum" class="section">
+            <div class="container">
+                <div class="section-head reveal">
+                    <span class="label bg-mint">JLPT LEVELS</span>
+                    <h2 class="section-title">N4からN1まで<ruby>対応<rt>たいおう</rt></ruby>！</h2>
+                    <p class="section-lead"><ruby>自分<rt>じぶん</rt></ruby>のレベルに<ruby>合<rt>あ</rt></ruby>わせたコースで、<br>スムーズにステップアップ。</p>
+                </div>
+                <div class="grid-4">
+                    <article class="pop-card level reveal">
+                        <span class="level-badge bg-teal">N4 <ruby>初中級<rt>しょちゅうきゅう</rt></ruby></span>
+                        <h3><ruby>日常<rt>にちじょう</rt></ruby><ruby>会話<rt>かいわ</rt></ruby></h3>
+                        <p><ruby>身近<rt>みぢか</rt></ruby>な<ruby>話題<rt>わだい</rt></ruby>の<ruby>会話<rt>かいわ</rt></ruby>と、やさしい<ruby>文章<rt>ぶんしょう</rt></ruby>の<ruby>読解<rt>どっかい</rt></ruby>。</p>
+                        <dl class="level-meta"><dt><ruby>単語<rt>たんご</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby></dt><dd><ruby>約<rt>やく</rt></ruby>1,500<ruby>語<rt>ご</rt></ruby></dd><dt><ruby>漢字<rt>かんじ</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby></dt><dd><ruby>約<rt>やく</rt></ruby>300<ruby>字<rt>じ</rt></ruby></dd></dl>
+                    </article>
+                    <article class="pop-card level reveal">
+                        <span class="level-badge bg-yellow">N3 <ruby>中級<rt>ちゅうきゅう</rt></ruby></span>
+                        <h3>ステップアップ</h3>
+                        <p><ruby>日常<rt>にちじょう</rt></ruby>の<ruby>話題<rt>わだい</rt></ruby>のリスニングと、<ruby>自然<rt>しぜん</rt></ruby>な<ruby>日本語<rt>にほんご</rt></ruby><ruby>表現<rt>ひょうげん</rt></ruby>。</p>
+                        <dl class="level-meta"><dt><ruby>単語<rt>たんご</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby></dt><dd><ruby>約<rt>やく</rt></ruby>3,700<ruby>語<rt>ご</rt></ruby></dd><dt><ruby>漢字<rt>かんじ</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby></dt><dd><ruby>約<rt>やく</rt></ruby>650<ruby>字<rt>じ</rt></ruby></dd></dl>
+                    </article>
+                    <article class="pop-card level reveal">
+                        <span class="level-badge bg-pink">N2 <ruby>中上級<rt>ちゅうじょうきゅう</rt></ruby></span>
+                        <h3>ビジネス</h3>
+                        <p><ruby>新聞<rt>しんぶん</rt></ruby><ruby>記事<rt>きじ</rt></ruby>や、<ruby>仕事<rt>しごと</rt></ruby>の<ruby>場面<rt>ばめん</rt></ruby>での<ruby>高度<rt>こうど</rt></ruby>なやりとり。</p>
+                        <dl class="level-meta"><dt><ruby>単語<rt>たんご</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby></dt><dd><ruby>約<rt>やく</rt></ruby>6,000<ruby>語<rt>ご</rt></ruby></dd><dt><ruby>漢字<rt>かんじ</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby></dt><dd><ruby>約<rt>やく</rt></ruby>1,000<ruby>字<rt>じ</rt></ruby></dd></dl>
+                    </article>
+                    <article class="pop-card level reveal">
+                        <span class="level-badge bg-purple">N1 <ruby>上級<rt>じょうきゅう</rt></ruby></span>
+                        <h3>プロ<ruby>級<rt>きゅう</rt></ruby></h3>
+                        <p><ruby>複雑<rt>ふくざつ</rt></ruby>な<ruby>論理<rt>ろんり</rt></ruby><ruby>展開<rt>てんかい</rt></ruby>の<ruby>理解<rt>りかい</rt></ruby>と、<ruby>幅広<rt>はばひろ</rt></ruby>い<ruby>表現力<rt>ひょうげんりょく</rt></ruby>。</p>
+                        <dl class="level-meta"><dt><ruby>単語<rt>たんご</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby></dt><dd><ruby>約<rt>やく</rt></ruby>10,000<ruby>語<rt>ご</rt></ruby></dd><dt><ruby>漢字<rt>かんじ</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby></dt><dd><ruby>約<rt>やく</rt></ruby>2,000<ruby>字<rt>じ</rt></ruby></dd></dl>
+                    </article>
+                </div>
+                <p class="note-small reveal">※ <ruby>単語<rt>たんご</rt></ruby>・<ruby>漢字<rt>かんじ</rt></ruby>の<ruby>数<rt>かず</rt></ruby>は、<ruby>各<rt>かく</rt></ruby>レベルの<ruby>合格<rt>ごうかく</rt></ruby>に<ruby>必要<rt>ひつよう</rt></ruby>とされる<ruby>一般的<rt>いっぱんてき</rt></ruby>な<ruby>目安<rt>めやす</rt></ruby>です。</p>
+            </div>
+        </section>
+
+        <!-- ================= FLOW ================= -->
+        <section id="flow" class="section section-cream">
+            <div class="container">
+                <div class="section-head reveal">
+                    <span class="label bg-yellow">HOW TO START</span>
+                    <h2 class="section-title">ご<ruby>利用<rt>りよう</rt></ruby>の<ruby>流<rt>なが</rt></ruby>れ</h2>
+                    <p class="section-lead"><ruby>申<rt>もうし</rt></ruby><ruby>込<rt>こ</rt></ruby>みから<ruby>学習開始<rt>がくしゅうかいし</rt></ruby>までの4つのステップ。</p>
+                </div>
+                <ol class="flow-list">
+                    <li class="pop-card flow-step reveal reveal-zoom">
+                        <span class="flow-no bg-pink">STEP 1</span>
+                        <div class="flow-icon"><svg class="icon"><use href="#i-layers"/></svg></div>
+                        <h3>レベルを<ruby>選<rt>えら</rt></ruby>んで<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>み</h3>
+                        <p><ruby>受講<rt>じゅこう</rt></ruby>するレベルとお<ruby>支払<rt>しはら</rt></ruby>い<ruby>方法<rt>ほうほう</rt></ruby>を<ruby>選<rt>えら</rt></ruby>び、お<ruby>名前<rt>なまえ</rt></ruby>・メールアドレス・パスワードを<ruby>登録<rt>とうろく</rt></ruby>します。</p>
+                    </li>
+                    <li class="pop-card flow-step reveal reveal-zoom">
+                        <span class="flow-no bg-yellow">STEP 2</span>
+                        <div class="flow-icon"><svg class="icon"><use href="#i-store"/></svg></div>
+                        <h3>お<ruby>支払<rt>しはら</rt></ruby>い</h3>
+                        <p>コンビニ<ruby>払<rt>ばら</rt></ruby>いまたは<ruby>銀行<rt>ぎんこう</rt></ruby><ruby>振込<rt>ふりこみ</rt></ruby>で、<ruby>案内<rt>あんない</rt></ruby>された<ruby>期限<rt>きげん</rt></ruby>までにお<ruby>支払<rt>しはら</rt></ruby>いください。</p>
+                    </li>
+                    <li class="pop-card flow-step reveal reveal-zoom">
+                        <span class="flow-no bg-mint">STEP 3</span>
+                        <div class="flow-icon"><svg class="icon"><use href="#i-mail"/></svg></div>
+                        <h3>アカウント<ruby>発行<rt>はっこう</rt></ruby></h3>
+                        <p><ruby>入金<rt>にゅうきん</rt></ruby>を<ruby>確認<rt>かくにん</rt></ruby>したあと、アカウントを<ruby>有効<rt>ゆうこう</rt></ruby>にして、メールでお<ruby>知<rt>し</rt></ruby>らせします。</p>
+                    </li>
+                    <li class="pop-card flow-step reveal reveal-zoom">
+                        <span class="flow-no bg-purple">STEP 4</span>
+                        <div class="flow-icon"><svg class="icon"><use href="#i-login"/></svg></div>
+                        <h3>ログインして<ruby>学習<rt>がくしゅう</rt></ruby>スタート</h3>
+                        <p>このページの「ログイン」から<ruby>入<rt>はい</rt></ruby>れば<ruby>準備<rt>じゅんび</rt></ruby>OK。<ruby>今日<rt>きょう</rt></ruby>から<ruby>合格<rt>ごうかく</rt></ruby>をめざしましょう！</p>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- ================= PRICING ================= -->
+        <section id="pricing" class="section">
+            <div class="container">
+                <div class="section-head reveal">
+                    <span class="label bg-purple">PRICING PLANS</span>
+                    <h2 class="section-title">シンプルな<ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>りプラン</h2>
+                    <p class="section-lead"><ruby>月額<rt>げつがく</rt></ruby><ruby>料金<rt>りょうきん</rt></ruby>も<ruby>追加<rt>ついか</rt></ruby><ruby>料金<rt>りょうきん</rt></ruby>もありません。<ruby>必要<rt>ひつよう</rt></ruby>なレベルだけを<ruby>選<rt>えら</rt></ruby>べます。</p>
+                </div>
+
+                <div class="grid-4 pricing-grid">
+                    <article class="pop-card plan reveal reveal-flip" data-level="N4">
+                        <span class="level-badge bg-teal">N4 <ruby>初中級<rt>しょちゅうきゅう</rt></ruby></span>
+                        <h3>N4プラン</h3>
+                        <p class="plan-price">¥3,000<small>（<ruby>税込<rt>ぜいこみ</rt></ruby>）</small></p>
+                        <p class="plan-once"><ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>り・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い</p>
+                        <ul class="check-list">
+                            <li>N4の<ruby>語彙<rt>ごい</rt></ruby>・<ruby>文法<rt>ぶんぽう</rt></ruby>・<ruby>聴解<rt>ちょうかい</rt></ruby></li>
+                            <li>N4<ruby>模擬<rt>もぎ</rt></ruby><ruby>試験<rt>しけん</rt></ruby></li>
+                            <li><ruby>学習<rt>がくしゅう</rt></ruby>ダッシュボード</li>
+                        </ul>
+                        <button type="button" class="pop-btn btn-cream btn-block" data-apply="N4"><span>N4を<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>む</span></button>
+                    </article>
+                    <article class="pop-card plan reveal reveal-flip" data-level="N3">
+                        <span class="level-badge bg-yellow">N3 <ruby>中級<rt>ちゅうきゅう</rt></ruby></span>
+                        <h3>N3プラン</h3>
+                        <p class="plan-price">¥3,500<small>（<ruby>税込<rt>ぜいこみ</rt></ruby>）</small></p>
+                        <p class="plan-once"><ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>り・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い</p>
+                        <ul class="check-list">
+                            <li>N3の<ruby>語彙<rt>ごい</rt></ruby>・<ruby>文法<rt>ぶんぽう</rt></ruby>・<ruby>聴解<rt>ちょうかい</rt></ruby></li>
+                            <li>N3<ruby>模擬<rt>もぎ</rt></ruby><ruby>試験<rt>しけん</rt></ruby></li>
+                            <li><ruby>学習<rt>がくしゅう</rt></ruby>ダッシュボード</li>
+                        </ul>
+                        <button type="button" class="pop-btn btn-cream btn-block" data-apply="N3"><span>N3を<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>む</span></button>
+                    </article>
+                    <article class="pop-card plan reveal reveal-flip" data-level="N2">
+                        <span class="level-badge bg-pink">N2 <ruby>中上級<rt>ちゅうじょうきゅう</rt></ruby></span>
+                        <h3>N2プラン</h3>
+                        <p class="plan-price">¥4,000<small>（<ruby>税込<rt>ぜいこみ</rt></ruby>）</small></p>
+                        <p class="plan-once"><ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>り・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い</p>
+                        <ul class="check-list">
+                            <li>N2の<ruby>語彙<rt>ごい</rt></ruby>・<ruby>文法<rt>ぶんぽう</rt></ruby>・<ruby>聴解<rt>ちょうかい</rt></ruby></li>
+                            <li>N2<ruby>模擬<rt>もぎ</rt></ruby><ruby>試験<rt>しけん</rt></ruby></li>
+                            <li><ruby>学習<rt>がくしゅう</rt></ruby>ダッシュボード</li>
+                        </ul>
+                        <button type="button" class="pop-btn btn-cream btn-block" data-apply="N2"><span>N2を<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>む</span></button>
+                    </article>
+                    <article class="pop-card plan reveal reveal-flip" data-level="N1">
+                        <span class="level-badge bg-purple">N1 <ruby>上級<rt>じょうきゅう</rt></ruby></span>
+                        <h3>N1プラン</h3>
+                        <p class="plan-price">¥4,500<small>（<ruby>税込<rt>ぜいこみ</rt></ruby>）</small></p>
+                        <p class="plan-once"><ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>り・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い</p>
+                        <ul class="check-list">
+                            <li>N1の<ruby>語彙<rt>ごい</rt></ruby>・<ruby>文法<rt>ぶんぽう</rt></ruby>・<ruby>聴解<rt>ちょうかい</rt></ruby></li>
+                            <li>N1<ruby>模擬<rt>もぎ</rt></ruby><ruby>試験<rt>しけん</rt></ruby></li>
+                            <li><ruby>学習<rt>がくしゅう</rt></ruby>ダッシュボード</li>
+                        </ul>
+                        <button type="button" class="pop-btn btn-cream btn-block" data-apply="N1"><span>N1を<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>む</span></button>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= FAQ ================= -->
+        <section id="faq" class="section section-cream">
+            <div class="container container-narrow">
+                <div class="section-head reveal">
+                    <span class="label bg-teal">FAQ</span>
+                    <h2 class="section-title">よくある<ruby>質問<rt>しつもん</rt></ruby></h2>
+                </div>
+                <div class="faq-list">
+                    <details class="pop-card faq reveal">
+                        <summary><span>スマートフォンだけで<ruby>学習<rt>がくしゅう</rt></ruby>できますか？</span><svg class="icon faq-plus"><use href="#i-plus"/></svg></summary>
+                        <p>はい。スマホに<ruby>対応<rt>たいおう</rt></ruby>しているので、<ruby>通学<rt>つうがく</rt></ruby>・<ruby>通勤<rt>つうきん</rt></ruby><ruby>中<rt>ちゅう</rt></ruby>の<ruby>電車<rt>でんしゃ</rt></ruby>でも、<ruby>単語<rt>たんご</rt></ruby>カードや<ruby>聴解<rt>ちょうかい</rt></ruby>をそのまま<ruby>使<rt>つか</rt></ruby>えます。</p>
+                    </details>
+                    <details class="pop-card faq reveal">
+                        <summary><span>お<ruby>支払<rt>しはら</rt></ruby>い<ruby>方法<rt>ほうほう</rt></ruby>は<ruby>何<rt>なに</rt></ruby>がありますか？</span><svg class="icon faq-plus"><use href="#i-plus"/></svg></summary>
+                        <p>コンビニ<ruby>払<rt>ばら</rt></ruby>いと<ruby>銀行<rt>ぎんこう</rt></ruby><ruby>振込<rt>ふりこみ</rt></ruby>の2つです。クレジットカードは<ruby>必要<rt>ひつよう</rt></ruby>ありません。</p>
+                    </details>
+                    <details class="pop-card faq reveal">
+                        <summary><span><ruby>月額<rt>げつがく</rt></ruby><ruby>料金<rt>りょうきん</rt></ruby>や<ruby>追加<rt>ついか</rt></ruby>の<ruby>料金<rt>りょうきん</rt></ruby>はかかりますか？</span><svg class="icon faq-plus"><use href="#i-plus"/></svg></summary>
+                        <p>かかりません。<ruby>各<rt>かく</rt></ruby>レベルとも<ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>りなので、<ruby>一度<rt>いちど</rt></ruby>のお<ruby>支払<rt>しはら</rt></ruby>いで、そのレベルの<ruby>機能<rt>きのう</rt></ruby>をすべて<ruby>使<rt>つか</rt></ruby>えます。</p>
+                    </details>
+                    <details class="pop-card faq reveal">
+                        <summary><span><ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>んだら、すぐに<ruby>使<rt>つか</rt></ruby>えますか？</span><svg class="icon faq-plus"><use href="#i-plus"/></svg></summary>
+                        <p><ruby>入金<rt>にゅうきん</rt></ruby>を<ruby>確認<rt>かくにん</rt></ruby>したあとに、アカウントを<ruby>発行<rt>はっこう</rt></ruby>してメールでお<ruby>知<rt>し</rt></ruby>らせします。<ruby>入金<rt>にゅうきん</rt></ruby>の<ruby>確認<rt>かくにん</rt></ruby>には<ruby>少<rt>すこ</rt></ruby>し<ruby>時間<rt>じかん</rt></ruby>がかかることがあります。</p>
+                    </details>
+                    <details class="pop-card faq reveal">
+                        <summary><span>あとから<ruby>別<rt>べつ</rt></ruby>のレベルも<ruby>勉強<rt>べんきょう</rt></ruby>したいです。</span><svg class="icon faq-plus"><use href="#i-plus"/></svg></summary>
+                        <p><ruby>同<rt>おな</rt></ruby>じアカウントに、レベルを<ruby>追加<rt>ついか</rt></ruby>で<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>めます。<ruby>新<rt>あたら</rt></ruby>しいアカウントを<ruby>作<rt>つく</rt></ruby>る<ruby>必要<rt>ひつよう</rt></ruby>はありません。</p>
+                    </details>
+                    <details class="pop-card faq reveal">
+                        <summary><span><ruby>無料<rt>むりょう</rt></ruby><ruby>体験<rt>たいけん</rt></ruby>はありますか？</span><svg class="icon faq-plus"><use href="#i-plus"/></svg></summary>
+                        <p><ruby>無料<rt>むりょう</rt></ruby><ruby>体験<rt>たいけん</rt></ruby>はありません。このページの「<ruby>体験<rt>たいけん</rt></ruby>デモ」で、<ruby>単語<rt>たんご</rt></ruby>カード・クイズ・<ruby>聴解<rt>ちょうかい</rt></ruby>プレーヤーの<ruby>使<rt>つか</rt></ruby>い<ruby>心地<rt>ごこち</rt></ruby>を<ruby>試<rt>ため</rt></ruby>せます。</p>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= CTA ================= -->
+        <section class="cta">
+            <div class="container cta-inner reveal reveal-zoom">
+                <h2>さあ！<br>ワクワクする<ruby>日本語<rt>にほんご</rt></ruby><ruby>学習<rt>がくしゅう</rt></ruby>を<br><ruby>始<rt>はじ</rt></ruby>めよう！</h2>
+                <p>N4〜N1、<ruby>必要<rt>ひつよう</rt></ruby>なレベルを<ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>りで。</p>
+                <a href="#pricing" class="pop-btn btn-yellow btn-lg"><span>プランを<ruby>選<rt>えら</rt></ruby>ぶ</span><svg class="icon"><use href="#i-arrow-right"/></svg></a>
+            </div>
+        </section>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <span class="brand-mark is-small"><img src="img/logo.png" alt="" width="26" height="30"></span>
+                        <span class="brand-name">R-anguage</span>
+                    </div>
+                    <p><ruby>楽<rt>たの</rt></ruby>しく<ruby>学<rt>まな</rt></ruby>んで<ruby>合格<rt>ごうかく</rt></ruby>をめざす！JLPT N4〜N1<ruby>対応<rt>たいおう</rt></ruby>の<ruby>日本語<rt>にほんご</rt></ruby><ruby>学習<rt>がくしゅう</rt></ruby>システム。</p>
+                    <a href="https://jprojectsriki-cpu.github.io/rikis_collection/" class="footer-series"><span>R-シリーズ<ruby>一覧<rt>いちらん</rt></ruby>へ</span><svg class="icon"><use href="#i-arrow-right"/></svg></a>
+                </div>
+                
+                <div class="footer-col">
+                    <p class="footer-head">JLPT コース</p>
+                    <ul>
+                        <li><a href="#pricing">N1 <ruby>上級<rt>じょうきゅう</rt></ruby></a></li>
+                        <li><a href="#pricing">N2 <ruby>中上級<rt>ちゅうじょうきゅう</rt></ruby></a></li>
+                        <li><a href="#pricing">N3 <ruby>中級<rt>ちゅうきゅう</rt></ruby></a></li>
+                        <li><a href="#pricing">N4 <ruby>初中級<rt>しょちゅうきゅう</rt></ruby></a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <p class="footer-head">サポート</p>
+                    <ul>
+                        <li><button type="button" data-open="termsDialog"><ruby>利用<rt>りよう</rt></ruby><ruby>規約<rt>きやく</rt></ruby></button></li>
+                        <li><button type="button" data-open="privacyDialog">プライバシーポリシー</button></li>
+                        <li><button type="button" data-open="tokushohoDialog"><ruby>特定<rt>とくてい</rt></ruby><ruby>商取引法<rt>しょうとりひきほう</rt></ruby>に<ruby>基<rt>もと</rt></ruby>づく<ruby>表記<rt>ひょうき</rt></ruby></button></li>
+                        <li><a href="https://jprojectsriki-cpu.github.io/rikis_collection/#contact">お<ruby>問<rt>と</rt></ruby>い<ruby>合<rt>あ</rt></ruby>わせ</a></li>
+                    </ul>
+                </div>
+            </div>
+            <p class="copyright">&copy; 2026 R-anguage / Reicher Rick. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- ================= DIALOGS ================= -->
+
+    <!-- お申し込み -->
+    <dialog class="modal" id="applyDialog" aria-labelledby="applyTitle">
+        <form class="modal-box" id="applyForm" novalidate>
+            <div class="modal-head">
+                <h2 id="applyTitle">お<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>み</h2>
+                <button type="button" class="modal-close" data-close aria-label="閉じる"><svg class="icon"><use href="#i-close"/></svg></button>
+            </div>
+
+            <fieldset class="field-group">
+                <legend><span class="step-no">01</span><span>レベル</span></legend>
+                <div class="level-select">
+                    <label><input type="radio" name="level" value="N4"><span><b>N4</b>¥3,000</span></label>
+                    <label><input type="radio" name="level" value="N3" checked><span><b>N3</b>¥3,500</span></label>
+                    <label><input type="radio" name="level" value="N2"><span><b>N2</b>¥4,000</span></label>
+                    <label><input type="radio" name="level" value="N1"><span><b>N1</b>¥4,500</span></label>
+                </div>
+            </fieldset>
+
+            <fieldset class="field-group">
+                <legend><span class="step-no">02</span><span>お<ruby>支払<rt>しはら</rt></ruby>い<ruby>方法<rt>ほうほう</rt></ruby></span></legend>
+                <div class="pay-select">
+                    <label><input type="radio" name="payment" value="konbini" checked><span><svg class="icon"><use href="#i-store"/></svg><span>コンビニ<ruby>払<rt>ばら</rt></ruby>い</span></span></label>
+                    <label><input type="radio" name="payment" value="bank_transfer"><span><svg class="icon"><use href="#i-bank"/></svg><span><ruby>銀行<rt>ぎんこう</rt></ruby><ruby>振込<rt>ふりこみ</rt></ruby></span></span></label>
+                </div>
+                <p class="note-small">※ お<ruby>支払<rt>しはら</rt></ruby>いの<ruby>手数料<rt>てすうりょう</rt></ruby>はお<ruby>客様<rt>きゃくさま</rt></ruby>のご<ruby>負担<rt>ふたん</rt></ruby>となります。</p>
+            </fieldset>
+
+            <fieldset class="field-group">
+                <legend><span class="step-no">03</span><span>アカウント<ruby>情報<rt>じょうほう</rt></ruby></span></legend>
+                <label class="field"><span>お<ruby>名前<rt>なまえ</rt></ruby></span><input type="text" name="name" maxlength="50" autocomplete="name" required></label>
+                <label class="field"><span>メールアドレス</span><input type="email" name="email" maxlength="200" autocomplete="email" required></label>
+                <label class="field"><span>パスワード（8<ruby>文字<rt>もじ</rt></ruby><ruby>以上<rt>いじょう</rt></ruby>）</span><input type="password" name="password" minlength="8" maxlength="64" autocomplete="new-password" required></label>
+                <label class="field"><span>パスワード（<ruby>確認<rt>かくにん</rt></ruby>）</span><input type="password" name="passwordConfirm" minlength="8" maxlength="64" autocomplete="new-password" required></label>
+                <label class="agree"><input type="checkbox" name="agree" required><span><button type="button" class="link-btn" data-open="termsDialog"><ruby>利用<rt>りよう</rt></ruby><ruby>規約<rt>きやく</rt></ruby></button>と<button type="button" class="link-btn" data-open="privacyDialog">プライバシーポリシー</button>に<ruby>同意<rt>どうい</rt></ruby>する</span></label>
+            </fieldset>
+
+            <p class="form-msg" id="applyMsg" role="status" aria-live="polite"></p>
+            <button type="submit" class="pop-btn btn-pink btn-block"><span><ruby>支払<rt>しはら</rt></ruby>い<ruby>画面<rt>がめん</rt></ruby>へ<ruby>進<rt>すす</rt></ruby>む</span><svg class="icon"><use href="#i-arrow-right"/></svg></button>
+            <p class="note-small center"><ruby>決済<rt>けっさい</rt></ruby>はStripeで<ruby>安全<rt>あんぜん</rt></ruby>に<ruby>処理<rt>しょり</rt></ruby>されます。</p>
+        </form>
+    </dialog>
+
+    <!-- ログイン -->
+    <dialog class="modal modal-small" id="loginDialog" aria-labelledby="loginTitle">
+        <form class="modal-box" id="loginForm" novalidate>
+            <div class="modal-head">
+                <h2 id="loginTitle">ログイン</h2>
+                <button type="button" class="modal-close" data-close aria-label="閉じる"><svg class="icon"><use href="#i-close"/></svg></button>
+            </div>
+            <label class="field"><span>メールアドレス</span><input type="email" name="email" autocomplete="email" required></label>
+            <label class="field"><span>パスワード</span><input type="password" name="password" autocomplete="current-password" required></label>
+            <p class="form-msg" id="loginMsg" role="status" aria-live="polite"></p>
+            <button type="submit" class="pop-btn btn-purple btn-block"><svg class="icon"><use href="#i-login"/></svg><span>ログイン</span></button>
+        </form>
+    </dialog>
+
+    <!-- 特定商取引法に基づく表記 -->
+    <dialog class="modal" id="tokushohoDialog" aria-labelledby="tokushohoTitle">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h2 id="tokushohoTitle">特定商取引法に基づく表記</h2>
+                <button type="button" class="modal-close" data-close aria-label="閉じる"><svg class="icon"><use href="#i-close"/></svg></button>
+            </div>
+            <dl class="doc-table">
+                <dt>販売事業者名</dt><dd>Reicher Rick</dd>
+                <dt>代表責任者</dt><dd>中村 力</dd>
+                <dt>所在地</dt><dd>〒902-0062 沖縄県那覇市字松川</dd>
+                <dt>お問い合わせ先</dt><dd><span class="todo">【メールアドレスを記入】</span><br>※お問い合わせは、原則としてお問い合わせフォームまたは上記アドレス宛にお願いいたします。</dd>
+                <dt>販売価格</dt><dd>N4プラン 3,000円／N3プラン 3,500円／N2プラン 4,000円／N1プラン 4,500円（いずれも税込・買い切り）</dd>
+                <dt>商品代金以外の必要料金</dt><dd>・インターネット接続料金および通信費用（お客様ご負担）<br>・コンビニ払い・銀行振込の手数料（お客様ご負担）</dd>
+                <dt>お支払い方法</dt><dd>コンビニ払い、銀行振込（決済代行：Stripe）</dd>
+                <dt>代金の支払時期</dt><dd>お申し込み後、ご案内する期限までにお支払いください。期限までにお支払いが確認できない場合、お申し込みは自動的に取り消されます。</dd>
+                <dt>サービスの提供時期</dt><dd>入金を確認したのち、アカウントを発行し、その旨をメールでお知らせした時点からご利用いただけます。</dd>
+                <dt>返品・返金・キャンセル</dt><dd>アカウント発行前のキャンセルは、全額を返金いたします。デジタルコンテンツの特性上、アカウント発行後の返金には原則として応じられません。<br>※当方のシステム障害等により、サービスの利用が著しく困難であると判断した場合に限り、個別に対応いたします。</dd>
+                <dt>推奨動作環境</dt><dd>最新版の Google Chrome, Safari, Microsoft Edge, Mozilla Firefox（PC／スマートフォン）</dd>
+            </dl>
+        </div>
+    </dialog>
+
+    <!-- 利用規約 -->
+    <dialog class="modal" id="termsDialog" aria-labelledby="termsTitle">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h2 id="termsTitle">利用規約</h2>
+                <button type="button" class="modal-close" data-close aria-label="閉じる"><svg class="icon"><use href="#i-close"/></svg></button>
+            </div>
+            <div class="doc-body">
+                <p>この利用規約（以下「本規約」といいます。）は、Reicher Rick（以下「当方」といいます。）が提供するJLPT学習サービス「R-anguage」（以下「本サービス」といいます。）の利用条件を定めるものです。登録ユーザーの皆様（以下「ユーザー」といいます。）には、本規約に従って本サービスをご利用いただきます。</p>
+                <h3>第1条（適用）</h3>
+                <ol>
+                    <li>本規約は、ユーザーと当方との間の本サービスの利用に関わる一切の関係に適用されるものとします。</li>
+                    <li>当方は本サービスに関し、本規約のほか、ご利用にあたってのルール等、各種の規定（以下「個別規定」といいます。）をすることがあります。これら個別規定はその名称のいかんに関わらず、本規約の一部を構成するものとします。</li>
+                </ol>
+                <h3>第2条（利用登録）</h3>
+                <ol>
+                    <li>本サービスにおいては、登録希望者が本規約に同意の上、当方の定める方法によって利用登録を申請し、当方がこれを承認することによって、利用登録が完了するものとします。</li>
+                    <li>当方は、利用登録の申請者に以下の事由があると判断した場合、利用登録の申請を承認しないことがあり、その理由については一切の開示義務を負わないものとします。
+                        <ul>
+                            <li>利用登録の申請に際して虚偽の事項を届け出た場合</li>
+                            <li>本規約に違反したことがある者からの申請である場合</li>
+                            <li>その他、当方が利用登録を相当でないと判断した場合</li>
+                        </ul>
+                    </li>
+                </ol>
+                <h3>第3条（ユーザーIDおよびパスワードの管理）</h3>
+                <ol>
+                    <li>ユーザーは、自己の責任において、本サービスのユーザーIDおよびパスワードを適切に管理するものとします。</li>
+                    <li>ユーザーは、いかなる場合にも、ユーザーIDおよびパスワードを第三者に譲渡または貸与し、もしくは第三者と共用することはできません。</li>
+                </ol>
+                <h3>第4条（利用料金および支払方法）</h3>
+                <p>ユーザーは、本サービスの有料対価として、当方が別途定め本ウェブサイトに表示する各レベルの利用料金（買い切り）を、当方が指定する方法（コンビニ払いまたは銀行振込）により支払うものとします。</p>
+                <h3>第5条（禁止事項）</h3>
+                <p>ユーザーは、本サービスの利用にあたり、以下の行為をしてはなりません。</p>
+                <ul>
+                    <li>法令または公序良俗に違反する行為</li>
+                    <li>犯罪行為に関連する行為</li>
+                    <li>当方のサーバーまたはネットワークの機能を破壊したり、妨害したりする行為</li>
+                    <li>当方のサービスの運営を妨害するおそれのある行為</li>
+                    <li>他のユーザーに関する個人情報等を収集または蓄積する行為</li>
+                    <li>不正アクセスをし、またはこれを試みる行為</li>
+                    <li>本サービスのコンテンツ（教材データ等）を無断で転載、複製、配布する行為</li>
+                </ul>
+                <h3>第6条（免責事項・サービス変更・終了）</h3>
+                <ol>
+                    <li>当方は、本サービスに事実上または法律上の瑕疵（安全性、信頼性、正確性、完全性、有効性、特定の目的への適合性、セキュリティ等に関する欠陥、エラーやバグ、権利侵害等を含みます。）がないことを明示的にも黙示的にも保証しておりません。</li>
+                    <li>当方は、ユーザーに通知することなく、本サービスの内容を変更しまたは本サービスの提供を中止することができるものとし、これによってユーザーに生じた損害について一切の責任を負いません。</li>
+                    <li>本サービスは学習を支援するものであり、日本語能力試験の合格を保証するものではありません。</li>
+                </ol>
+                <p class="doc-date">最終改定日：2026年10月23日</p>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- プライバシーポリシー -->
+    <dialog class="modal" id="privacyDialog" aria-labelledby="privacyTitle">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h2 id="privacyTitle">プライバシーポリシー</h2>
+                <button type="button" class="modal-close" data-close aria-label="閉じる"><svg class="icon"><use href="#i-close"/></svg></button>
+            </div>
+            <div class="doc-body">
+                <p>Reicher Rick（以下「当方」といいます。）は、本ウェブサイト上で提供するサービス「R-anguage」（以下「本サービス」といいます。）における、ユーザーの個人情報の取扱いについて、以下のとおりプライバシーポリシー（以下「本ポリシー」といいます。）を定め、適切な保護に努めます。</p>
+                <h3>第1条（収集する個人情報）</h3>
+                <ul>
+                    <li>ユーザー識別情報：お名前、メールアドレス、パスワード（ハッシュ化して保存し、元のパスワードは保存しません）</li>
+                    <li>決済関連情報：お支払いの状況（決済はStripe, Inc.が処理し、当方は支払い用の番号や口座情報を保存しません）</li>
+                    <li>利用履歴情報：学習の進み具合などの学習データ</li>
+                </ul>
+                <h3>第2条（個人情報の利用目的）</h3>
+                <ul>
+                    <li>本サービスの提供・運営のため</li>
+                    <li>ユーザーからの問い合わせに回答するため（本人確認を行うことを含む）</li>
+                    <li>利用料金の請求および入金確認のため</li>
+                    <li>アカウント発行や重要なお知らせのメールを送付するため</li>
+                    <li>利用規約に違反したユーザーの特定や、不正利用を防止するため</li>
+                </ul>
+                <h3>第3条（個人情報の第三者提供）</h3>
+                <p>当方は、次に掲げる場合を除いて、あらかじめユーザーの同意を得ることなく、第三者に個人情報を提供することはありません。</p>
+                <ul>
+                    <li>法令に基づく場合</li>
+                    <li>人の生命、身体または財産の保護のために必要がある場合であって、本人の同意を得ることが困難であるとき</li>
+                    <li>国の機関もしくは地方公共団体またはその委託を受けた者が法令の定める事務を遂行することに対して協力する必要がある場合</li>
+                </ul>
+                <h3>第4条（外部サービスの利用）</h3>
+                <p>データの保存およびメールの送信に、Googleのサービス（Google スプレッドシート／Apps Script）を利用しています。</p>
+                <h3>第5条（安全管理措置）</h3>
+                <p>当方は、個人情報の紛失、破壊、改ざんおよび漏洩などを防止するため、適切な情報セキュリティ対策を講じます。</p>
+                <h3>第6条（個人情報の開示・訂正・削除）</h3>
+                <p>ユーザーは、当方の保有する自己の個人情報について、当方が定める手続きにより、開示、訂正、追加または削除を請求することができます。</p>
+                <h3>第7条（お問い合わせ窓口）</h3>
+                <p>本ポリシーに関するお問い合わせは、お問い合わせフォームよりお願いいたします。</p>
+                <p class="doc-date">最終改定日：2026年10月23日</p>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/lp.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+﻿# ===== OS生成ファイル =====
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ===== エディタ設定 =====
+.vscode/
+*.code-workspace
+
+# ===== 秘密情報（GitHubに公開しない） =====
+.env
+*.local.js
+.clasprc.json
+
+# ===== Node.js（将来claspを使う場合） =====
+node_modules/
+npm-debug.log*
+
+# ===== ログ・一時ファイル =====
+*.log
+*.tmp

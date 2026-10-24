@@ -63,6 +63,211 @@
         items.forEach(function (el) { io.observe(el); });
     }
 
+    /* ---------- 料金プラン：横並び・スライド ---------- */
+    function initPlanSlider() {
+        var grid = document.querySelector('.pricing-grid');
+        if (!grid) return;
+        var cards = Array.prototype.slice.call(grid.querySelectorAll('.plan'));
+        if (!cards.length) return;
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var behavior = reduce ? 'auto' : 'smooth';
+
+        // 横並びのスライダーに組み替える（HTMLは変更不要）
+        var wrap = document.createElement('div');
+        wrap.className = 'plan-slider reveal';
+        grid.parentNode.insertBefore(wrap, grid);
+        wrap.appendChild(grid);
+        grid.classList.remove('grid-4');
+        grid.classList.add('plan-track');
+        grid.setAttribute('tabindex', '0');
+        grid.setAttribute('role', 'region');
+        grid.setAttribute('aria-label', '料金プラン（左右にスライドできます）');
+        cards.forEach(function (card) { card.classList.remove('reveal', 'reveal-flip'); });
+
+        // 矢印ボタンとドット
+        function makeNav(cls, label, icon) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'plan-nav ' + cls;
+            b.setAttribute('aria-label', label);
+            b.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#' + icon + '"/></svg>';
+            return b;
+        }
+        var prev = makeNav('plan-prev', '前のプラン', 'i-arrow-left');
+        var next = makeNav('plan-next', '次のプラン', 'i-arrow-right');
+        var dotsBox = document.createElement('div');
+        dotsBox.className = 'plan-dots';
+        var dots = cards.map(function (card, i) {
+            var d = document.createElement('button');
+            d.type = 'button';
+            d.className = 'plan-dot';
+            d.setAttribute('aria-label', (card.getAttribute('data-level') || ('プラン' + (i + 1))) + 'プランを表示');
+            d.addEventListener('click', function () { goTo(i); });
+            dotsBox.appendChild(d);
+            return d;
+        });
+        var controls = document.createElement('div');
+        controls.className = 'plan-controls';
+        controls.appendChild(prev);
+        controls.appendChild(dotsBox);
+        controls.appendChild(next);
+        wrap.appendChild(controls);
+
+        function padLeft() { return parseFloat(window.getComputedStyle(grid).paddingLeft) || 0; }
+        function step() { return cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft : grid.clientWidth; }
+        function maxScroll() { return grid.scrollWidth - grid.clientWidth; }
+        function goTo(i) {
+            grid.scrollTo({ left: Math.max(0, cards[i].offsetLeft - padLeft()), behavior: behavior });
+        }
+        prev.addEventListener('click', function () { grid.scrollBy({ left: -step(), behavior: behavior }); });
+        next.addEventListener('click', function () { grid.scrollBy({ left: step(), behavior: behavior }); });
+
+        // 表示中のカードに合わせて、ドットと矢印の状態を更新する
+        function update() {
+            var t = grid.getBoundingClientRect();
+            cards.forEach(function (card, i) {
+                var r = card.getBoundingClientRect();
+                var overlap = Math.min(r.right, t.right) - Math.max(r.left, t.left);
+                var on = overlap >= r.width * 0.6;
+                dots[i].classList.toggle('is-active', on);
+                if (on) dots[i].setAttribute('aria-current', 'true'); else dots[i].removeAttribute('aria-current');
+            });
+            prev.disabled = grid.scrollLeft <= 2;
+            next.disabled = grid.scrollLeft >= maxScroll() - 2;
+        }
+        var queued = false;
+        function queue() { if (!queued) { queued = true; window.requestAnimationFrame(function () { queued = false; update(); }); } }
+        grid.addEventListener('scroll', queue, { passive: true });
+        window.addEventListener('resize', queue);
+        update();
+    }
+
+    /* ---------- スマホ：3つのバッジを横に流す ---------- */
+    function initBadgeMarquee() {
+        var list = document.querySelector('.trust-badges');
+        if (!list || !window.matchMedia) return;
+        var mq = window.matchMedia('(max-width: 600px)');
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var SPEED = 40; // 1秒あたりに流れる距離(px)
+        var originals = Array.prototype.slice.call(list.children);
+        var clones = [];
+        var raf = null, last = 0, pos = 0, holding = false, resumeTimer = null;
+        var dragX = null, startLeft = 0;
+
+        // 途切れず繰り返すため、同じ内容を2セット後ろに足す
+        function setup() {
+            for (var n = 0; n < 2; n++) {
+                originals.forEach(function (li) {
+                    var c = li.cloneNode(true);
+                    c.setAttribute('aria-hidden', 'true');
+                    list.appendChild(c);
+                    clones.push(c);
+                });
+            }
+        }
+        function teardown() {
+            clones.forEach(function (c) { if (c.parentNode) c.parentNode.removeChild(c); });
+            clones = [];
+        }
+        function oneSet() { return clones.length ? clones[0].offsetLeft - originals[0].offsetLeft : 0; }
+        function wrap() {
+            var w = oneSet();
+            if (w <= 0) return;
+            while (pos >= w) pos -= w;
+            while (pos < 0) pos += w;
+        }
+        function hold() { holding = true; window.clearTimeout(resumeTimer); }
+        function release() {
+            window.clearTimeout(resumeTimer);
+            resumeTimer = window.setTimeout(function () { pos = list.scrollLeft; holding = false; }, 1500);
+        }
+        function frame(t) {
+            raf = window.requestAnimationFrame(frame);
+            var dt = last ? Math.min(t - last, 100) : 0;
+            last = t;
+            if (holding || dragX !== null) return;
+            pos += SPEED * dt / 1000;
+            wrap();
+            list.scrollLeft = pos;
+        }
+        function start() {
+            if (raf) return;
+            setup();
+            list.scrollLeft = 0;
+            pos = 0;
+            holding = false;
+            last = 0;
+            raf = window.requestAnimationFrame(frame);
+        }
+        function stop() {
+            if (raf) window.cancelAnimationFrame(raf);
+            raf = null;
+            window.clearTimeout(resumeTimer);
+            teardown();
+            list.scrollLeft = 0;
+        }
+        function sync() { if (mq.matches && !reduce) start(); else stop(); }
+
+        // 触れている間は止め、離して少し経ったら再開する
+        list.addEventListener('touchstart', hold, { passive: true });
+        list.addEventListener('touchend', release, { passive: true });
+        list.addEventListener('touchcancel', release, { passive: true });
+        list.addEventListener('wheel', function () { hold(); release(); }, { passive: true });
+        // マウスのドラッグでも動かせる
+        list.addEventListener('mousedown', function (e) { dragX = e.clientX; startLeft = list.scrollLeft; hold(); });
+        window.addEventListener('mousemove', function (e) {
+            if (dragX === null) return;
+            list.scrollLeft = startLeft - (e.clientX - dragX);
+        });
+        window.addEventListener('mouseup', function () {
+            if (dragX === null) return;
+            dragX = null;
+            release();
+        });
+
+        if (mq.addEventListener) mq.addEventListener('change', sync); else mq.addListener(sync);
+        sync();
+    }
+
+    /* ---------- 背景の3Dオブジェクト（大きなキューブ1つ） ---------- */
+    function initBg3d() {
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var SIZE = 340; // キューブの大きさ(px)。位置は lp.css の .o3 の --x / --y で調整
+
+        var layer = document.createElement('div');
+        layer.className = 'bg3d';
+        layer.setAttribute('aria-hidden', 'true');
+
+        var cube = document.createElement('div');
+        cube.className = 'o3';
+        cube.style.setProperty('--sz', SIZE + 'px');
+        var spin = document.createElement('div');
+        spin.className = 'o3-spin';
+        spin.innerHTML = '<i></i><i></i><i></i><i></i><i></i><i></i>';
+        cube.appendChild(spin);
+        layer.appendChild(cube);
+        document.body.insertBefore(layer, document.body.firstChild);
+        if (reduce) return;
+
+        // スクロールで回り、マウスでゆるく傾く
+        var mx = 0, my = 0, sy = window.pageYOffset || 0, queued = false;
+        function update() {
+            queued = false;
+            var x = mx * 50;
+            var y = my * 50 + Math.sin(sy / 500) * 40;
+            cube.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)' +
+                ' rotateX(' + (my * -20).toFixed(1) + 'deg) rotateY(' + (sy * 0.12).toFixed(1) + 'deg)';
+        }
+        function queue() { if (!queued) { queued = true; window.requestAnimationFrame(update); } }
+        window.addEventListener('scroll', function () { sy = window.pageYOffset; queue(); }, { passive: true });
+        window.addEventListener('mousemove', function (e) {
+            mx = e.clientX / window.innerWidth - 0.5;
+            my = e.clientY / window.innerHeight - 0.5;
+            queue();
+        }, { passive: true });
+        update();
+    }
+
     /* ---------- 単語カード ---------- */
     var POS = '［ ' + r('名詞', 'めいし') + '／する' + r('動詞', 'どうし') + ' ］';
     var CARDS = [
@@ -248,9 +453,12 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        initBg3d();
         initFurigana();
         initMenu();
+        initPlanSlider(); // initReveal より前に実行する
         initReveal();
+        initBadgeMarquee();
         initFlashcards();
         initQuiz();
         initPlayer();

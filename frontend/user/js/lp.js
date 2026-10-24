@@ -417,6 +417,18 @@
 
     var TOKEN_KEY = 'ranguage_token';
 
+    // 共通ローディング（loading.js が読み込まれていないときは何もしない）
+    var Loader = window.RLoading || { show: function () {}, hide: function () { return Promise.resolve(); } };
+
+    // 通信が終わったら、ローディングを消してから結果を返す
+    function withLoading(html, promise) {
+        Loader.show(html);
+        return promise.then(
+            function (res) { return Loader.hide().then(function () { return res; }); },
+            function (err) { return Loader.hide().then(function () { throw err; }); }
+        );
+    }
+
     function initForms() {
         /* ----- 申し込み ----- */
         var apply = document.getElementById('applyForm');
@@ -434,15 +446,15 @@
                 if (!apiReady()) return setMsg(msg, '現在、お申し込みの受付を準備中です。公開まで今しばらくお待ちください。');
 
                 setBusy(apply, true);
-                setMsg(msg, '送信しています…');
-                apiPost({
+                setMsg(msg, '');
+                withLoading('お<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>みを<ruby>送信<rt>そうしん</rt></ruby>しています', apiPost({
                     action: 'apply',
                     level: fd.get('level'),
                     payment: fd.get('payment'),
                     name: String(fd.get('name') || '').trim(),
                     email: String(fd.get('email') || '').trim(),
                     password: pw
-                }).then(function (res) {
+                })).then(function (res) {
                     if (res && res.ok) {
                         apply.reset();
                         setMsg(msg, 'お申し込みを受け付けました（申込番号：' + res.applicationId + '）。' +
@@ -471,8 +483,8 @@
                 if (!apiReady()) return setMsg(loginMsg, 'ログイン機能は準備中です。公開まで今しばらくお待ちください。');
 
                 setBusy(login, true);
-                setMsg(loginMsg, 'ログインしています…');
-                apiPost({ action: 'login', email: email, password: password })
+                setMsg(loginMsg, '');
+                withLoading('ログインしています', apiPost({ action: 'login', email: email, password: password }))
                     .then(function (res) {
                         if (res && res.ok) {
                             try { localStorage.setItem(TOKEN_KEY, res.token); } catch (err) { /* 保存できない環境 */ }

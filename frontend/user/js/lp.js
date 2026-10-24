@@ -142,91 +142,59 @@
         update();
     }
 
-    /* ---------- スマホ：3つのバッジを横に流す ---------- */
+    /* ---------- スマホ：3つのバッジを自動で横に流す ---------- */
     function initBadgeMarquee() {
         var list = document.querySelector('.trust-badges');
-        if (!list || !window.matchMedia) return;
-        var mq = window.matchMedia('(max-width: 600px)');
-        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        var SPEED = 40; // 1秒あたりに流れる距離(px)
+        if (!list) return;
         var originals = Array.prototype.slice.call(list.children);
-        var clones = [];
-        var raf = null, last = 0, pos = 0, holding = false, resumeTimer = null;
-        var dragX = null, startLeft = 0;
+        if (!originals.length) return;
+        var SPEED = 40; // 1秒あたりに流れる距離(px)
 
-        // 途切れず繰り返すため、同じ内容を2セット後ろに足す
-        function setup() {
-            for (var n = 0; n < 2; n++) {
-                originals.forEach(function (li) {
-                    var c = li.cloneNode(true);
-                    c.setAttribute('aria-hidden', 'true');
-                    list.appendChild(c);
-                    clones.push(c);
-                });
+        // 途切れず繰り返すため、同じ内容を2セット後ろに足す（表示・非表示はCSSで切り替え）
+        for (var n = 0; n < 2; n++) {
+            originals.forEach(function (li) {
+                var c = li.cloneNode(true);
+                c.classList.add('tb-clone');
+                c.setAttribute('aria-hidden', 'true');
+                list.appendChild(c);
+            });
+        }
+        var firstClone = list.children[originals.length];
+
+        // 1セット分の幅を測り、CSSアニメーションに渡す
+        var lastShift = -1;
+        function measure() {
+            var shift = firstClone.offsetLeft - originals[0].offsetLeft;
+            if (shift <= 0) { // PC幅など、複製が非表示のとき
+                list.style.removeProperty('--shift');
+                list.style.removeProperty('--dur');
+                lastShift = -1;
+                return;
             }
+            if (shift === lastShift) return;
+            lastShift = shift;
+            list.style.setProperty('--shift', shift + 'px');
+            list.style.setProperty('--dur', (shift / SPEED).toFixed(2) + 's');
         }
-        function teardown() {
-            clones.forEach(function (c) { if (c.parentNode) c.parentNode.removeChild(c); });
-            clones = [];
+        measure();
+        window.addEventListener('resize', measure);
+        window.addEventListener('load', measure);
+        if ('ResizeObserver' in window) {
+            // ふりがなの ON/OFF などで幅が変わったときも測り直す
+            var ro = new ResizeObserver(measure);
+            originals.forEach(function (li) { ro.observe(li); });
         }
-        function oneSet() { return clones.length ? clones[0].offsetLeft - originals[0].offsetLeft : 0; }
-        function wrap() {
-            var w = oneSet();
-            if (w <= 0) return;
-            while (pos >= w) pos -= w;
-            while (pos < 0) pos += w;
-        }
-        function hold() { holding = true; window.clearTimeout(resumeTimer); }
-        function release() {
-            window.clearTimeout(resumeTimer);
-            resumeTimer = window.setTimeout(function () { pos = list.scrollLeft; holding = false; }, 1500);
-        }
-        function frame(t) {
-            raf = window.requestAnimationFrame(frame);
-            var dt = last ? Math.min(t - last, 100) : 0;
-            last = t;
-            if (holding || dragX !== null) return;
-            pos += SPEED * dt / 1000;
-            wrap();
-            list.scrollLeft = pos;
-        }
-        function start() {
-            if (raf) return;
-            setup();
-            list.scrollLeft = 0;
-            pos = 0;
-            holding = false;
-            last = 0;
-            raf = window.requestAnimationFrame(frame);
-        }
-        function stop() {
-            if (raf) window.cancelAnimationFrame(raf);
-            raf = null;
-            window.clearTimeout(resumeTimer);
-            teardown();
-            list.scrollLeft = 0;
-        }
-        function sync() { if (mq.matches && !reduce) start(); else stop(); }
 
         // 触れている間は止め、離して少し経ったら再開する
+        var timer = null;
+        function hold() { window.clearTimeout(timer); list.classList.add('is-paused'); }
+        function release() {
+            window.clearTimeout(timer);
+            timer = window.setTimeout(function () { list.classList.remove('is-paused'); }, 1200);
+        }
         list.addEventListener('touchstart', hold, { passive: true });
         list.addEventListener('touchend', release, { passive: true });
         list.addEventListener('touchcancel', release, { passive: true });
-        list.addEventListener('wheel', function () { hold(); release(); }, { passive: true });
-        // マウスのドラッグでも動かせる
-        list.addEventListener('mousedown', function (e) { dragX = e.clientX; startLeft = list.scrollLeft; hold(); });
-        window.addEventListener('mousemove', function (e) {
-            if (dragX === null) return;
-            list.scrollLeft = startLeft - (e.clientX - dragX);
-        });
-        window.addEventListener('mouseup', function () {
-            if (dragX === null) return;
-            dragX = null;
-            release();
-        });
-
-        if (mq.addEventListener) mq.addEventListener('change', sync); else mq.addListener(sync);
-        sync();
     }
 
     /* ---------- 背景の3Dオブジェクト（大きなキューブ1つ） ---------- */

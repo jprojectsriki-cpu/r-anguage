@@ -41,3 +41,35 @@ function testSheets() {
     Logger.log(name + '（' + headers.length + '列）: ' + headers.join(', '));
   });
 }
+
+
+/**
+ * POSTリクエストの入口
+ * フロントからは { action: '○○', ... } の形のJSONを送ってもらう
+ */
+function doPost(e) {
+  let req;
+  try {
+    req = JSON.parse(e.postData.contents);
+  } catch (err) {
+    return json_({ ok: false, message: 'リクエストの形式が正しくありません。' });
+  }
+
+  try {
+    switch (req.action) {
+      case 'apply':
+        return json_(apply_(req));
+      case 'login':
+        return json_(login_(req.email, req.password));
+      case 'logout':
+        return json_(logout_(req.token));
+      case 'me':
+        return json_(checkSession_(req.token));
+      default:
+        return json_({ ok: false, message: '不明な操作です。' });
+    }
+  } catch (err) {
+    console.error(err);
+    return json_({ ok: false, message: 'サーバーでエラーが発生しました。時間をおいてもう一度お試しください。' });
+  }
+}

@@ -393,7 +393,32 @@
 
     function apiReady() { return /^https:\/\//.test(CONFIG.API_URL || ''); }
 
+        /* ---------- GASへの送信 ---------- */
+    // Content-Type を text/plain にすると、ブラウザの事前確認（プリフライト）が不要になり、GASで受け取れる
+    function apiPost(data) {
+        return fetch(CONFIG.API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(data)
+        }).then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        });
+    }
+
+    // 送信中はボタンを押せないようにする（二重送信の防止）
+    function setBusy(form, busy) {
+        var btn = form.querySelector('button[type="submit"]');
+        if (!btn) return;
+        btn.disabled = busy;
+        btn.style.opacity = busy ? '0.6' : '';
+        form.setAttribute('aria-busy', String(busy));
+    }
+
+    var TOKEN_KEY = 'ranguage_token';
+
     function initForms() {
+        /* ----- 申し込み ----- */
         var apply = document.getElementById('applyForm');
         if (apply) {
             var msg = document.getElementById('applyMsg');
@@ -407,15 +432,63 @@
                 if (pw !== String(fd.get('passwordConfirm') || '')) return setMsg(msg, 'パスワード（確認）が一致しません。', true);
                 if (!fd.get('agree')) return setMsg(msg, '利用規約とプライバシーポリシーへの同意が必要です。', true);
                 if (!apiReady()) return setMsg(msg, '現在、お申し込みの受付を準備中です。公開まで今しばらくお待ちください。');
-                // TODO: バックエンド(GAS)へ送信し、Stripe の支払い画面へ移動する
-                setMsg(msg, 'お申し込み機能は準備中です。');
+
+                setBusy(apply, true);
+                setMsg(msg, '送信しています…');
+                apiPost({
+                    action: 'apply',
+                    level: fd.get('level'),
+                    payment: fd.get('payment'),
+                    name: String(fd.get('name') || '').trim(),
+                    email: String(fd.get('email') || '').trim(),
+                    password: pw
+                }).then(function (res) {
+                    if (res && res.ok) {
+                        apply.reset();
+                        setMsg(msg, 'お申し込みを受け付けました（申込番号：' + res.applicationId + '）。' +
+                            '確認のメールをお送りしましたので、ご確認ください。');
+                    } else {
+                        setMsg(msg, (res && res.message) || 'お申し込みに失敗しました。', true);
+                    }
+                }).catch(function (err) {
+                    console.error(err);
+                    setMsg(msg, '通信に失敗しました。時間をおいてもう一度お試しください。', true);
+                }).then(function () {
+                    setBusy(apply, false);
+                });
             });
         }
+
+        /* ----- ログイン ----- */
         var login = document.getElementById('loginForm');
         if (login) {
+            var loginMsg = document.getElementById('loginMsg');
             login.addEventListener('submit', function (e) {
                 e.preventDefault();
-                setMsg(document.getElementById('loginMsg'), 'ログイン機能は準備中です。公開まで今しばらくお待ちください。');
+                var email = String(login.elements.email.value || '').trim();
+                var password = String(login.elements.password.value || '');
+                if (!email || !password) return setMsg(loginMsg, 'メールアドレスとパスワードを入力してください。', true);
+                if (!apiReady()) return setMsg(loginMsg, 'ログイン機能は準備中です。公開まで今しばらくお待ちください。');
+
+                setBusy(login, true);
+                setMsg(loginMsg, 'ログインしています…');
+                apiPost({ action: 'login', email: email, password: password })
+                    .then(function (res) {
+                        if (res && res.ok) {
+                            try { localStorage.setItem(TOKEN_KEY, res.token); } catch (err) { /* 保存できない環境 */ }
+                            login.reset();
+                            setMsg(loginMsg, res.user.name + 'さん、ログインしました。学習画面は準備中です。');
+                        } else {
+                            setMsg(loginMsg, (res && res.message) || 'ログインに失敗しました。', true);
+                        }
+                    })
+                    .catch(function (err) {
+                        console.error(err);
+                        setMsg(loginMsg, '通信に失敗しました。時間をおいてもう一度お試しください。', true);
+                    })
+                    .then(function () {
+                        setBusy(login, false);
+                    });
             });
         }
     }

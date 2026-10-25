@@ -17,12 +17,9 @@
     <!-- ================= ログイン ================= -->
     <main class="login-view" id="loginView" hidden>
         <form class="card login-card" id="loginForm" novalidate>
-            <div class="login-brand">
+            <div class="brand">
                 <span class="brand-mark"><img src="../user/img/logo.png" alt="" width="28" height="32"></span>
-                <div>
-                    <p class="brand-name">R-anguage</p>
-                    <p class="brand-sub">ADMIN CONSOLE</p>
-                </div>
+                <span class="brand-name">R-anguage</span>
             </div>
             <h1 class="login-title">管理者ログイン</h1>
             <label class="field"><span>メールアドレス</span><input type="email" name="email" autocomplete="username" required></label>
@@ -33,82 +30,197 @@
     </main>
 
     <!-- ================= 管理画面 ================= -->
-    <div class="app-view" id="appView" hidden>
-        <header class="topbar">
-            <div class="topbar-inner">
-                <div class="brand">
-                    <span class="brand-mark"><img src="../user/img/logo.png" alt="" width="24" height="28"></span>
-                    <div>
-                        <p class="brand-name">R-anguage</p>
-                        <p class="brand-sub">ADMIN CONSOLE</p>
-                    </div>
-                </div>
-                <div class="topbar-actions">
-                    <span class="who" id="whoAmI"></span>
-                    <button type="button" class="btn btn-white btn-sm" id="logoutBtn">ログアウト</button>
-                </div>
-            </div>
-        </header>
+    <div class="app" id="appView" hidden>
 
-        <main class="container">
-            <div class="page-head">
-                <div>
-                    <h1 class="page-title">申込の管理</h1>
-                    <p class="page-lead">入金を確認したら「発行」を押すと、アカウントが有効になり、発行メールが自動で送られます。</p>
-                </div>
-                <button type="button" class="btn btn-white btn-sm" id="reloadBtn">最新の情報に更新</button>
+        <!-- 左のメニュー（スマホでは上） -->
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="brand-mark"><img src="../user/img/logo.png" alt="" width="24" height="28"></span>
+                <span class="brand-name">R-anguage</span>
             </div>
-
-            <div class="toolbar">
-                <div class="tabs" role="tablist" aria-label="状態で絞り込み" id="statusTabs">
-                    <button type="button" role="tab" class="tab" data-status="awaiting_payment" aria-selected="true">入金待ち <b data-count="awaiting_payment">0</b></button>
-                    <button type="button" role="tab" class="tab" data-status="issued" aria-selected="false">発行済み <b data-count="issued">0</b></button>
-                    <button type="button" role="tab" class="tab" data-status="expired" aria-selected="false">期限切れ <b data-count="expired">0</b></button>
-                    <button type="button" role="tab" class="tab" data-status="cancelled" aria-selected="false">キャンセル <b data-count="cancelled">0</b></button>
-                    <button type="button" role="tab" class="tab" data-status="" aria-selected="false">すべて <b data-count="">0</b></button>
-                </div>
-                <label class="search">
-                    <span class="visually-hidden">検索</span>
-                    <input type="search" id="searchBox" placeholder="名前・メール・申込番号で検索">
-                </label>
+            <nav class="nav" id="nav" aria-label="管理メニュー">
+                <button type="button" class="nav-item" data-view="dashboard" aria-current="page">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V11M10 20V5M16 20v-6M2 20h20"/></svg><span>ダッシュボード</span>
+                </button>
+                <button type="button" class="nav-item" data-view="applications">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/></svg><span>申込</span><b class="nav-badge" id="navBadgeApps" hidden></b>
+                </button>
+                <button type="button" class="nav-item" data-view="users">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5.5 6.5-5.5s5.5 2 6.5 5.5"/><path d="M15.5 4.8a3.5 3.5 0 0 1 0 6.4M17.5 14.8c2 .6 3.4 2.4 4 5.2"/></svg><span>受講生</span>
+                </button>
+                <button type="button" class="nav-item" data-view="soon" data-title="問題">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5z"/><path d="M12 6v13"/></svg><span>問題</span><small>準備中</small>
+                </button>
+                <button type="button" class="nav-item" data-view="soon" data-title="単語カード">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/></svg><span>単語カード</span><small>準備中</small>
+                </button>
+                <button type="button" class="nav-item" data-view="soon" data-title="お知らせ">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l6 4V6L7 10z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg><span>お知らせ</span><small>準備中</small>
+                </button>
+            </nav>
+            <div class="sidebar-foot">
+                <p class="who" id="whoAmI"></p>
+                <button type="button" class="btn btn-white btn-sm btn-block" id="logoutBtn">ログアウト</button>
             </div>
+        </aside>
 
+        <main class="main">
             <p class="notice" id="notice" role="status" aria-live="polite" hidden></p>
 
-            <div class="table-wrap card">
-                <table class="app-table">
-                    <thead>
-                        <tr>
-                            <th>申込番号</th>
-                            <th>申込日時</th>
-                            <th>お名前／メール</th>
-                            <th>レベル</th>
-                            <th>金額</th>
-                            <th>お支払い</th>
-                            <th>支払期限</th>
-                            <th>状態</th>
-                            <th class="col-action">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="appRows"></tbody>
-                </table>
-                <p class="empty" id="emptyNote" hidden>該当する申込はありません。</p>
-            </div>
+            <!-- ===== ダッシュボード ===== -->
+            <section class="view" data-view="dashboard">
+                <div class="page-head">
+                    <div>
+                        <h1 class="page-title">ダッシュボード</h1>
+                        <p class="page-lead" id="dashUpdated"></p>
+                    </div>
+                    <button type="button" class="btn btn-white btn-sm" data-reload>最新の情報に更新</button>
+                </div>
+
+                <div class="kpis">
+                    <article class="card kpi">
+                        <p class="kpi-label">今月の売上</p>
+                        <p class="kpi-value" id="kpiSales">¥0</p>
+                        <p class="kpi-sub" id="kpiSalesSub"></p>
+                    </article>
+                    <article class="card kpi">
+                        <p class="kpi-label">入金待ち</p>
+                        <p class="kpi-value" id="kpiWaiting">0<small>件</small></p>
+                        <p class="kpi-sub" id="kpiWaitingSub"></p>
+                    </article>
+                    <article class="card kpi is-alert" id="kpiOverdueCard">
+                        <p class="kpi-label">支払期限を過ぎた申込</p>
+                        <p class="kpi-value" id="kpiOverdue">0<small>件</small></p>
+                        <p class="kpi-sub">期限切れ処理の対象</p>
+                    </article>
+                    <article class="card kpi">
+                        <p class="kpi-label">利用中の受講生</p>
+                        <p class="kpi-value" id="kpiUsers">0<small>人</small></p>
+                        <p class="kpi-sub" id="kpiUsersSub"></p>
+                    </article>
+                </div>
+
+                <div class="charts">
+                    <article class="card chart-card chart-wide">
+                        <div class="chart-head">
+                            <div>
+                                <h2>月別の売上</h2>
+                                <p>発行（入金確認）した月で集計・直近6か月</p>
+                            </div>
+                            <button type="button" class="link-btn" data-table-toggle="salesTable">表で見る</button>
+                        </div>
+                        <div class="chart" id="salesChart"></div>
+                        <div class="chart-table" id="salesTable" hidden></div>
+                    </article>
+                    <article class="card chart-card">
+                        <div class="chart-head">
+                            <div>
+                                <h2>月別の申込数</h2>
+                                <p>申込があった月で集計・直近6か月</p>
+                            </div>
+                            <button type="button" class="link-btn" data-table-toggle="appsTable">表で見る</button>
+                        </div>
+                        <div class="chart" id="appsChart"></div>
+                        <div class="chart-table" id="appsTable" hidden></div>
+                    </article>
+                    <article class="card chart-card">
+                        <div class="chart-head">
+                            <div>
+                                <h2>レベル別の受講生</h2>
+                                <p>利用中のアカウントが持っているレベル</p>
+                            </div>
+                        </div>
+                        <div class="hbars" id="levelChart"></div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- ===== 申込 ===== -->
+            <section class="view" data-view="applications" hidden>
+                <div class="page-head">
+                    <div>
+                        <h1 class="page-title">申込</h1>
+                        <p class="page-lead">入金を確認したら「発行」を押すと、アカウントが有効になり、発行メールが自動で送られます。</p>
+                    </div>
+                    <button type="button" class="btn btn-white btn-sm" data-reload>最新の情報に更新</button>
+                </div>
+                <div class="toolbar">
+                    <div class="tabs" id="appTabs" role="tablist" aria-label="状態で絞り込み">
+                        <button type="button" role="tab" class="tab" data-status="awaiting_payment" aria-selected="true">入金待ち <b data-count="awaiting_payment">0</b></button>
+                        <button type="button" role="tab" class="tab" data-status="issued" aria-selected="false">発行済み <b data-count="issued">0</b></button>
+                        <button type="button" role="tab" class="tab" data-status="expired" aria-selected="false">期限切れ <b data-count="expired">0</b></button>
+                        <button type="button" role="tab" class="tab" data-status="cancelled" aria-selected="false">キャンセル <b data-count="cancelled">0</b></button>
+                        <button type="button" role="tab" class="tab" data-status="" aria-selected="false">すべて <b data-count="">0</b></button>
+                    </div>
+                    <label class="search"><span class="visually-hidden">検索</span><input type="search" id="appSearch" placeholder="名前・メール・申込番号で検索"></label>
+                </div>
+                <div class="table-wrap card">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>申込番号</th><th>申込日時</th><th>お名前／メール</th><th>レベル</th><th>金額</th><th>お支払い</th><th>支払期限</th><th>状態</th><th class="col-action">操作</th></tr>
+                        </thead>
+                        <tbody id="appRows"></tbody>
+                    </table>
+                    <p class="empty" id="appEmpty" hidden>該当する申込はありません。</p>
+                </div>
+            </section>
+
+            <!-- ===== 受講生 ===== -->
+            <section class="view" data-view="users" hidden>
+                <div class="page-head">
+                    <div>
+                        <h1 class="page-title">受講生</h1>
+                        <p class="page-lead">停止すると、ログイン中の端末もその場でログアウトされます。</p>
+                    </div>
+                    <button type="button" class="btn btn-white btn-sm" data-reload>最新の情報に更新</button>
+                </div>
+                <div class="toolbar">
+                    <div class="tabs" id="userTabs" role="tablist" aria-label="状態で絞り込み">
+                        <button type="button" role="tab" class="tab" data-status="active" aria-selected="true">利用中 <b data-ucount="active">0</b></button>
+                        <button type="button" role="tab" class="tab" data-status="suspended" aria-selected="false">停止中 <b data-ucount="suspended">0</b></button>
+                        <button type="button" role="tab" class="tab" data-status="pending" aria-selected="false">入金待ち <b data-ucount="pending">0</b></button>
+                        <button type="button" role="tab" class="tab" data-status="" aria-selected="false">すべて <b data-ucount="">0</b></button>
+                    </div>
+                    <label class="search"><span class="visually-hidden">検索</span><input type="search" id="userSearch" placeholder="名前・メールで検索"></label>
+                </div>
+                <div class="table-wrap card">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>お名前／メール</th><th>状態</th><th>レベル</th><th>登録日</th><th>最終ログイン</th><th class="col-action">操作</th></tr>
+                        </thead>
+                        <tbody id="userRows"></tbody>
+                    </table>
+                    <p class="empty" id="userEmpty" hidden>該当する受講生はいません。</p>
+                </div>
+            </section>
+
+            <!-- ===== 準備中 ===== -->
+            <section class="view" data-view="soon" hidden>
+                <div class="card soon">
+                    <h1 class="page-title" id="soonTitle"></h1>
+                    <p>この機能は、ただいま準備中です。</p>
+                </div>
+            </section>
         </main>
     </div>
 
-    <!-- 発行の確認 -->
-    <dialog class="modal" id="issueDialog" aria-labelledby="issueTitle">
+    <!-- 確認ダイアログ（発行・キャンセル・停止・再開で共通） -->
+    <dialog class="modal" id="confirmDialog" aria-labelledby="confirmTitle">
         <form method="dialog" class="modal-box">
-            <h2 id="issueTitle">この申込を発行しますか？</h2>
-            <dl class="confirm-list" id="issueDetail"></dl>
-            <p class="confirm-note">入金を確認してから発行してください。発行すると、アカウントが有効になり、受講生に発行メールが送られます。</p>
+            <h2 id="confirmTitle"></h2>
+            <dl class="confirm-list" id="confirmDetail"></dl>
+            <label class="field" id="confirmNoteField" hidden><span id="confirmNoteLabel">メモ</span><textarea id="confirmNote" rows="3" maxlength="200"></textarea></label>
+            <label class="field" id="confirmLevelField" hidden><span>追加するレベル</span><select id="confirmLevel"></select></label>
+            <p class="confirm-note" id="confirmNoteText"></p>
             <div class="modal-actions">
                 <button type="submit" value="cancel" class="btn btn-white">やめる</button>
-                <button type="submit" value="issue" class="btn btn-pink" id="issueConfirmBtn">入金を確認して発行する</button>
+                <button type="submit" value="ok" class="btn btn-pink" id="confirmOk"></button>
             </div>
         </form>
     </dialog>
+
+    <!-- グラフのツールチップ -->
+    <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
 
     <script src="../user/js/config.js"></script>
     <script src="../user/js/loading.js"></script>

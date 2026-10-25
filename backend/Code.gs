@@ -65,6 +65,10 @@ function doPost(e) {
         return json_(logout_(req.token));
       case 'me':
         return json_(checkSession_(req.token));
+      case 'admin.list':
+        return json_(adminListApplications_(req.token, req.status));
+      case 'admin.issue':
+        return json_(adminIssue_(req.token, req.applicationId));
       default:
         return json_({ ok: false, message: '不明な操作です。' });
     }

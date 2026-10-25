@@ -177,7 +177,12 @@ function checkSession_(token) {
     return { ok: false, reason: 'expired', message: 'ログインの有効期限が切れました。もう一度ログインしてください。' };
   }
   const session = JSON.parse(raw);
-  if (cache.get('current_' + session.userId) !== token) {
+  const current = cache.get('current_' + session.userId);
+  if (current === 'suspended') {
+    cache.remove('session_' + token);
+    return { ok: false, reason: 'suspended', message: 'このアカウントは現在ご利用いただけません。' };
+  }
+  if (current !== token) {
     cache.remove('session_' + token);
     return { ok: false, reason: 'replaced', message: '別の端末でログインされたため、ログアウトしました。' };
   }

@@ -69,6 +69,14 @@ function doPost(e) {
         return json_(adminListApplications_(req.token, req.status));
       case 'admin.issue':
         return json_(adminIssue_(req.token, req.applicationId));
+            case 'admin.users':
+        return json_(adminListUsers_(req.token));
+      case 'admin.userStatus':
+        return json_(adminSetUserStatus_(req.token, req.userId, req.status));
+      case 'admin.addLevel':
+        return json_(adminAddLevel_(req.token, req.userId, req.level));
+      case 'admin.cancel':
+        return json_(adminCancelApplication_(req.token, req.applicationId, req.note));
       default:
         return json_({ ok: false, message: '不明な操作です。' });
     }

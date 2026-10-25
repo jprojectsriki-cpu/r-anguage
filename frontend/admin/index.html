@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>R-anguage 管理画面</title>
+    <link rel="icon" href="../user/img/favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../user/css/loading.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+    <!-- ================= ログイン ================= -->
+    <main class="login-view" id="loginView" hidden>
+        <form class="card login-card" id="loginForm" novalidate>
+            <div class="login-brand">
+                <span class="brand-mark"><img src="../user/img/logo.png" alt="" width="28" height="32"></span>
+                <div>
+                    <p class="brand-name">R-anguage</p>
+                    <p class="brand-sub">ADMIN CONSOLE</p>
+                </div>
+            </div>
+            <h1 class="login-title">管理者ログイン</h1>
+            <label class="field"><span>メールアドレス</span><input type="email" name="email" autocomplete="username" required></label>
+            <label class="field"><span>パスワード</span><input type="password" name="password" autocomplete="current-password" required></label>
+            <p class="form-msg" id="loginMsg" role="status" aria-live="polite"></p>
+            <button type="submit" class="btn btn-purple btn-block">ログイン</button>
+        </form>
+    </main>
+
+    <!-- ================= 管理画面 ================= -->
+    <div class="app-view" id="appView" hidden>
+        <header class="topbar">
+            <div class="topbar-inner">
+                <div class="brand">
+                    <span class="brand-mark"><img src="../user/img/logo.png" alt="" width="24" height="28"></span>
+                    <div>
+                        <p class="brand-name">R-anguage</p>
+                        <p class="brand-sub">ADMIN CONSOLE</p>
+                    </div>
+                </div>
+                <div class="topbar-actions">
+                    <span class="who" id="whoAmI"></span>
+                    <button type="button" class="btn btn-white btn-sm" id="logoutBtn">ログアウト</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <div class="page-head">
+                <div>
+                    <h1 class="page-title">申込の管理</h1>
+                    <p class="page-lead">入金を確認したら「発行」を押すと、アカウントが有効になり、発行メールが自動で送られます。</p>
+                </div>
+                <button type="button" class="btn btn-white btn-sm" id="reloadBtn">最新の情報に更新</button>
+            </div>
+
+            <div class="toolbar">
+                <div class="tabs" role="tablist" aria-label="状態で絞り込み" id="statusTabs">
+                    <button type="button" role="tab" class="tab" data-status="awaiting_payment" aria-selected="true">入金待ち <b data-count="awaiting_payment">0</b></button>
+                    <button type="button" role="tab" class="tab" data-status="issued" aria-selected="false">発行済み <b data-count="issued">0</b></button>
+                    <button type="button" role="tab" class="tab" data-status="expired" aria-selected="false">期限切れ <b data-count="expired">0</b></button>
+                    <button type="button" role="tab" class="tab" data-status="cancelled" aria-selected="false">キャンセル <b data-count="cancelled">0</b></button>
+                    <button type="button" role="tab" class="tab" data-status="" aria-selected="false">すべて <b data-count="">0</b></button>
+                </div>
+                <label class="search">
+                    <span class="visually-hidden">検索</span>
+                    <input type="search" id="searchBox" placeholder="名前・メール・申込番号で検索">
+                </label>
+            </div>
+
+            <p class="notice" id="notice" role="status" aria-live="polite" hidden></p>
+
+            <div class="table-wrap card">
+                <table class="app-table">
+                    <thead>
+                        <tr>
+                            <th>申込番号</th>
+                            <th>申込日時</th>
+                            <th>お名前／メール</th>
+                            <th>レベル</th>
+                            <th>金額</th>
+                            <th>お支払い</th>
+                            <th>支払期限</th>
+                            <th>状態</th>
+                            <th class="col-action">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appRows"></tbody>
+                </table>
+                <p class="empty" id="emptyNote" hidden>該当する申込はありません。</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- 発行の確認 -->
+    <dialog class="modal" id="issueDialog" aria-labelledby="issueTitle">
+        <form method="dialog" class="modal-box">
+            <h2 id="issueTitle">この申込を発行しますか？</h2>
+            <dl class="confirm-list" id="issueDetail"></dl>
+            <p class="confirm-note">入金を確認してから発行してください。発行すると、アカウントが有効になり、受講生に発行メールが送られます。</p>
+            <div class="modal-actions">
+                <button type="submit" value="cancel" class="btn btn-white">やめる</button>
+                <button type="submit" value="issue" class="btn btn-pink" id="issueConfirmBtn">入金を確認して発行する</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="../user/js/config.js"></script>
+    <script src="../user/js/loading.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン | R-anguage</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" href="img/favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/loading.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <script>
+        try { if (localStorage.getItem('ranguage_furigana') === 'off') document.documentElement.classList.add('furigana-off'); } catch (e) {}
+    </script>
+</head>
+<body>
+
+    <header class="auth-header">
+        <a href="index.html" class="brand" aria-label="R-anguage トップページへ">
+            <span class="brand-mark"><img src="img/logo.png" alt="" width="28" height="32"></span>
+            <span class="brand-name">R-anguage</span>
+        </a>
+        <div class="furigana-box">
+            <span class="furigana-label" id="furiganaLabel">ふりがな</span>
+            <button type="button" class="switch" id="furiganaSwitch" role="switch" aria-checked="true" aria-labelledby="furiganaLabel">
+                <span class="switch-knob"></span><span class="switch-on">ON</span><span class="switch-off">OFF</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="auth-main">
+        <span class="deco deco-circle" aria-hidden="true"></span>
+        <span class="deco deco-square" aria-hidden="true"></span>
+        <span class="deco deco-ring" aria-hidden="true"></span>
+
+        <!-- ログインフォーム -->
+        <section class="auth-card" id="loginCard">
+            <span class="auth-badge">LOGIN</span>
+            <h1 class="auth-title">ログイン</h1>
+            <p class="auth-lead"><ruby>発行<rt>はっこう</rt></ruby>メールに<ruby>書<rt>か</rt></ruby>かれたメールアドレスと、お<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>みのときに<ruby>決<rt>き</rt></ruby>めたパスワードを<ruby>入力<rt>にゅうりょく</rt></ruby>してください。</p>
+
+            <p class="auth-alert" id="loginAlert" role="alert" hidden></p>
+
+            <form id="loginForm" novalidate>
+                <label class="field">
+                    <span>メールアドレス</span>
+                    <input type="email" name="email" autocomplete="username" required>
+                </label>
+                <label class="field">
+                    <span>パスワード</span>
+                    <span class="pw-wrap">
+                        <input type="password" name="password" autocomplete="current-password" required>
+                        <button type="button" class="pw-toggle" id="pwToggle" aria-pressed="false">
+                            <ruby>表示<rt>ひょうじ</rt></ruby>
+                        </button>
+                    </span>
+                </label>
+                <p class="form-msg" id="loginMsg" role="status" aria-live="polite"></p>
+                <button type="submit" class="pop-btn btn-purple btn-block">
+                    <span>ログイン</span>
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M13 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/></svg>
+                </button>
+            </form>
+
+            <ul class="auth-links">
+                <li><span class="muted">パスワードを<ruby>忘<rt>わす</rt></ruby>れた<ruby>方<rt>かた</rt></ruby>（<ruby>準備中<rt>じゅんびちゅう</rt></ruby>）</span></li>
+                <li><a href="index.html#pricing">はじめての<ruby>方<rt>かた</rt></ruby>は、こちらからお<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>み</a></li>
+            </ul>
+            <p class="auth-note">※ <ruby>同<rt>おな</rt></ruby>じアカウントで、<ruby>別<rt>べつ</rt></ruby>の<ruby>端末<rt>たんまつ</rt></ruby>から<ruby>同時<rt>どうじ</rt></ruby>にログインすることはできません。あとからログインした<ruby>端末<rt>たんまつ</rt></ruby>が<ruby>優先<rt>ゆうせん</rt></ruby>されます。</p>
+        </section>
+
+        <!-- ログイン済みの表示 -->
+        <section class="auth-card" id="doneCard" hidden>
+            <span class="auth-badge bg-mint">WELCOME</span>
+            <h1 class="auth-title"><span id="userName"></span>さん、ようこそ！</h1>
+            <p class="auth-lead">ログインしています。</p>
+            <dl class="level-box">
+                <dt>ご<ruby>利用<rt>りよう</rt></ruby>のレベル</dt>
+                <dd id="userLevels"></dd>
+            </dl>
+            <p class="auth-lead"><ruby>学習<rt>がくしゅう</rt></ruby><ruby>画面<rt>がめん</rt></ruby>は、ただいま<ruby>準備中<rt>じゅんびちゅう</rt></ruby>です。もうしばらくお<ruby>待<rt>ま</rt></ruby>ちください。</p>
+            <button type="button" class="pop-btn btn-white btn-block" id="logoutBtn"><span>ログアウト</span></button>
+        </section>
+
+        <p class="back-link"><a href="index.html">← R-anguage のトップページへ</a></p>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/loading.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>

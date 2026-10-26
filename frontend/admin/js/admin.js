@@ -3,6 +3,7 @@
  * - ダッシュボード（売上・申込数のグラフ、レベル別の受講生、集計カード）
  * - 申込（発行・キャンセル）
  * - 受講生（停止・再開・レベル追加）
+ * - 問題は js/questions.js（window.RAdmin を使う）
  */
 (function () {
     'use strict';
@@ -23,8 +24,10 @@
         appStatus: 'awaiting_payment',
         appQuery: '',
         userStatus: 'active',
-        userQuery: ''
+        userQuery: '',
+        view: ''
     };
+    var viewHooks = {}; // 画面ごとの処理（questions.js などが登録する）
 
     function $(id) { return document.getElementById(id); }
 
@@ -101,14 +104,23 @@
         return false;
     }
 
-    function switchView(name, title) {
+    function switchView(name, title, force) {
+        // 編集中の画面から離れるときの確認
+        var leaving = viewHooks[state.view];
+        if (!force && name !== state.view && leaving && leaving.beforeLeave) {
+            leaving.beforeLeave().then(function (ok) { if (ok) switchView(name, title, true); });
+            return;
+        }
+        state.view = name;
+        var navName = name === 'questionEdit' ? 'questions' : name;
         document.querySelectorAll('.view').forEach(function (v) { v.hidden = v.getAttribute('data-view') !== name; });
         document.querySelectorAll('.nav-item').forEach(function (b) {
-            var on = b.getAttribute('data-view') === name && (name !== 'soon' || b.getAttribute('data-title') === title);
+            var on = b.getAttribute('data-view') === navName && (name !== 'soon' || b.getAttribute('data-title') === title);
             if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
         });
         if (name === 'soon') $('soonTitle').textContent = title;
         if (name === 'dashboard') renderDashboard(); // 幅が変わっていることがあるので描き直す
+        if (viewHooks[name] && viewHooks[name].onShow) viewHooks[name].onShow();
         window.scrollTo(0, 0);
     }
 
@@ -608,6 +620,8 @@
             setToken('');
             state.applications = [];
             state.users = [];
+            state.view = '';
+            Object.keys(viewHooks).forEach(function (k) { if (viewHooks[k].onLogout) viewHooks[k].onLogout(); });
             notice('');
             showLogin('ログアウトしました。');
             if (token) apiPost({ action: 'logout', token: token }).catch(function () {});
@@ -675,6 +689,22 @@
                 showLogin('通信に失敗しました。時間をおいてもう一度お試しください。', true);
             });
     }
+
+    /* ほかのファイル（questions.js など）から使う共通の部品 */
+    window.RAdmin = {
+        apiPost: apiPost,
+        withLoading: withLoading,
+        getToken: getToken,
+        handleAuthError: handleAuthError,
+        el: el,
+        td: td,
+        fmt: fmt,
+        notice: notice,
+        button: button,
+        confirmAction: confirmAction,
+        switchView: switchView,
+        registerView: function (name, hooks) { viewHooks[name] = hooks; }
+    };
 
     document.addEventListener('DOMContentLoaded', function () {
         initLogin();

@@ -48,8 +48,8 @@
                 <button type="button" class="nav-item" data-view="users">
                     <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5.5 6.5-5.5s5.5 2 6.5 5.5"/><path d="M15.5 4.8a3.5 3.5 0 0 1 0 6.4M17.5 14.8c2 .6 3.4 2.4 4 5.2"/></svg><span>受講生</span>
                 </button>
-                <button type="button" class="nav-item" data-view="soon" data-title="問題">
-                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5z"/><path d="M12 6v13"/></svg><span>問題</span><small>準備中</small>
+                <button type="button" class="nav-item" data-view="questions">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5z"/><path d="M12 6v13"/></svg><span>問題</span><b class="nav-badge" id="navBadgeQ" hidden></b>
                 </button>
                 <button type="button" class="nav-item" data-view="soon" data-title="単語カード">
                     <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/></svg><span>単語カード</span><small>準備中</small>
@@ -194,6 +194,162 @@
                 </div>
             </section>
 
+            <!-- ===== 問題：一覧 ===== -->
+            <section class="view" data-view="questions" hidden>
+                <div class="page-head">
+                    <div>
+                        <h1 class="page-title">問題</h1>
+                        <p class="page-lead">受講生に出題されるのは「公開」の問題だけです。模擬試験は、公開の問題からランダムに出題されます。</p>
+                    </div>
+                    <div class="head-actions">
+                        <button type="button" class="btn btn-white btn-sm" id="qReload">最新の情報に更新</button>
+                        <button type="button" class="btn btn-pink btn-sm" id="qNew">
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>新しい問題
+                        </button>
+                    </div>
+                </div>
+
+                <article class="card q-summary">
+                    <div class="chart-head">
+                        <div>
+                            <h2>登録状況</h2>
+                            <p>公開している問題の数（かっこ内は下書き）。数字を押すと、その問題だけを表示します。</p>
+                        </div>
+                    </div>
+                    <div class="matrix-wrap"><table class="matrix" id="qMatrix"></table></div>
+                </article>
+
+                <div class="q-alert" id="qErrorBox" hidden>
+                    <span id="qErrorText"></span>
+                    <button type="button" class="btn btn-white btn-xs" id="qErrorToggle">ミスのある問題だけ表示</button>
+                </div>
+
+                <div class="toolbar">
+                    <div class="tabs" id="qLevelTabs" role="tablist" aria-label="レベルで絞り込み">
+                        <button type="button" role="tab" class="tab" data-level="" aria-selected="true">すべて <b data-qcount="">0</b></button>
+                        <button type="button" role="tab" class="tab" data-level="N4" aria-selected="false">N4 <b data-qcount="N4">0</b></button>
+                        <button type="button" role="tab" class="tab" data-level="N3" aria-selected="false">N3 <b data-qcount="N3">0</b></button>
+                        <button type="button" role="tab" class="tab" data-level="N2" aria-selected="false">N2 <b data-qcount="N2">0</b></button>
+                        <button type="button" role="tab" class="tab" data-level="N1" aria-selected="false">N1 <b data-qcount="N1">0</b></button>
+                    </div>
+                    <div class="filters">
+                        <label class="select-sm"><span class="visually-hidden">科目</span>
+                            <select id="qSection">
+                                <option value="">すべての科目</option>
+                                <option>文字・語彙</option><option>文法</option><option>読解</option><option>聴解</option>
+                            </select>
+                        </label>
+                        <label class="select-sm"><span class="visually-hidden">状態</span>
+                            <select id="qStatus">
+                                <option value="">公開・下書き</option>
+                                <option>公開</option><option>下書き</option>
+                            </select>
+                        </label>
+                        <label class="search"><span class="visually-hidden">検索</span><input type="search" id="qSearch" placeholder="問題文・問題ID・問題形式で検索"></label>
+                    </div>
+                </div>
+
+                <div class="table-wrap card">
+                    <table class="data-table q-table">
+                        <thead>
+                            <tr><th>問題ID</th><th>レベル</th><th>科目／問題形式</th><th>問題文</th><th>正解</th><th>状態</th><th>更新日</th><th class="col-action">操作</th></tr>
+                        </thead>
+                        <tbody id="qRows"></tbody>
+                    </table>
+                    <p class="empty" id="qEmpty" hidden>該当する問題はありません。</p>
+                </div>
+
+                <details class="card q-help">
+                    <summary>スプレッドシートからまとめて登録する方法</summary>
+                    <ol>
+                        <li>「R-anguage_JLPT試験対策システム」スプレッドシートの <b>Questions</b> シートを開きます。</li>
+                        <li>空いている行に、<b>B列（レベル）〜N列（状態）</b>を入力または貼り付けます。<b>A列（問題ID）と O・P列（日時）は空欄</b>のままにしてください。</li>
+                        <li>この画面で「最新の情報に更新」を押すと、問題IDが自動で付き、一覧に表示されます。</li>
+                        <li>入力ミスがある問題は、一覧の上に件数が表示されます。「編集」から直せます。</li>
+                    </ol>
+                    <p class="help-sub">ふりがなは、付けたい漢字だけ <code>{漢字|よみ}</code> と書きます。例：<code>{日本語|にほんご}を{勉強|べんきょう}する</code><br>
+                    聴解の音声ファイルは、GitHub の <code>frontend/user/audio/</code> フォルダに入れ、ファイル名（例：<code>N3_L001.mp3</code>）を F列に書きます。</p>
+                </details>
+            </section>
+
+            <!-- ===== 問題：作成・編集 ===== -->
+            <section class="view" data-view="questionEdit" hidden>
+                <div class="page-head">
+                    <div>
+                        <button type="button" class="link-btn back-btn" id="qBack">← 問題の一覧にもどる</button>
+                        <h1 class="page-title" id="qEditTitle">新しい問題</h1>
+                    </div>
+                </div>
+
+                <div class="editor">
+                    <form class="card q-form" id="qForm" novalidate>
+                        <div class="form-row">
+                            <label class="field"><span>レベル</span>
+                                <select name="level"><option>N4</option><option>N3</option><option>N2</option><option>N1</option></select>
+                            </label>
+                            <label class="field"><span>科目</span>
+                                <select name="section"><option>文字・語彙</option><option>文法</option><option>読解</option><option>聴解</option></select>
+                            </label>
+                            <label class="field"><span>問題形式 <em>任意</em></span>
+                                <input type="text" name="form" list="qFormList" maxlength="50" placeholder="例：漢字読み">
+                                <datalist id="qFormList"></datalist>
+                            </label>
+                        </div>
+
+                        <label class="field" id="qAudioField"><span>音声ファイル名 <em class="req">必須</em></span>
+                            <input type="text" name="audio" maxlength="100" placeholder="例：N3_L001.mp3" autocomplete="off" spellcheck="false">
+                            <small class="hint">GitHub の <code>frontend/user/audio/</code> に入れたファイルの名前</small>
+                        </label>
+
+                        <div class="field">
+                            <div class="field-head"><span id="qPassageLabel">本文</span><button type="button" class="ruby-btn" data-ruby="passage">ふりがな</button></div>
+                            <textarea name="passage" rows="5" maxlength="5000"></textarea>
+                            <small class="hint" id="qPassageHint"></small>
+                        </div>
+
+                        <div class="field">
+                            <div class="field-head"><span>問題文 <em class="req">必須</em></span><button type="button" class="ruby-btn" data-ruby="question">ふりがな</button></div>
+                            <textarea name="question" rows="3" maxlength="2000" placeholder="例：{日本|にほん}に{来|き}た（　　）、{日本語|にほんご}が{話|はな}せるようになりたい。"></textarea>
+                        </div>
+
+                        <fieldset class="field choices">
+                            <legend>選択肢と正解 <em class="req">必須</em><small>正解の番号を選んでください</small></legend>
+                            <div class="choice"><label class="choice-radio"><input type="radio" name="answer" value="1"><span>1</span></label><input type="text" name="choice1" maxlength="300" aria-label="選択肢1"></div>
+                            <div class="choice"><label class="choice-radio"><input type="radio" name="answer" value="2"><span>2</span></label><input type="text" name="choice2" maxlength="300" aria-label="選択肢2"></div>
+                            <div class="choice"><label class="choice-radio"><input type="radio" name="answer" value="3"><span>3</span></label><input type="text" name="choice3" maxlength="300" aria-label="選択肢3"></div>
+                            <div class="choice"><label class="choice-radio"><input type="radio" name="answer" value="4"><span>4</span></label><input type="text" name="choice4" maxlength="300" aria-label="選択肢4"></div>
+                        </fieldset>
+
+                        <div class="field">
+                            <div class="field-head"><span>解説 <em>任意</em></span><button type="button" class="ruby-btn" data-ruby="explanation">ふりがな</button></div>
+                            <textarea name="explanation" rows="3" maxlength="3000"></textarea>
+                        </div>
+
+                        <fieldset class="field status-pick">
+                            <legend>状態</legend>
+                            <label><input type="radio" name="status" value="下書き"><span>下書き</span></label>
+                            <label><input type="radio" name="status" value="公開"><span>公開</span></label>
+                        </fieldset>
+
+                        <ul class="form-errors" id="qFormErrors" hidden></ul>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-white" id="qCancel">やめる</button>
+                            <button type="submit" class="btn btn-white" value="next" id="qSaveNext">保存して、続けて作る</button>
+                            <button type="submit" class="btn btn-pink" value="save">保存する</button>
+                        </div>
+                    </form>
+
+                    <aside class="card q-preview" aria-label="受講生の画面での見え方">
+                        <div class="preview-head">
+                            <h2>プレビュー</h2>
+                            <label class="mini-switch"><input type="checkbox" id="previewRuby" checked><span>ふりがな</span></label>
+                        </div>
+                        <div class="preview-body" id="qPreview"></div>
+                    </aside>
+                </div>
+            </section>
+
             <!-- ===== 準備中 ===== -->
             <section class="view" data-view="soon" hidden>
                 <div class="card soon">
@@ -219,11 +375,26 @@
         </form>
     </dialog>
 
+    <!-- ふりがなを付ける -->
+    <dialog class="modal modal-sm" id="rubyDialog" aria-labelledby="rubyTitle">
+        <form method="dialog" class="modal-box">
+            <h2 id="rubyTitle">ふりがなを付ける</h2>
+            <p class="ruby-target"><span>漢字</span><b id="rubyBase"></b></p>
+            <label class="field"><span>よみ（ひらがな）</span><input type="text" id="rubyReading" autocomplete="off"></label>
+            <p class="confirm-note">ふりがなを付けたい漢字を、先に選んでから押してください。</p>
+            <div class="modal-actions">
+                <button type="submit" value="cancel" class="btn btn-white">やめる</button>
+                <button type="submit" value="ok" class="btn btn-pink">付ける</button>
+            </div>
+        </form>
+    </dialog>
+
     <!-- グラフのツールチップ -->
     <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
 
     <script src="../user/js/config.js"></script>
     <script src="../user/js/loading.js"></script>
     <script src="js/admin.js"></script>
+    <script src="js/questions.js"></script>
 </body>
 </html>

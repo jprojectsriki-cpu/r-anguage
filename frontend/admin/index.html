@@ -51,8 +51,8 @@
                 <button type="button" class="nav-item" data-view="questions">
                     <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5z"/><path d="M12 6v13"/></svg><span>問題</span><b class="nav-badge" id="navBadgeQ" hidden></b>
                 </button>
-                <button type="button" class="nav-item" data-view="soon" data-title="単語カード">
-                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/></svg><span>単語カード</span><small>準備中</small>
+                <button type="button" class="nav-item" data-view="vocab">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/></svg><span>単語カード</span><b class="nav-badge" id="navBadgeV" hidden></b>
                 </button>
                 <button type="button" class="nav-item" data-view="soon" data-title="お知らせ">
                     <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l6 4V6L7 10z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg><span>お知らせ</span><small>準備中</small>
@@ -350,6 +350,138 @@
                 </div>
             </section>
 
+            <!-- ===== 単語カード：一覧 ===== -->
+            <section class="view" data-view="vocab" hidden>
+                <div class="page-head">
+                    <div>
+                        <h1 class="page-title">単語カード</h1>
+                        <p class="page-lead">受講生に表示されるのは「公開」のカードだけです。受講生は、自分が持っているレベルのカードで学習します。</p>
+                    </div>
+                    <div class="head-actions">
+                        <button type="button" class="btn btn-white btn-sm" id="vReload">最新の情報に更新</button>
+                        <button type="button" class="btn btn-pink btn-sm" id="vNew">
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>新しいカード
+                        </button>
+                    </div>
+                </div>
+
+                <div class="q-alert" id="vErrorBox" hidden>
+                    <span id="vErrorText"></span>
+                    <button type="button" class="btn btn-white btn-xs" id="vErrorToggle">確認が必要なカードだけ表示</button>
+                </div>
+
+                <div class="toolbar">
+                    <div class="tabs" id="vLevelTabs" role="tablist" aria-label="レベルで絞り込み">
+                        <button type="button" role="tab" class="tab" data-level="" aria-selected="true">すべて <b data-vcount="">0</b></button>
+                        <button type="button" role="tab" class="tab" data-level="N4" aria-selected="false">N4 <b data-vcount="N4">0</b></button>
+                        <button type="button" role="tab" class="tab" data-level="N3" aria-selected="false">N3 <b data-vcount="N3">0</b></button>
+                        <button type="button" role="tab" class="tab" data-level="N2" aria-selected="false">N2 <b data-vcount="N2">0</b></button>
+                        <button type="button" role="tab" class="tab" data-level="N1" aria-selected="false">N1 <b data-vcount="N1">0</b></button>
+                    </div>
+                    <div class="filters">
+                        <label class="select-sm"><span class="visually-hidden">状態</span>
+                            <select id="vStatus">
+                                <option value="">公開・下書き</option>
+                                <option>公開</option><option>下書き</option>
+                            </select>
+                        </label>
+                        <label class="search"><span class="visually-hidden">検索</span><input type="search" id="vSearch" placeholder="単語・読み・英語の意味で検索"></label>
+                    </div>
+                </div>
+
+                <div class="table-wrap card">
+                    <table class="data-table v-table">
+                        <thead>
+                            <tr><th>カードID</th><th>レベル</th><th>単語／読み</th><th>英語の意味</th><th>例文</th><th>状態</th><th>更新日</th><th class="col-action">操作</th></tr>
+                        </thead>
+                        <tbody id="vRows"></tbody>
+                    </table>
+                    <p class="empty" id="vEmpty" hidden>該当するカードはありません。</p>
+                </div>
+
+                <details class="card q-help">
+                    <summary>スプレッドシートからまとめて登録する方法</summary>
+                    <ol>
+                        <li>「R-anguage_JLPT試験対策システム」スプレッドシートの <b>Vocab</b> シートを開きます。</li>
+                        <li>空いている行に、<b>B列（レベル）〜H列（状態）</b>を入力または貼り付けます。<b>A列（カードID）と I・J列（日時）は空欄</b>のままにしてください。</li>
+                        <li>この画面で「最新の情報に更新」を押すと、カードIDが自動で付き、一覧に表示されます。</li>
+                        <li>入力ミスや、同じレベルに同じ単語が2枚あるときは、一覧の上に件数が表示されます。「編集」から直せます。</li>
+                    </ol>
+                    <p class="help-sub">読み（D列）は、ひらがな・カタカナだけで書きます。例文（F列）のふりがなは、付けたい漢字だけ <code>{漢字|よみ}</code> と書きます。例：<code>{友達|ともだち}との{約束|やくそく}を{守|まも}る。</code></p>
+                </details>
+            </section>
+
+            <!-- ===== 単語カード：作成・編集 ===== -->
+            <section class="view" data-view="vocabEdit" hidden>
+                <div class="page-head">
+                    <div>
+                        <button type="button" class="link-btn back-btn" id="vBack">← 単語カードの一覧にもどる</button>
+                        <h1 class="page-title" id="vEditTitle">新しいカード</h1>
+                    </div>
+                </div>
+
+                <div class="editor">
+                    <form class="card q-form" id="vForm" novalidate>
+                        <div class="form-row">
+                            <label class="field"><span>レベル</span>
+                                <select name="level"><option>N4</option><option>N3</option><option>N2</option><option>N1</option></select>
+                            </label>
+                            <label class="field"><span>単語 <em class="req">必須</em></span>
+                                <input type="text" name="word" maxlength="50" placeholder="例：約束" autocomplete="off">
+                            </label>
+                            <label class="field"><span>読み <em class="req">必須</em></span>
+                                <input type="text" name="reading" maxlength="100" placeholder="例：やくそく" autocomplete="off">
+                            </label>
+                        </div>
+
+                        <label class="field"><span>英語の意味 <em class="req">必須</em></span>
+                            <input type="text" name="meaning" maxlength="200" placeholder="例：promise; appointment" autocomplete="off" lang="en">
+                            <small class="hint">意味が2つ以上あるときは「;（セミコロン）」で区切ります</small>
+                        </label>
+
+                        <div class="field">
+                            <div class="field-head"><span>例文 <em>任意</em></span><button type="button" class="ruby-btn" data-vruby="example">ふりがな</button></div>
+                            <textarea name="example" rows="2" maxlength="500" placeholder="例：{友達|ともだち}との{約束|やくそく}を{守|まも}る。"></textarea>
+                        </div>
+
+                        <label class="field"><span>例文の英訳 <em>任意</em></span>
+                            <textarea name="exampleEn" rows="2" maxlength="500" lang="en" placeholder="例：I keep my promise with my friend."></textarea>
+                        </label>
+
+                        <fieldset class="field status-pick">
+                            <legend>状態</legend>
+                            <label><input type="radio" name="status" value="下書き"><span>下書き</span></label>
+                            <label><input type="radio" name="status" value="公開"><span>公開</span></label>
+                        </fieldset>
+
+                        <div class="form-errors" id="vFormErrors" hidden>
+                            <ul id="vFormErrorList"></ul>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-white" id="vCancel">やめる</button>
+                            <button type="submit" class="btn btn-white" value="next" id="vSaveNext">保存して、続けて作る</button>
+                            <button type="submit" class="btn btn-pink" value="save">保存する</button>
+                        </div>
+                    </form>
+
+                    <aside class="card q-preview" aria-label="受講生の画面での見え方">
+                        <div class="preview-head">
+                            <h2>プレビュー</h2>
+                            <label class="mini-switch"><input type="checkbox" id="vPreviewRuby" checked><span>ふりがな</span></label>
+                        </div>
+                        <div class="preview-body">
+                            <button type="button" class="flashcard" id="vCard" aria-label="カードをめくる">
+                                <span class="fc-face fc-front" id="vFront"></span>
+                                <span class="fc-face fc-back" id="vBackFace"></span>
+                            </button>
+                            <p class="pv-status">カードを押すと、裏面（読み・意味・例文）を表示します。</p>
+                            <p class="pv-status" id="vPvStatus"></p>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
             <!-- ===== 準備中 ===== -->
             <section class="view" data-view="soon" hidden>
                 <div class="card soon">
@@ -396,5 +528,6 @@
     <script src="../user/js/loading.js"></script>
     <script src="js/admin.js"></script>
     <script src="js/questions.js"></script>
+    <script src="js/vocab.js"></script>
 </body>
 </html>

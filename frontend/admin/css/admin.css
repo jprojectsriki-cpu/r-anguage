@@ -307,6 +307,33 @@ fieldset.field legend small { margin-left: 8px; font-size: 0.7rem; color: var(--
 .ruby-target { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.8rem; color: var(--dark-70); }
 .ruby-target b { font-size: 1.4rem; color: var(--dark); }
 
+/* ---------- 単語カード ---------- */
+.v-word { display: block; font-size: 1.05rem; font-weight: 900; }
+.cell-meaning { min-width: 140px; max-width: 220px; font-weight: 500; }
+.v-en { margin-top: 2px; font-style: italic; }
+div.form-errors { padding: 10px 14px; }
+div.form-errors ul { padding-left: 18px; }
+div.form-errors .btn { margin-top: 8px; }
+
+.flashcard { display: grid; width: 100%; min-height: 240px; padding: 0; perspective: 1000px; text-align: center; }
+.fc-face {
+    grid-area: 1 / 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    padding: 24px 18px; border-radius: 22px; border: 3px solid var(--dark); box-shadow: 5px 5px 0 var(--dark);
+    backface-visibility: hidden; transition: transform 0.45s;
+}
+.fc-front { background: #fff; }
+.fc-back { background: #FFF3CF; transform: rotateY(180deg); }
+.flashcard.is-flipped .fc-front { transform: rotateY(-180deg); }
+.flashcard.is-flipped .fc-back { transform: rotateY(0); }
+.fc-front .level-pill { align-self: flex-start; }
+.fc-word { font-size: 2.4rem; font-weight: 900; line-height: 1.6; word-break: break-all; }
+.fc-word-sm { font-size: 1.7rem; }
+.fc-reading { font-size: 1rem; color: var(--dark-70); }
+.fc-meaning { font-family: var(--font-en); font-size: 1.1rem; font-weight: 600; color: var(--purple); }
+.fc-example { display: grid; gap: 2px; width: 100%; margin-top: 6px; padding-top: 10px; border-top: 2px dashed rgba(30, 27, 75, 0.25); font-size: 0.9rem; line-height: 2.1; }
+.fc-ex-en { font-size: 0.8rem; color: var(--dark-70); font-weight: 500; }
+@media (prefers-reduced-motion: reduce) { .fc-face { transition: none; } }
+
 /* ---------- レスポンシブ ---------- */
 @media (max-width: 1100px) {
     .kpis { grid-template-columns: repeat(2, 1fr); }
@@ -339,6 +366,7 @@ fieldset.field legend small { margin-left: 8px; font-size: 0.7rem; color: var(--
     .search { max-width: none; }
     .filters { justify-content: stretch; }
     .cell-question { max-width: none; }
+    .cell-meaning { max-width: none; }
     .data-table td.cell-question { display: block; text-align: left; }
     .data-table td.cell-question::before { display: block; margin-bottom: 2px; }
 }

@@ -83,6 +83,12 @@ function doPost(e) {
         return json_(adminSaveQuestion_(req.token, req.question || {}));
       case 'admin.deleteQuestion':
         return json_(adminDeleteQuestion_(req.token, req.questionId));
+      case 'admin.cards':
+        return json_(adminListCards_(req.token));
+      case 'admin.saveCard':
+        return json_(adminSaveCard_(req.token, req.card || {}));
+      case 'admin.deleteCard':
+        return json_(adminDeleteCard_(req.token, req.cardId));
       default:
         return json_({ ok: false, message: '不明な操作です。' });
     }

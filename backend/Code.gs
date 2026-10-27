@@ -89,6 +89,12 @@ function doPost(e) {
         return json_(adminSaveCard_(req.token, req.card || {}));
       case 'admin.deleteCard':
         return json_(adminDeleteCard_(req.token, req.cardId));
+      case 'admin.notices':
+        return json_(adminListNotices_(req.token));
+      case 'admin.saveNotice':
+        return json_(adminSaveNotice_(req.token, req.notice || {}));
+      case 'admin.deleteNotice':
+        return json_(adminDeleteNotice_(req.token, req.noticeId));
       default:
         return json_({ ok: false, message: '不明な操作です。' });
     }

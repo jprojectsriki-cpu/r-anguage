@@ -54,8 +54,8 @@
                 <button type="button" class="nav-item" data-view="vocab">
                     <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/></svg><span>単語カード</span><b class="nav-badge" id="navBadgeV" hidden></b>
                 </button>
-                <button type="button" class="nav-item" data-view="soon" data-title="お知らせ">
-                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l6 4V6L7 10z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg><span>お知らせ</span><small>準備中</small>
+                <button type="button" class="nav-item" data-view="notices">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l6 4V6L7 10z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg><span>お知らせ</span><b class="nav-badge" id="navBadgeN" hidden></b>
                 </button>
             </nav>
             <div class="sidebar-foot">
@@ -482,6 +482,139 @@
                 </div>
             </section>
 
+            <!-- ===== お知らせ：一覧 ===== -->
+            <section class="view" data-view="notices" hidden>
+                <div class="page-head">
+                    <div>
+                        <h1 class="page-title">お知らせ</h1>
+                        <p class="page-lead">受講生に表示されるのは「公開」で、今日が表示期間の中にあるお知らせだけです。対象のレベルを持っている受講生に表示されます。</p>
+                    </div>
+                    <div class="head-actions">
+                        <button type="button" class="btn btn-white btn-sm" id="nReload">最新の情報に更新</button>
+                        <button type="button" class="btn btn-pink btn-sm" id="nNew">
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>新しいお知らせ
+                        </button>
+                    </div>
+                </div>
+
+                <div class="q-alert" id="nErrorBox" hidden>
+                    <span id="nErrorText"></span>
+                    <button type="button" class="btn btn-white btn-xs" id="nErrorShow">入力ミスのあるお知らせを表示</button>
+                </div>
+
+                <div class="toolbar">
+                    <div class="tabs" id="nTabs" role="tablist" aria-label="表示の状況で絞り込み">
+                        <button type="button" role="tab" class="tab" data-phase="showing" aria-selected="true">表示中 <b data-ncount="showing">0</b></button>
+                        <button type="button" role="tab" class="tab" data-phase="scheduled" aria-selected="false">表示前 <b data-ncount="scheduled">0</b></button>
+                        <button type="button" role="tab" class="tab" data-phase="draft" aria-selected="false">下書き <b data-ncount="draft">0</b></button>
+                        <button type="button" role="tab" class="tab" data-phase="ended" aria-selected="false">表示終了 <b data-ncount="ended">0</b></button>
+                        <button type="button" role="tab" class="tab" data-phase="error" aria-selected="false" hidden>入力ミス <b data-ncount="error">0</b></button>
+                        <button type="button" role="tab" class="tab" data-phase="" aria-selected="false">すべて <b data-ncount="">0</b></button>
+                    </div>
+                    <div class="filters">
+                        <label class="select-sm"><span class="visually-hidden">対象</span>
+                            <select id="nTarget">
+                                <option value="">すべての対象</option>
+                                <option value="すべて">対象：すべて</option>
+                                <option value="N4">対象：N4</option><option value="N3">対象：N3</option><option value="N2">対象：N2</option><option value="N1">対象：N1</option>
+                            </select>
+                        </label>
+                        <label class="search"><span class="visually-hidden">検索</span><input type="search" id="nSearch" placeholder="タイトル・本文で検索"></label>
+                    </div>
+                </div>
+
+                <div class="table-wrap card">
+                    <table class="data-table n-table">
+                        <thead>
+                            <tr><th>お知らせID</th><th>タイトル</th><th>対象</th><th>表示期間</th><th>状況</th><th>更新日</th><th class="col-action">操作</th></tr>
+                        </thead>
+                        <tbody id="nRows"></tbody>
+                    </table>
+                    <p class="empty" id="nEmpty" hidden>該当するお知らせはありません。</p>
+                </div>
+
+                <details class="card q-help">
+                    <summary>スプレッドシートからまとめて登録する方法</summary>
+                    <ol>
+                        <li>「R-anguage_JLPT試験対策システム」スプレッドシートの <b>Notices</b> シートを開きます。</li>
+                        <li>空いている行に、<b>B列（タイトル）〜H列（状態）</b>を入力または貼り付けます。<b>A列（お知らせID）と I・J列（日時）は空欄</b>のままにしてください。</li>
+                        <li>この画面で「最新の情報に更新」を押すと、お知らせIDが自動で付き、一覧に表示されます。</li>
+                    </ol>
+                    <p class="help-sub">日付は <code>2026-11-01</code> の形で書きます（<code>2026/11/1</code> と書いても自動でそろえます）。表示終了日を空欄にすると、ずっと表示します。<br>
+                    ふりがなは、付けたい漢字だけ <code>{漢字|よみ}</code> と書きます。</p>
+                </details>
+            </section>
+
+            <!-- ===== お知らせ：作成・編集 ===== -->
+            <section class="view" data-view="noticeEdit" hidden>
+                <div class="page-head">
+                    <div>
+                        <button type="button" class="link-btn back-btn" id="nBack">← お知らせの一覧にもどる</button>
+                        <h1 class="page-title" id="nEditTitle">新しいお知らせ</h1>
+                    </div>
+                </div>
+
+                <div class="editor">
+                    <form class="card q-form" id="nForm" novalidate>
+                        <div class="field">
+                            <div class="field-head"><span>タイトル <em class="req">必須</em></span><button type="button" class="ruby-btn" data-nruby="title">ふりがな</button></div>
+                            <input type="text" name="title" maxlength="100" autocomplete="off" placeholder="例：{年末年始|ねんまつねんし}のお{休|やす}みについて">
+                        </div>
+
+                        <div class="field">
+                            <div class="field-head"><span>本文 <em class="req">必須</em></span><button type="button" class="ruby-btn" data-nruby="body">ふりがな</button></div>
+                            <textarea name="body" rows="7" maxlength="3000"></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <label class="field"><span>対象</span>
+                                <select name="target">
+                                    <option value="すべて">すべて</option>
+                                    <option>N4</option><option>N3</option><option>N2</option><option>N1</option>
+                                </select>
+                            </label>
+                            <label class="field"><span>表示開始日 <em class="req">必須</em></span>
+                                <input type="date" name="startDate">
+                            </label>
+                            <label class="field"><span>表示終了日 <em>任意</em></span>
+                                <input type="date" name="endDate">
+                            </label>
+                        </div>
+                        <p class="hint n-hint">表示終了日を空欄にすると、ずっと表示します。終了日の日までは表示されます。</p>
+
+                        <fieldset class="field status-pick">
+                            <legend>重要</legend>
+                            <label><input type="radio" name="importance" value="通常"><span>通常</span></label>
+                            <label><input type="radio" name="importance" value="重要"><span>重要（目立つように表示）</span></label>
+                        </fieldset>
+
+                        <fieldset class="field status-pick">
+                            <legend>状態</legend>
+                            <label><input type="radio" name="status" value="下書き"><span>下書き</span></label>
+                            <label><input type="radio" name="status" value="公開"><span>公開</span></label>
+                        </fieldset>
+
+                        <div class="form-errors" id="nFormErrors" hidden><ul id="nFormErrorList"></ul></div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-white" id="nCancel">やめる</button>
+                            <button type="submit" class="btn btn-pink" value="save">保存する</button>
+                        </div>
+                    </form>
+
+                    <aside class="card q-preview" aria-label="受講生の画面での見え方">
+                        <div class="preview-head">
+                            <h2>プレビュー</h2>
+                            <label class="mini-switch"><input type="checkbox" id="nPreviewRuby" checked><span>ふりがな</span></label>
+                        </div>
+                        <div class="preview-body">
+                            <article class="notice-card" id="nPreview"></article>
+                            <p class="pv-status" id="nPvStatus"></p>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
             <!-- ===== 準備中 ===== -->
             <section class="view" data-view="soon" hidden>
                 <div class="card soon">
@@ -529,5 +662,6 @@
     <script src="js/admin.js"></script>
     <script src="js/questions.js"></script>
     <script src="js/vocab.js"></script>
+    <script src="js/notices.js"></script>
 </body>
 </html>

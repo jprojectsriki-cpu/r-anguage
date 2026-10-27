@@ -334,6 +334,20 @@ div.form-errors .btn { margin-top: 8px; }
 .fc-ex-en { font-size: 0.8rem; color: var(--dark-70); font-weight: 500; }
 @media (prefers-reduced-motion: reduce) { .fc-face { transition: none; } }
 
+/* ---------- お知らせ ---------- */
+.important-tag { display: inline-block; margin-right: 6px; padding: 0 10px; border-radius: 999px; background: var(--pink); color: #fff; border: 1.5px solid var(--dark); font-size: 0.72rem; vertical-align: middle; white-space: nowrap; }
+.n-title { font-weight: 900; line-height: 2; }
+.n-body { margin-top: 2px; }
+.target-all { display: inline-block; padding: 0 10px; border-radius: 999px; border: 2px solid var(--dark); background: #fff; font-size: 0.78rem; white-space: nowrap; }
+.n-hint { margin: -4px 0 12px; }
+
+.notice-card { padding: 18px 20px; border-radius: 18px; background: #fff; border: 3px solid var(--dark); box-shadow: 4px 4px 0 var(--dark); }
+.notice-card.is-important { background: #FFF0F6; border-color: var(--pink); box-shadow: 4px 4px 0 var(--pink); }
+.notice-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.notice-date { font-family: var(--font-en); font-size: 0.8rem; color: var(--dark-50); }
+.notice-title { font-size: 1.1rem; font-weight: 900; line-height: 2; }
+.notice-body { margin-top: 6px; font-size: 0.9rem; font-weight: 500; line-height: 2.1; word-break: break-word; }
+
 /* ---------- レスポンシブ ---------- */
 @media (max-width: 1100px) {
     .kpis { grid-template-columns: repeat(2, 1fr); }
@@ -369,6 +383,7 @@ div.form-errors .btn { margin-top: 8px; }
     .cell-meaning { max-width: none; }
     .data-table td.cell-question { display: block; text-align: left; }
     .data-table td.cell-question::before { display: block; margin-bottom: 2px; }
+    .data-table td.cell-question .cell-sub { text-align: left; }
 }
 @media (max-width: 600px) {
     .form-row { grid-template-columns: 1fr 1fr; }

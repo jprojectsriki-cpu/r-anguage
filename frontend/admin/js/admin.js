@@ -3,7 +3,7 @@
  * - ダッシュボード（売上・申込数のグラフ、レベル別の受講生、集計カード）
  * - 申込（発行・キャンセル）
  * - 受講生（停止・再開・レベル追加）
- * - 問題は js/questions.js、単語カードは js/vocab.js（どちらも window.RAdmin を使う）
+ * - 問題は js/questions.js、単語カードは js/vocab.js、お知らせは js/notices.js（どれも window.RAdmin を使う）
  */
 (function () {
     'use strict';
@@ -112,7 +112,7 @@
             return;
         }
         state.view = name;
-        var navName = { questionEdit: 'questions', vocabEdit: 'vocab' }[name] || name;
+        var navName = { questionEdit: 'questions', vocabEdit: 'vocab', noticeEdit: 'notices' }[name] || name;
         document.querySelectorAll('.view').forEach(function (v) { v.hidden = v.getAttribute('data-view') !== name; });
         document.querySelectorAll('.nav-item').forEach(function (b) {
             var on = b.getAttribute('data-view') === navName && (name !== 'soon' || b.getAttribute('data-title') === title);

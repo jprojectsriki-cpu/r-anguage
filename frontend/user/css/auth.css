@@ -34,6 +34,7 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 :focus-visible { outline: 3px solid var(--purple); outline-offset: 3px; }
 [hidden] { display: none !important; }
 .bg-mint { background: var(--mint) !important; color: var(--dark) !important; }
+.bg-pink { background: var(--pink) !important; color: #fff !important; }
 
 /* ふりがな */
 ruby { ruby-position: over; }
@@ -152,6 +153,8 @@ html.furigana-off rt { display: none; }
 .auth-links { list-style: none; display: grid; gap: 6px; margin-top: 20px; padding-top: 16px; border-top: 2px dashed rgba(30, 27, 75, 0.2); font-size: 0.85rem; line-height: 2; }
 .auth-links a { color: var(--purple); text-underline-offset: 4px; }
 .muted { color: var(--dark-50); }
+.check-list { margin: 0 0 18px; padding: 12px 16px 12px 32px; border-radius: 16px; background: var(--cream); border: 2px dashed rgba(30, 27, 75, 0.3); font-size: 0.8rem; line-height: 2.1; color: var(--dark-70); }
+.auth-card > .pop-btn + .auth-links { margin-top: 16px; }
 .auth-note { margin-top: 12px; font-size: 0.72rem; color: var(--dark-50); line-height: 2.1; }
 
 .level-box { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; padding: 12px 16px; border-radius: 16px; background: var(--cream); border: 2.5px solid var(--dark); }

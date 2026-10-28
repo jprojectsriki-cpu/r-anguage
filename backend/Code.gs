@@ -61,6 +61,12 @@ function doPost(e) {
         return json_(apply_(req));
       case 'login':
         return json_(login_(req.email, req.password));
+      case 'resetRequest':
+        return json_(requestPasswordReset_(req.email));
+      case 'resetCheck':
+        return json_(checkResetToken_(req.token));
+      case 'resetPassword':
+        return json_(resetPassword_(req.token, req.password));
       case 'logout':
         return json_(logout_(req.token));
       case 'me':

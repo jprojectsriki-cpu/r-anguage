@@ -1,5 +1,6 @@
 /**
  * R-anguage API - 申し込み
+ * - 期限切れ・キャンセルで「入金待ち」のまま残ったアカウントは、同じメールアドレスで申し込み直せる
  */
 
 // レベルごとの料金（税込・買い切り）
@@ -49,25 +50,55 @@ function apply_(req) {
   lock.waitLock(20000);
   let application;
   try {
-    if (emailExists_(email)) {
-      return {
-        ok: false,
-        message: 'このメールアドレスはすでに登録されています。レベルの追加は、ログイン後のマイページからお申し込みください。'
-      };
-    }
-
     const now = new Date();
     const expiresAt = new Date(now.getTime() + PAYMENT_DAYS * 24 * 60 * 60 * 1000);
-    const userId = Utilities.getUuid();
     const salt = generateSalt_();
+    let userId;
 
-    getSheet_(SHEET_USERS).appendRow([
-      userId, email, hashPassword_(password, salt), salt, name,
-      'user',      // role
-      'pending',   // status（入金待ち）
-      '',          // levels（発行時に追加する）
-      now, '', ''  // createdAt, activatedAt, lastLoginAt
-    ]);
+    const existing = findUserByEmail_(email);
+    if (existing) {
+      // 利用中・停止中のアカウントは、新しく申し込めない
+      if (existing.status !== 'pending') {
+        return {
+          ok: false,
+          message: 'このメールアドレスはすでに登録されています。レベルの追加は、ログイン後のマイページからお申し込みください。'
+        };
+      }
+
+      // 「入金待ち」のアカウント：お支払い待ちの申込がまだ有効なら、二重の申し込みを防ぐ
+      const apps = readApplications_().filter(function (a) { return a.userId === existing.userId; });
+      const open = apps.filter(function (a) {
+        if (a.status === 'paid') return true;
+        return a.status === 'awaiting_payment' && a.expiresAt && new Date(a.expiresAt).getTime() > now.getTime();
+      });
+      if (open.length) {
+        return {
+          ok: false,
+          message: 'このメールアドレスでは、お支払い待ちのお申し込み（' + open[0].applicationId + '）があります。受付メールに書かれた支払期限までにお支払いください。'
+        };
+      }
+
+      // 期限が過ぎたのに、まだ「入金待ち」のままの申込は、ここで「期限切れ」にする（期限切れメールは送らない）
+      const appSheet = getSheet_(SHEET_APPLICATIONS);
+      const stamp = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+      apps.filter(function (a) { return a.status === 'awaiting_payment'; }).forEach(function (a) {
+        appSheet.getRange(a.row, 8).setValue('expired');
+        appSheet.getRange(a.row, 14).setValue((a.note ? a.note + '\n' : '') + '[' + stamp + ' 期限切れ（申し込み直しのため）]');
+      });
+
+      // 期限切れ・キャンセルで残っていたアカウントを、新しい内容で使い直す（C：passwordHash、D：salt、E：name）
+      userId = existing.userId;
+      getSheet_(SHEET_USERS).getRange(existing.row, 3, 1, 3).setValues([[hashPassword_(password, salt), salt, name]]);
+    } else {
+      userId = Utilities.getUuid();
+      getSheet_(SHEET_USERS).appendRow([
+        userId, email, hashPassword_(password, salt), salt, name,
+        'user',      // role
+        'pending',   // status（入金待ち）
+        '',          // levels（発行時に追加する）
+        now, '', ''  // createdAt, activatedAt, lastLoginAt
+      ]);
+    }
 
     application = {
       applicationId: makeApplicationId_(),

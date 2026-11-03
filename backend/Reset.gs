@@ -1,5 +1,5 @@
 /**
- * R-anguage API - パスワード再設定
+ * R-ANGUAGE API - パスワード再設定
  * - 再設定メールのリンクは30分間有効・1回だけ使える
  * - 登録されていないメールアドレスでも、同じ返事を返す（登録の有無を知られないため）
  */
@@ -101,12 +101,12 @@ function resetMaskEmail_(email) {
 function sendResetMail_(user, token) {
   MailApp.sendEmail({
     to: user.email,
-    subject: '【R-anguage】パスワード再設定のご案内',
-    name: 'R-anguage',
+    subject: '【R-ANGUAGE】パスワード再設定のご案内',
+    name: 'R-ANGUAGE',
     body: [
       user.name + ' 様',
       '',
-      'R-anguage のパスワード再設定のお申し込みを受け付けました。',
+      'R-ANGUAGE のパスワード再設定のお申し込みを受け付けました。',
       '下のリンクを開いて、新しいパスワードを設定してください。',
       '',
       RESET_PAGE_URL + '?token=' + token,
@@ -116,7 +116,7 @@ function sendResetMail_(user, token) {
       '※ 心当たりがない場合は、このメールを無視してください。パスワードは変わりません。',
       '',
       '----------------------------------------',
-      'R-anguage｜JLPT N4〜N1 日本語学習システム'
+      'R-ANGUAGE｜JLPT N4〜N1 日本語学習システム'
     ].join('\n')
   });
 }
@@ -125,12 +125,12 @@ function sendResetMail_(user, token) {
 function sendResetDoneMail_(user) {
   MailApp.sendEmail({
     to: user.email,
-    subject: '【R-anguage】パスワードを変更しました',
-    name: 'R-anguage',
+    subject: '【R-ANGUAGE】パスワードを変更しました',
+    name: 'R-ANGUAGE',
     body: [
       user.name + ' 様',
       '',
-      'R-anguage のパスワードを変更しました。',
+      'R-ANGUAGE のパスワードを変更しました。',
       'ログイン中だった端末は、安全のためログアウトしています。',
       '新しいパスワードで、もう一度ログインしてください。',
       '',
@@ -139,26 +139,26 @@ function sendResetDoneMail_(user) {
       '※ 心当たりがない場合は、すぐにパスワード再設定のお手続きをしてください。',
       '',
       '----------------------------------------',
-      'R-anguage｜JLPT N4〜N1 日本語学習システム'
+      'R-ANGUAGE｜JLPT N4〜N1 日本語学習システム'
     ].join('\n')
   });
 }
 
 /**
  * 【テスト用】パスワード再設定の動作確認
- * - R-anguageの管理者アカウントで、パスワードを「今と同じパスワード」に設定し直して確認する（パスワードは変わらない）
+ * - R-ANGUAGEの管理者アカウントで、パスワードを「今と同じパスワード」に設定し直して確認する（パスワードは変わらない）
  * - 管理者のメールアドレスに、「パスワード再設定のご案内」と「パスワードを変更しました」の2通が届く
- * 事前に、スクリプト プロパティに TEST_PASSWORD（R-anguageの管理者パスワード）を入れておくこと
+ * 事前に、スクリプト プロパティに TEST_PASSWORD（R-ANGUAGEの管理者パスワード）を入れておくこと
  */
 function testReset() {
   const props = PropertiesService.getScriptProperties();
   const password = props.getProperty('TEST_PASSWORD');
   const email = String(props.getProperty('ADMIN_EMAIL') || '').trim().toLowerCase();
-  if (!password) throw new Error('スクリプト プロパティに TEST_PASSWORD（R-anguageの管理者パスワード）を設定してください。');
+  if (!password) throw new Error('スクリプト プロパティに TEST_PASSWORD（R-ANGUAGEの管理者パスワード）を設定してください。');
 
   // 最初に、TEST_PASSWORD が今の管理者パスワードと同じかを確かめる（違うときは何も変えずに止める）
   const before = login_(email, password);
-  if (!before.ok) throw new Error('TEST_PASSWORD が R-anguageの管理者パスワードと一致しません。何も変更せずに止めました：' + before.message);
+  if (!before.ok) throw new Error('TEST_PASSWORD が R-ANGUAGEの管理者パスワードと一致しません。何も変更せずに止めました：' + before.message);
   logout_(before.token);
 
   const cache = CacheService.getScriptCache();

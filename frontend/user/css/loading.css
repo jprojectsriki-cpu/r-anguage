@@ -1,5 +1,5 @@
 /* =========================================================
- * R-anguage 共通ローディング（全画面で共通）
+ * R-ANGUAGE 共通ローディング（全画面で共通）
  * 使い方：loading.css と loading.js を読み込み、
  *   RLoading.show('送信中')  → 表示
  *   RLoading.hide()          → 非表示（Promiseを返す）

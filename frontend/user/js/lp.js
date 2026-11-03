@@ -1,4 +1,4 @@
-/* R-anguage LP
+/* R-ANGUAGE LP
  * - ふりがな ON/OFF・スマホメニュー・スクロール表示
  * - 体験デモ（単語カード・クイズ・聴解プレーヤー）
  * - モーダル（お申し込み・ログイン・規約など）
@@ -470,6 +470,14 @@
                 });
             });
         }
+
+        /* ----- 「ATMでの振り込み方」へのリンク：よくある質問を開いてから移動する ----- */
+        document.querySelectorAll('a[href="#faq-atm"]').forEach(function (link) {
+            link.addEventListener('click', function () {
+                var d = document.getElementById('faq-atm');
+                if (d) d.open = true;
+            });
+        });
 
         /* ----- ログイン ----- */
         var login = document.getElementById('loginForm');

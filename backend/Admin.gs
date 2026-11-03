@@ -1,5 +1,5 @@
 /**
- * R-anguage API - 管理者用（申込一覧・発行）
+ * R-ANGUAGE API - 管理者用（申込一覧・発行）
  */
 
 /** 管理者かどうかを確かめる */
@@ -121,13 +121,13 @@ function adminIssue_(token, applicationId) {
 function sendIssueMail_(app) {
   MailApp.sendEmail({
     to: app.email,
-    subject: '【R-anguage】アカウントを発行しました（' + app.applicationId + '）',
-    name: 'R-anguage',
+    subject: '【R-ANGUAGE】アカウントを発行しました（' + app.applicationId + '）',
+    name: 'R-ANGUAGE',
     body: [
       app.name + ' 様',
       '',
       'お支払いを確認いたしました。ありがとうございます。',
-      'R-anguage のアカウントを発行しましたので、お知らせします。',
+      'R-ANGUAGE のアカウントを発行しましたので、お知らせします。',
       '',
       '■ 申込番号　　　：' + app.applicationId,
       '■ 追加したレベル：' + app.level,
@@ -142,7 +142,7 @@ function sendIssueMail_(app) {
       '　 あとからログインした端末が優先され、前の端末は自動でログアウトします。',
       '',
       '----------------------------------------',
-      'R-anguage｜JLPT N4〜N1 日本語学習システム'
+      'R-ANGUAGE｜JLPT N4〜N1 日本語学習システム'
     ].join('\n')
   });
 }
@@ -302,7 +302,7 @@ function testUserAdmin() {
   const emailB = adminEmail.replace('@', '+ratest2@');
 
   const appA = apply_({ level: 'N3', payment: 'bank_transfer', name: 'テスト 太郎', email: emailA, password: 'testpass123' });
-  const appB = apply_({ level: 'N2', payment: 'konbini', name: 'テスト 花子', email: emailB, password: 'testpass123' });
+  const appB = apply_({ level: 'N2', payment: 'bank_transfer', name: 'テスト 花子', email: emailB, password: 'testpass123' });
   if (!appA.ok || !appB.ok) throw new Error('テスト申込に失敗しました。前のテストの行が残っていないか確認してください。');
 
   const admin = login_(adminEmail, password);

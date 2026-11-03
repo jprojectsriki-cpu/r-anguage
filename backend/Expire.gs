@@ -1,5 +1,5 @@
 /**
- * R-anguage API - 支払期限の自動処理（毎日1回、深夜3時ごろに自動で動く）
+ * R-ANGUAGE API - 支払期限の自動処理（毎日1回、深夜3時ごろに自動で動く）
  * - 支払期限を過ぎた「入金待ち」の申込を「期限切れ」にして、申込者にメールで知らせる
  * - 支払期限が明日（または今日）の申込者に、1回だけリマインドメールを送る
  * - 処理したものがあった日は、管理者にまとめてメールで知らせる
@@ -96,12 +96,12 @@ function formatLimit_(d) {
 function sendExpiredMail_(a) {
   MailApp.sendEmail({
     to: a.email,
-    subject: '【R-anguage】お支払いの期限が過ぎたため、お申し込みを取り消しました（' + a.applicationId + '）',
-    name: 'R-anguage',
+    subject: '【R-ANGUAGE】お支払いの期限が過ぎたため、お申し込みを取り消しました（' + a.applicationId + '）',
+    name: 'R-ANGUAGE',
     body: [
       a.name + ' 様',
       '',
-      'R-anguage にお申し込みいただき、ありがとうございました。',
+      'R-ANGUAGE にお申し込みいただき、ありがとうございました。',
       'お支払いの期限までに入金を確認できなかったため、以下のお申し込みを取り消しました。',
       '',
       '■ 申込番号：' + a.applicationId,
@@ -114,7 +114,7 @@ function sendExpiredMail_(a) {
       '※ 期限の直前にお支払いいただいた場合など、行き違いがありましたら、このメールにご返信ください。',
       '',
       '----------------------------------------',
-      'R-anguage｜JLPT N4〜N1 日本語学習システム'
+      'R-ANGUAGE｜JLPT N4〜N1 日本語学習システム'
     ].join('\n')
   });
 }
@@ -124,12 +124,12 @@ function sendReminderMail_(a, today) {
   const isToday = jstDate_(a.expiresAt) === today;
   MailApp.sendEmail({
     to: a.email,
-    subject: '【R-anguage】お支払いの期限は' + (isToday ? '今日' : '明日') + 'です（' + a.applicationId + '）',
-    name: 'R-anguage',
+    subject: '【R-ANGUAGE】お支払いの期限は' + (isToday ? '今日' : '明日') + 'です（' + a.applicationId + '）',
+    name: 'R-ANGUAGE',
     body: [
       a.name + ' 様',
       '',
-      'R-anguage にお申し込みいただき、ありがとうございます。',
+      'R-ANGUAGE にお申し込みいただき、ありがとうございます。',
       'お支払いの期限が' + (isToday ? '今日' : '明日') + 'になりましたので、お知らせします。',
       '',
       '■ 申込番号：' + a.applicationId,
@@ -138,14 +138,15 @@ function sendReminderMail_(a, today) {
       '■ お支払い：' + (PAYMENT_METHODS[a.paymentMethod] || a.paymentMethod),
       '■ 支払期限：' + formatLimit_(a.expiresAt),
       '',
-      '銀行振込の場合は、振込名義の前に申込番号を付けてください。',
+    ].concat(bankLines_(a.applicationId)).concat([
+      '',
       '期限を過ぎると、お申し込みは自動的に取り消されます。',
       '',
       '※ このメールと行き違いでお支払いいただいた場合は、ご容赦ください。',
       '',
       '----------------------------------------',
-      'R-anguage｜JLPT N4〜N1 日本語学習システム'
-    ].join('\n')
+      'R-ANGUAGE｜JLPT N4〜N1 日本語学習システム'
+    ]).join('\n')
   });
 }
 
@@ -156,8 +157,8 @@ function sendCheckSummaryMail_(expired, reminded) {
   const line = function (a) { return '・' + a.applicationId + '　' + a.name + '　' + a.level + '　期限 ' + formatLimit_(a.expiresAt); };
   MailApp.sendEmail({
     to: adminEmail,
-    subject: '【R-anguage管理】支払期限の処理：期限切れ ' + expired.length + '件・リマインド ' + reminded.length + '件',
-    name: 'R-anguage',
+    subject: '【R-ANGUAGE管理】支払期限の処理：期限切れ ' + expired.length + '件・リマインド ' + reminded.length + '件',
+    name: 'R-ANGUAGE',
     body: [
       '支払期限の自動処理を行いました。',
       '',
@@ -189,7 +190,7 @@ function testPaymentCheck() {
 
   // ① 2人分の申込を作る
   const a = apply_({ level: 'N4', payment: 'bank_transfer', name: 'テスト 太郎', email: emailA, password: 'testpass123' });
-  const b = apply_({ level: 'N3', payment: 'konbini', name: 'テスト 花子', email: emailB, password: 'testpass123' });
+  const b = apply_({ level: 'N3', payment: 'bank_transfer', name: 'テスト 花子', email: emailB, password: 'testpass123' });
   if (!a.ok || !b.ok) throw new Error('テストの申込に失敗しました：' + (a.message || b.message));
   Logger.log('① 申込 → ' + a.applicationId + '、' + b.applicationId);
 
@@ -208,12 +209,12 @@ function testPaymentCheck() {
   Logger.log('④ 2回目 → ' + JSON.stringify(dailyPaymentCheck()));
 
   // ⑤ Bは、お支払い待ちの申込が有効なので、申し込み直せない
-  const b2 = apply_({ level: 'N2', payment: 'konbini', name: 'テスト 花子', email: emailB, password: 'testpass123' });
+  const b2 = apply_({ level: 'N2', payment: 'bank_transfer', name: 'テスト 花子', email: emailB, password: 'testpass123' });
   Logger.log('⑤ Bの申し込み直し → ok:' + b2.ok + ' / ' + b2.message);
 
   // ⑥ Aは期限切れなので、同じメールアドレスで申し込み直せる（アカウントは同じものを使う）
   const userBefore = findUserByEmail_(emailA);
-  const a2 = apply_({ level: 'N2', payment: 'konbini', name: 'テスト 次郎', email: emailA, password: 'newpass456' });
+  const a2 = apply_({ level: 'N2', payment: 'bank_transfer', name: 'テスト 次郎', email: emailA, password: 'newpass456' });
   const userAfter = findUserByEmail_(emailA);
   Logger.log('⑥ Aの申し込み直し → ok:' + a2.ok + ' / ' + a2.applicationId +
     ' / 同じアカウント:' + (userBefore.userId === userAfter.userId) + ' / 名前:' + userAfter.name +

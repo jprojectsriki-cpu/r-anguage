@@ -1,5 +1,5 @@
 /**
- * R-anguage API - エントリポイント
+ * R-ANGUAGE API - エントリポイント
  */
 
 // シート名（スプレッドシートのタブ名と完全一致させる）
@@ -10,7 +10,7 @@ const SHEET_APPLICATIONS = 'Applications';
  * GETリクエストの入口（動作確認用）
  */
 function doGet(e) {
-  return json_({ ok: true, message: 'R-anguage API is running' });
+  return json_({ ok: true, message: 'R-ANGUAGE API is running' });
 }
 
 /**

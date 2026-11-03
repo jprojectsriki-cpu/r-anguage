@@ -1,11 +1,14 @@
 /**
- * R-anguage API - 申し込み
+ * R-ANGUAGE API - 申し込み
+ * - お支払いは銀行振込だけ（2026-11-03〜）。振込先は、スクリプト プロパティ BANK_INFO に入れる（コードには書かない）
  * - 期限切れ・キャンセルで「入金待ち」のまま残ったアカウントは、同じメールアドレスで申し込み直せる
  */
 
 // レベルごとの料金（税込・買い切り）
 const PRICES = { N4: 3000, N3: 3500, N2: 4000, N1: 4500 };
-const PAYMENT_METHODS = { konbini: 'コンビニ払い', bank_transfer: '銀行振込' };
+// お支払い方法の名前（konbini は、銀行振込だけにする前の申込を表示するために残す）
+const PAYMENT_METHODS = { bank_transfer: '銀行振込', konbini: 'コンビニ払い' };
+const PAYMENT_DEFAULT = 'bank_transfer'; // 新しい申込は、すべて銀行振込
 const PAYMENT_DAYS = 7; // 支払期限（日）
 
 /** 申込番号を作る（例：RA-20261024-K7Q2） */
@@ -29,14 +32,13 @@ function emailExists_(email) {
 /** 申し込みを受け付ける */
 function apply_(req) {
   const level = String(req.level || '');
-  const payment = String(req.payment || '');
+  const payment = PAYMENT_DEFAULT; // 画面から何が送られても、銀行振込で受け付ける
   const name = String(req.name || '').trim();
   const email = String(req.email || '').trim().toLowerCase();
   const password = String(req.password || '');
 
   // ---- 入力チェック ----
   if (!PRICES[level]) return { ok: false, message: 'レベルを選択してください。' };
-  if (!PAYMENT_METHODS[payment]) return { ok: false, message: 'お支払い方法を選択してください。' };
   if (!name || name.length > 50) return { ok: false, message: 'お名前を50文字以内で入力してください。' };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) {
     return { ok: false, message: 'メールアドレスの形式を確認してください。' };
@@ -124,6 +126,50 @@ function apply_(req) {
   };
 }
 
+/**
+ * 振込先の案内（受付メール・リマインドメールで使う）
+ * 振込先は、スクリプト プロパティ BANK_INFO（例：「〇〇銀行 〇〇支店 普通 1234567 ナカムラ リキ」）
+ */
+function bankLines_(applicationId) {
+  const bank = String(PropertiesService.getScriptProperties().getProperty('BANK_INFO') || '').trim();
+  const code = String(applicationId || '').slice(-4);
+  if (!bank) return ['振込先の口座は、追ってメールでお知らせします。'];
+  return [
+    '■ 振込先　：' + bank,
+    '',
+    '振込名義（お名前）の前に、申込番号の最後の4文字「' + code + '」を付けてください。',
+    '（例：' + code + ' ヤマダ タロウ）',
+    '振込手数料は、お客様のご負担となります。',
+    '',
+    '【ATMでの振り込み方】',
+    '1. 銀行のATMで「振込」を選びます。',
+    '2. 上の「振込先」の銀行・支店・口座の種類（普通）・口座番号を入れます。',
+    '3. 金額を入れます（上の「金額」と同じ）。',
+    '4. 振込名義（あなたの名前）の前に「' + code + '」を入れます。',
+    '5. 内容を確かめて、お金を払います（現金か、キャッシュカード）。',
+    '6. 明細書（レシート）は、アカウントが届くまで捨てないでください。',
+    '※ コンビニのATMは、キャッシュカードがないと振り込めないことがあります。現金のときは、銀行のATMを使ってください。',
+    '※ わからないときは、銀行の窓口で、このメールを見せてください。',
+    '',
+    '[How to pay at an ATM]',
+    '1. At a bank ATM, choose "振込" (Transfer).',
+    '2. Enter the bank, branch, account type (普通 = ordinary) and account number shown in "振込先" above.',
+    '3. Enter the amount shown in "金額" above.',
+    '4. Before your name (振込名義), enter "' + code + '". Your name is entered in katakana. Example: ' + code + ' ヤマダ タロウ',
+    '5. Check the details and pay (cash or cash card).',
+    '6. Keep the receipt (明細書) until you receive your account email.',
+    '* Convenience store ATMs often accept transfers only with a cash card. To pay in cash, please use a bank ATM.',
+    '* If you are not sure, show this email to the staff at the bank counter.'
+  ];
+}
+
+/** 【確認用】振込先（BANK_INFO）が入っているかをログに出す */
+function checkBankInfo() {
+  const bank = PropertiesService.getScriptProperties().getProperty('BANK_INFO');
+  Logger.log('BANK_INFO：' + (bank ? '入っています' : 'まだです（スクリプト プロパティに入れてください）'));
+  Logger.log(bankLines_('RA-20261103-AB12').join('\n'));
+}
+
 /** 受付メール（申込者あて）と、新着通知（管理者あて）を送る */
 function sendApplyMails_(name, email, a) {
   const deadline = Utilities.formatDate(a.expiresAt, 'Asia/Tokyo', 'yyyy年M月d日 HH:mm');
@@ -131,12 +177,12 @@ function sendApplyMails_(name, email, a) {
 
   MailApp.sendEmail({
     to: email,
-    subject: '【R-anguage】お申し込みを受け付けました（' + a.applicationId + '）',
-    name: 'R-anguage',
+    subject: '【R-ANGUAGE】お申し込みを受け付けました（' + a.applicationId + '）',
+    name: 'R-ANGUAGE',
     body: [
       name + ' 様',
       '',
-      'R-anguage にお申し込みいただき、ありがとうございます。',
+      'R-ANGUAGE にお申し込みいただき、ありがとうございます。',
       '以下の内容でお申し込みを受け付けました。',
       '',
       '■ 申込番号：' + a.applicationId,
@@ -145,8 +191,7 @@ function sendApplyMails_(name, email, a) {
       '■ お支払い：' + PAYMENT_METHODS[a.payment],
       '■ 支払期限：' + deadline,
       '',
-      'お支払い方法のご案内は、追ってメールでお送りします。',
-      '銀行振込の場合は、振込名義の前に申込番号を付けてください。',
+    ].concat(bankLines_(a.applicationId)).concat([
       '',
       'お支払いを確認したあと、アカウントを発行してメールでお知らせします。',
       'ログインには、お申し込み時に設定したパスワードをお使いください。',
@@ -155,17 +200,17 @@ function sendApplyMails_(name, email, a) {
       '※ このメールに心当たりがない場合は、このメールを破棄してください。',
       '',
       '----------------------------------------',
-      'R-anguage｜JLPT N4〜N1 日本語学習システム',
+      'R-ANGUAGE｜JLPT N4〜N1 日本語学習システム',
       'https://jprojectsriki-cpu.github.io/r-anguage/frontend/user/'
-    ].join('\n')
+    ]).join('\n')
   });
 
   const adminEmail = PropertiesService.getScriptProperties().getProperty('ADMIN_EMAIL');
   if (adminEmail) {
     MailApp.sendEmail({
       to: adminEmail,
-      subject: '【R-anguage管理】新しいお申し込み（' + a.applicationId + '）',
-      name: 'R-anguage',
+      subject: '【R-ANGUAGE管理】新しいお申し込み（' + a.applicationId + '）',
+      name: 'R-ANGUAGE',
       body: [
         '新しいお申し込みがありました。',
         '',
@@ -192,9 +237,9 @@ function testApply() {
   const res1 = apply_({ level: 'N3', payment: 'bank_transfer', name: 'テスト 太郎', email: testEmail, password: 'testpass123' });
   Logger.log('① 1回目の申込 → ' + JSON.stringify(res1));
 
-  const res2 = apply_({ level: 'N2', payment: 'konbini', name: 'テスト 太郎', email: testEmail, password: 'testpass123' });
+  const res2 = apply_({ level: 'N2', payment: 'bank_transfer', name: 'テスト 太郎', email: testEmail, password: 'testpass123' });
   Logger.log('② 同じメールで2回目 → ' + JSON.stringify(res2));
 
-  const res3 = apply_({ level: 'N5', payment: 'konbini', name: 'テスト', email: 'x@example.com', password: 'testpass123' });
+  const res3 = apply_({ level: 'N5', payment: 'bank_transfer', name: 'テスト', email: 'x@example.com', password: 'testpass123' });
   Logger.log('③ 存在しないレベル → ' + JSON.stringify(res3));
 }

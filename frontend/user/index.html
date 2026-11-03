@@ -318,15 +318,17 @@
                             </div>
                             <div class="player">
                                 <div class="eq" id="eq" aria-hidden="true"><i class="bg-pink"></i><i class="bg-yellow"></i><i class="bg-mint"></i><i class="bg-purple"></i><i class="bg-blue"></i><i class="bg-pink"></i></div>
-                                <div class="player-time"><span id="audioTimer">00:08</span><span>00:35</span></div>
-                                <div class="player-bar"><span id="audioBar" style="width:25%"></span></div>
+                                <div class="player-time"><span id="audioTimer">00:00</span><span id="audioTotal">00:00</span></div>
+                                <div class="player-bar"><span id="audioBar" style="width:0%"></span></div>
                                 <div class="player-controls">
                                     <button type="button" class="pop-btn btn-white btn-xs" id="audioBack" aria-label="5秒戻す"><svg class="icon"><use href="#i-back5"/></svg><span>5<ruby>秒<rt>びょう</rt></ruby></span></button>
                                     <button type="button" class="pop-btn btn-pink btn-round" id="audioPlay" aria-label="再生"><svg class="icon icon-play"><use href="#i-play"/></svg><svg class="icon icon-pause"><use href="#i-pause"/></svg></button>
                                     <button type="button" class="pop-btn btn-white btn-xs" id="audioFwd" aria-label="5秒進める"><span>5<ruby>秒<rt>びょう</rt></ruby></span><svg class="icon"><use href="#i-fwd5"/></svg></button>
                                 </div>
                             </div>
-                            <p class="player-script"><b>［スクリプト］</b>「まもなく2<ruby>番線<rt>ばんせん</rt></ruby>に<ruby>電車<rt>でんしゃ</rt></ruby>がまいります。」</p>
+                            <p class="player-note" id="audioNote" hidden>このブラウザでは<ruby>音声<rt>おんせい</rt></ruby>を<ruby>再生<rt>さいせい</rt></ruby>できません。<ruby>別<rt>べつ</rt></ruby>のブラウザでお<ruby>試<rt>ため</rt></ruby>しください。</p>
+                            <p class="player-script"><b>［スクリプト］</b>「まもなく、2<ruby>番線<rt>ばんせん</rt></ruby>に、<ruby>東京<rt>とうきょう</rt></ruby><ruby>行<rt>い</rt></ruby>きの<ruby>電車<rt>でんしゃ</rt></ruby>がまいります。<ruby>危<rt>あぶ</rt></ruby>ないですから、<ruby>黄色<rt>きいろ</rt></ruby>い<ruby>線<rt>せん</rt></ruby>の<ruby>内側<rt>うちがわ</rt></ruby>まで、お<ruby>下<rt>さ</rt></ruby>がりください。この<ruby>電車<rt>でんしゃ</rt></ruby>は、<ruby>各駅<rt>かくえき</rt></ruby>に<ruby>止<rt>と</rt></ruby>まります。」</p>
+                            <p class="player-hint">※ <ruby>体験<rt>たいけん</rt></ruby>デモの<ruby>音声<rt>おんせい</rt></ruby>は、ブラウザの<ruby>読<rt>よ</rt></ruby>み<ruby>上<rt>あ</rt></ruby>げ<ruby>機能<rt>きのう</rt></ruby>を<ruby>使<rt>つか</rt></ruby>っています。<ruby>音<rt>おと</rt></ruby>が<ruby>出<rt>で</rt></ruby>ないときは、スマホのマナーモードと<ruby>音量<rt>おんりょう</rt></ruby>を<ruby>確<rt>たし</rt></ruby>かめてください。</p>
                         </div>
                     </div>
                 </div>
@@ -390,7 +392,7 @@
                         <span class="flow-no bg-yellow">STEP 2</span>
                         <div class="flow-icon"><svg class="icon"><use href="#i-bank"/></svg></div>
                         <h3>お<ruby>支払<rt>しはら</rt></ruby>い</h3>
-                        <p>メールでお<ruby>知<rt>し</rt></ruby>らせする<ruby>口座<rt>こうざ</rt></ruby>に、<ruby>期限<rt>きげん</rt></ruby>（お<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>みから7<ruby>日<rt>にち</rt></ruby>）までに<ruby>銀行<rt>ぎんこう</rt></ruby><ruby>振込<rt>ふりこみ</rt></ruby>でお<ruby>支払<rt>しはら</rt></ruby>いください。<br><a href="#faq-atm" class="atm-link">ATMでの<ruby>振<rt>ふ</rt></ruby>り<ruby>込<rt>こ</rt></ruby>み<ruby>方<rt>かた</rt></ruby>（How to pay）</a></p>
+                        <p>メールでお<ruby>知<rt>し</rt></ruby>らせする<ruby>口座<rt>こうざ</rt></ruby>に、<ruby>期限<rt>きげん</rt></ruby>（お<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>みから7<ruby>日<rt>にち</rt></ruby>）までに<ruby>銀行<rt>ぎんこう</rt></ruby><ruby>振込<rt>ふりこみ</rt></ruby>でお<ruby>支払<rt>しはら</rt></ruby>いください。<br><a href="#faq-atm" class="atm-link">ATMでの<ruby>振<rt>ふ</rt></ruby>り<ruby>込<rt>こ</rt></ruby>み<ruby>方<rt>かた</rt></ruby></a></p>
                     </li>
                     <li class="pop-card flow-step reveal reveal-zoom">
                         <span class="flow-no bg-mint">STEP 3</span>
@@ -484,10 +486,10 @@
                     </details>
                     <details class="pop-card faq reveal">
                         <summary><span>お<ruby>支払<rt>しはら</rt></ruby>い<ruby>方法<rt>ほうほう</rt></ruby>は<ruby>何<rt>なに</rt></ruby>がありますか？</span><svg class="icon faq-plus"><use href="#i-plus"/></svg></summary>
-                        <p><ruby>銀行<rt>ぎんこう</rt></ruby><ruby>振込<rt>ふりこみ</rt></ruby>だけです。お<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>みのあと、<ruby>振込先<rt>ふりこみさき</rt></ruby>の<ruby>口座<rt>こうざ</rt></ruby>をメールでお<ruby>知<rt>し</rt></ruby>らせします。クレジットカードは<ruby>必要<rt>ひつよう</rt></ruby>ありません。<a href="#faq-atm" class="atm-link">ATMでの<ruby>振<rt>ふ</rt></ruby>り<ruby>込<rt>こ</rt></ruby>み<ruby>方<rt>かた</rt></ruby>（How to pay）</a></p>
+                        <p><ruby>銀行<rt>ぎんこう</rt></ruby><ruby>振込<rt>ふりこみ</rt></ruby>だけです。お<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>みのあと、<ruby>振込先<rt>ふりこみさき</rt></ruby>の<ruby>口座<rt>こうざ</rt></ruby>をメールでお<ruby>知<rt>し</rt></ruby>らせします。クレジットカードは<ruby>必要<rt>ひつよう</rt></ruby>ありません。<a href="#faq-atm" class="atm-link">ATMでの<ruby>振<rt>ふ</rt></ruby>り<ruby>込<rt>こ</rt></ruby>み<ruby>方<rt>かた</rt></ruby></a></p>
                     </details>
                     <details class="pop-card faq reveal" id="faq-atm">
-                        <summary><span>ATMでの<ruby>振<rt>ふ</rt></ruby>り<ruby>込<rt>こ</rt></ruby>み<ruby>方<rt>かた</rt></ruby>を<ruby>教<rt>おし</rt></ruby>えてください。<br><small lang="en">How do I pay by bank transfer at an ATM?</small></span><svg class="icon faq-plus"><use href="#i-plus"/></svg></summary>
+                        <summary><span>ATMでの<ruby>振<rt>ふ</rt></ruby>り<ruby>込<rt>こ</rt></ruby>み<ruby>方<rt>かた</rt></ruby>を<ruby>教<rt>おし</rt></ruby>えてください。</span><svg class="icon faq-plus"><use href="#i-plus"/></svg></summary>
                         <div class="faq-body">
                             <ol class="atm-steps">
                                 <li><ruby>銀行<rt>ぎんこう</rt></ruby>のATMで「<ruby>振込<rt>ふりこみ</rt></ruby>」を<ruby>選<rt>えら</rt></ruby>びます。</li>
@@ -498,18 +500,6 @@
                                 <li><ruby>明細書<rt>めいさいしょ</rt></ruby>（レシート）は、アカウントが<ruby>届<rt>とど</rt></ruby>くまで<ruby>捨<rt>す</rt></ruby>てないでください。</li>
                             </ol>
                             <p class="atm-note">※ コンビニのATMは、キャッシュカードがないと<ruby>振<rt>ふ</rt></ruby>り<ruby>込<rt>こ</rt></ruby>めないことがあります。<ruby>現金<rt>げんきん</rt></ruby>で<ruby>払<rt>はら</rt></ruby>うときは、<ruby>銀行<rt>ぎんこう</rt></ruby>のATMを<ruby>使<rt>つか</rt></ruby>ってください。<br>※ わからないときは、<ruby>銀行<rt>ぎんこう</rt></ruby>の<ruby>窓口<rt>まどぐち</rt></ruby>で、お<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>みのメールを<ruby>見<rt>み</rt></ruby>せてください。</p>
-                            <div class="atm-en" lang="en">
-                                <p class="atm-en-h">In English</p>
-                                <ol class="atm-steps">
-                                    <li>At a bank ATM, choose <b>“振込” (Transfer)</b>.</li>
-                                    <li>Enter the bank, branch, account type (普通 = ordinary) and account number written in our email.</li>
-                                    <li>Enter the amount (the price of the level you chose).</li>
-                                    <li>Before your name (振込名義), enter the <b>last 4 characters of your application number</b>. Your name is entered in katakana. Example: K7Q2 ヤマダ タロウ</li>
-                                    <li>Check the details and pay (cash or cash card).</li>
-                                    <li>Keep the receipt (明細書) until you receive your account email.</li>
-                                </ol>
-                                <p class="atm-note">* Convenience store ATMs often accept transfers only with a cash card. To pay in cash, please use a bank ATM.<br>* If you are not sure, show our application email to the staff at the bank counter.</p>
-                            </div>
                         </div>
                     </details>
                     <details class="pop-card faq reveal">

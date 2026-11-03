@@ -317,42 +317,108 @@
         });
     }
 
-    /* ---------- 聴解プレーヤー（見た目だけの再現） ---------- */
+    /* ---------- 聴解プレーヤー（ブラウザの読み上げ機能で、スクリプトを読む） ---------- */
     function initPlayer() {
         var play = document.getElementById('audioPlay');
         var bar = document.getElementById('audioBar');
         var timer = document.getElementById('audioTimer');
+        var total = document.getElementById('audioTotal');
         var eq = document.getElementById('eq');
+        var note = document.getElementById('audioNote');
         if (!play) return;
-        var TOTAL = 35;
-        var pos = 8;
+        // 読む文（1文ずつ読む。秒数は、文字数からのめやす）
+        var LINES = [
+            'まもなく、2番線に、東京行きの電車がまいります。',
+            '危ないですから、黄色い線の内側まで、お下がりください。',
+            'この電車は、各駅に止まります。'
+        ];
+        var segs = [];
+        var t = 0;
+        LINES.forEach(function (text) {
+            var d = Math.max(2, Math.round(text.length * 0.2 + 0.8));
+            segs.push({ text: text, start: t, dur: d });
+            t += d;
+        });
+        var TOTAL = t;
+        var pos = 0;       // いまの位置（秒）
+        var seg = 0;       // いま読んでいる文
+        var playing = false;
         var tick = null;
+        var token = 0;     // 古い読み上げの終わりを無視するための番号
 
+        function fmt(sec) { sec = Math.round(sec); return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0'); }
         function draw() {
             bar.style.width = (pos / TOTAL * 100) + '%';
-            timer.textContent = '00:' + String(Math.round(pos)).padStart(2, '0');
+            timer.textContent = fmt(pos);
+        }
+        function segAt(p) {
+            for (var i = segs.length - 1; i >= 0; i--) if (p >= segs[i].start) return i;
+            return 0;
+        }
+        function jaVoice() {
+            var vs = window.speechSynthesis.getVoices();
+            return vs.find(function (v) { return /^ja(-|_|$)/i.test(v.lang); }) || null;
+        }
+        function setUi(on) {
+            play.classList.toggle('is-playing', on);
+            play.setAttribute('aria-label', on ? '一時停止' : '再生');
+            eq.classList.toggle('is-playing', on);
         }
         function stop() {
+            playing = false;
+            token++;
             window.clearInterval(tick);
             tick = null;
-            play.classList.remove('is-playing');
-            play.setAttribute('aria-label', '再生');
-            eq.classList.remove('is-playing');
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            setUi(false);
         }
-        play.addEventListener('click', function () {
-            if (tick) { stop(); return; }
+        function speakFrom(i) {
+            if (i >= segs.length) { stop(); pos = 0; draw(); return; } // 最後まで読んだら、はじめにもどす
+            seg = i;
+            pos = segs[i].start;
+            draw();
+            var my = ++token;
+            var u = new SpeechSynthesisUtterance(segs[i].text);
+            u.lang = 'ja-JP';
+            u.rate = 0.95;
+            var v = jaVoice();
+            if (v) u.voice = v;
+            u.onend = function () { if (playing && my === token) speakFrom(i + 1); };
+            // 読み終わりの知らせが来ないブラウザのために、めやすの秒数を過ぎたら次の文へ進む
+            window.setTimeout(function () { if (playing && my === token) speakFrom(i + 1); }, (segs[i].dur + 3) * 1000);
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(u);
+        }
+        function start() {
+            if (!('speechSynthesis' in window)) {
+                if (note) note.hidden = false;
+                return;
+            }
+            playing = true;
+            setUi(true);
             if (pos >= TOTAL) pos = 0;
-            play.classList.add('is-playing');
-            play.setAttribute('aria-label', '一時停止');
-            eq.classList.add('is-playing');
+            speakFrom(segAt(pos));
+            window.clearInterval(tick);
             tick = window.setInterval(function () {
-                pos = Math.min(TOTAL, pos + 1);
+                // 読んでいる文の終わりまでは進める（読み終わりは onend で次の文へ）
+                var end = segs[seg].start + segs[seg].dur;
+                pos = Math.min(end - 0.2, pos + 0.25);
                 draw();
-                if (pos >= TOTAL) stop();
-            }, 1000);
-        });
-        document.getElementById('audioBack').addEventListener('click', function () { pos = Math.max(0, pos - 5); draw(); });
-        document.getElementById('audioFwd').addEventListener('click', function () { pos = Math.min(TOTAL, pos + 5); draw(); });
+            }, 250);
+        }
+        function jump(p) {
+            pos = Math.max(0, Math.min(TOTAL, p));
+            if (playing) speakFrom(segAt(pos)); else draw();
+        }
+
+        if (total) total.textContent = fmt(TOTAL);
+        play.addEventListener('click', function () { if (playing) stop(); else start(); });
+        document.getElementById('audioBack').addEventListener('click', function () { jump(pos - 5); });
+        document.getElementById('audioFwd').addEventListener('click', function () { jump(pos + 5); });
+        // 声の一覧は、あとから読みこまれることがある
+        if ('speechSynthesis' in window && window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = function () { jaVoice(); };
+        }
         draw();
     }
 

@@ -414,6 +414,11 @@
                     button('キャンセル', 'btn btn-white btn-xs', function () { cancelApplication(a); })
                 );
                 c9.append(acts);
+            } else if (a.status === 'expired') {
+                // 期限のあとに入金があったときだけ使う
+                var acts2 = el('div', 'actions');
+                acts2.append(button('発行', 'btn btn-white btn-xs', function () { issueApplication(a); }));
+                c9.append(acts2);
             } else {
                 c9.textContent = '—';
             }
@@ -438,12 +443,18 @@
         confirmAction({
             title: 'この申込を発行しますか？',
             rows: appRows(a),
-            text: '入金を確認してから発行してください。発行すると、アカウントが有効になり、受講生に発行メールが送られます。',
+            text: (a.status === 'expired'
+                ? '支払期限を過ぎた（期限切れの）申込です。期限のあとに入金を確認できたときだけ発行してください。'
+                : '入金を確認してから発行してください。') + '発行すると、アカウントが有効になり、受講生に発行メールが送られます。',
             ok: '入金を確認して発行する'
         }).then(function (r) {
             if (!r) return;
             runAction('アカウントを発行しています', { action: 'admin.issue', applicationId: a.applicationId }, function (res) {
-                return a.applicationId + ' を発行しました（レベル：' + res.levels.join('、') + '）。発行メールを送信しました。';
+                var msg = a.applicationId + ' を発行しました（レベル：' + res.levels.join('、') + '）。発行メールを送信しました。';
+                if (res.others && res.others.length) {
+                    msg += '同じ受講生に、ほかの「入金待ち」の申込があります：' + res.others.join('、') + '。二重に入金されないよう、いらなければキャンセルしてください。';
+                }
+                return msg;
             });
         });
     }

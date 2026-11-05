@@ -76,7 +76,8 @@ function adminIssue_(token, applicationId) {
     app = readApplications_().filter(function (a) { return a.applicationId === applicationId; })[0];
     if (!app) return { ok: false, message: '申込が見つかりません。' };
 
-    const blocked = { issued: '発行済み', expired: '期限切れ', cancelled: 'キャンセル済み' };
+    // 期限切れの申込も、期限のあとに入金を確認できたときは発行できる（2026-11-03）
+    const blocked = { issued: '発行済み', cancelled: 'キャンセル済み' };
     if (blocked[app.status]) {
       return { ok: false, message: 'この申込は「' + blocked[app.status] + '」のため発行できません。' };
     }
@@ -97,6 +98,10 @@ function adminIssue_(token, applicationId) {
     apps.getRange(app.row, 8).setValue('issued');               // status
     if (!app.paidAt) apps.getRange(app.row, 11).setValue(now);  // paidAt
     apps.getRange(app.row, 12).setValue(now);                   // issuedAt
+    if (app.status === 'expired') {
+      const stamp = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+      apps.getRange(app.row, 14).setValue((app.note ? app.note + '\n' : '') + '[' + stamp + ' 期限のあとに入金を確認して発行]'); // note
+    }
 
     // アカウント：有効にして、レベルを追加する
     const levels = String(u[7] || '').split(',').filter(String);
@@ -109,12 +114,16 @@ function adminIssue_(token, applicationId) {
     if (!u[9]) users.getRange(userRow, 10).setValue(now);       // activatedAt（初回だけ）
 
     app.levels = levels;
+    // 同じアカウントに、ほかの「入金待ち」の申込がないか（申し込み直したあとなど。二重の入金に気づくため）
+    app.others = readApplications_().filter(function (x) {
+      return x.userId === app.userId && x.applicationId !== app.applicationId && (x.status === 'awaiting_payment' || x.status === 'paid');
+    }).map(function (x) { return x.applicationId + '（' + x.level + '）'; });
   } finally {
     lock.releaseLock();
   }
 
   sendIssueMail_(app);
-  return { ok: true, applicationId: app.applicationId, levels: app.levels };
+  return { ok: true, applicationId: app.applicationId, levels: app.levels, others: app.others };
 }
 
 /** 発行メールを送る */

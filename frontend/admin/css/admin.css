@@ -395,3 +395,11 @@ div.form-errors .btn { margin-top: 8px; }
     .kpi { padding: 14px; }
     .kpi-value { font-size: 1.6rem; }
 }
+
+/* ---------- 試験日 ---------- */
+.e-form { margin-bottom: 18px; padding: 18px 20px; }
+.e-form-title { margin-bottom: 10px; font-size: 1rem; }
+.e-form-row { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 0 14px; }
+.e-form-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.e-table tr.is-past td { color: var(--dark-50); }
+@media (max-width: 640px) { .e-form-row { grid-template-columns: minmax(0, 1fr); } }

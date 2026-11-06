@@ -563,7 +563,8 @@
                         if (res && res.ok) {
                             try { localStorage.setItem(TOKEN_KEY, res.token); } catch (err) { /* 保存できない環境 */ }
                             login.reset();
-                            setMsg(loginMsg, res.user.name + 'さん、ログインしました。学習画面は準備中です。');
+                            setMsg(loginMsg, res.user.name + 'さん、ログインしました。学習画面へ移動します。');
+                            location.href = 'app.html';
                         } else {
                             setMsg(loginMsg, (res && res.message) || 'ログインに失敗しました。', true);
                         }

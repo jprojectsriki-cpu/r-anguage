@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>R-ANGUAGE</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" href="img/favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/loading.css">
+    <link rel="stylesheet" href="css/app.css">
+    <script>
+        // ふりがな・文字の大きさは、画面を描く前に当てる（ちらつかないように）
+        try {
+            if (localStorage.getItem('ranguage_furigana') === 'off') document.documentElement.classList.add('furigana-off');
+            var fs = localStorage.getItem('ranguage_fontsize');
+            if (fs === 's' || fs === 'l') document.documentElement.classList.add('fs-' + fs);
+        } catch (e) {}
+    </script>
+</head>
+<body>
+    <!-- R-ANGUAGE 受講生の画面（ホーム／問題／単語／模試／マイページ）。中身は js/app.js が描く -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
+        <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5z"/><path d="M12 6v13"/></symbol>
+        <symbol id="i-cards" viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/></symbol>
+        <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></symbol>
+        <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
+        <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
+        <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+        <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+        <symbol id="i-out" viewBox="0 0 24 24"><path d="M14 17l5-5-5-5M19 12H8"/><path d="M11 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+    </svg>
+
+    <header class="top">
+        <a href="#home" class="brand" aria-label="ホームへ">
+            <span class="brand-mark"><img src="img/logo.png" alt="" width="20" height="23"></span>
+            <span class="brand-name">R-ANGUAGE</span>
+        </a>
+        <p class="top-title" id="topTitle"></p>
+    </header>
+
+    <main class="main" id="main" tabindex="-1"></main>
+
+    <!-- 下のメニュー（スマホファースト。下にスクロールすると隠れ、上にスクロールすると出る） -->
+    <nav class="tabbar" id="tabbar" aria-label="メニュー">
+        <a href="#home" class="tab" data-page="home"><svg class="icon"><use href="#i-home"/></svg><span>ホーム</span></a>
+        <a href="#practice" class="tab" data-page="practice"><svg class="icon"><use href="#i-book"/></svg><span><ruby>問題<rt>もんだい</rt></ruby></span></a>
+        <a href="#vocab" class="tab" data-page="vocab"><svg class="icon"><use href="#i-cards"/></svg><span><ruby>単語<rt>たんご</rt></ruby></span></a>
+        <a href="#mock" class="tab" data-page="mock"><svg class="icon"><use href="#i-timer"/></svg><span><ruby>模試<rt>もし</rt></ruby></span></a>
+        <a href="#mypage" class="tab" data-page="mypage"><svg class="icon"><use href="#i-user"/></svg><span>マイページ</span></a>
+    </nav>
+
+    <!-- 確かめるダイアログ -->
+    <dialog class="modal" id="confirmDialog" aria-labelledby="confirmTitle">
+        <form method="dialog" class="modal-box">
+            <h2 class="modal-title" id="confirmTitle"></h2>
+            <div class="modal-body" id="confirmBody"></div>
+            <div class="modal-foot">
+                <button type="submit" value="cancel" class="pop-btn btn-white">キャンセル</button>
+                <button type="submit" value="ok" class="pop-btn btn-pink" id="confirmOk"></button>
+            </div>
+        </form>
+    </dialog>
+
+    <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+
+    <script src="js/config.js"></script>
+    <script src="js/loading.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

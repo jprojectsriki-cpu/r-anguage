@@ -71,11 +71,25 @@ function doPost(e) {
         return json_(logout_(req.token));
       case 'me':
         return json_(checkSession_(req.token));
+      case 'me.profile':
+        return json_(meProfile_(req.token));
+      case 'me.changePassword':
+        return json_(meChangePassword_(req.token, req.currentPassword, req.newPassword));
+      case 'me.applyLevel':
+        return json_(meApplyLevel_(req.token, req.level));
+      case 'me.saveSettings':
+        return json_(meSaveSettings_(req.token, req));
+      case 'admin.examDates':
+        return json_(adminListExamDates_(req.token));
+      case 'admin.saveExamDate':
+        return json_(adminSaveExamDate_(req.token, req.exam || {}));
+      case 'admin.deleteExamDate':
+        return json_(adminDeleteExamDate_(req.token, req.examId));
       case 'admin.list':
         return json_(adminListApplications_(req.token, req.status));
       case 'admin.issue':
         return json_(adminIssue_(req.token, req.applicationId));
-            case 'admin.users':
+      case 'admin.users':
         return json_(adminListUsers_(req.token));
       case 'admin.userStatus':
         return json_(adminSetUserStatus_(req.token, req.userId, req.status));

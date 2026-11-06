@@ -65,20 +65,9 @@
         $('doneCard').hidden = true;
         $('loginCard').hidden = false;
     }
-    function showDone(user) {
-        $('userName').textContent = user.name;
-        var box = $('userLevels');
-        box.replaceChildren();
-        (user.levels || []).forEach(function (lv) {
-            var s = document.createElement('span');
-            s.className = 'lv lv-' + lv;
-            s.textContent = lv;
-            box.append(s);
-        });
-        if (!box.children.length) box.textContent = '—';
-        $('loginCard').hidden = true;
-        $('doneCard').hidden = false;
-        // ※ 学習画面（ダッシュボード）ができたら、ここで移動する
+    /** ログインできたら、学習の画面（app.html）へ移動する */
+    function showDone() {
+        location.replace('app.html');
     }
 
     /* ---------- ログイン ---------- */

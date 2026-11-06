@@ -351,30 +351,54 @@
     }
 
     /* ---------- マイページの操作 ---------- */
+    /* 設定の保存
+     * - 押した内容は、すぐ画面に当てる（want に入れる）
+     * - 続けて押したときは、最後の内容だけを送る（0.4秒待ってから送る・同時に2つは送らない）
+     * - 保存が終わる前に画面を閉じようとしたら、ブラウザが確認を出す
+     */
+    var save = { want: null, timer: 0, busy: false };
     function saveSettings(change) {
         var u = state.profile.user;
-        var next = {
-            examId: change.examId !== undefined ? change.examId : u.examId,
-            settings: Object.assign({}, u.settings, change.settings || {})
+        var base = save.want || { examId: u.examId, settings: u.settings };
+        save.want = {
+            examId: change.examId !== undefined ? change.examId : base.examId,
+            settings: Object.assign({}, base.settings, change.settings || {})
         };
-        applySettings(next.settings); // 先に画面に当てる（保存に失敗したらもどす）
-        apiPost({ action: 'me.saveSettings', examId: next.examId, settings: next.settings }).then(function (res) {
+        applySettings(save.want.settings);
+        window.clearTimeout(save.timer);
+        save.timer = window.setTimeout(sendSettings, 400);
+    }
+    function sendSettings() {
+        if (save.busy || !save.want) return;
+        var u = state.profile.user;
+        var sending = save.want;
+        save.busy = true;
+        apiPost({ action: 'me.saveSettings', examId: sending.examId, settings: sending.settings }).then(function (res) {
+            save.busy = false;
             if (authFailed(res)) return;
-            if (!res || !res.ok) {
-                applySettings(u.settings);
-                toast((res && res.message) || '保存できませんでした。', true);
-                route();
-                return;
-            }
+            if (!res || !res.ok) return failed((res && res.message) || '{保存|ほぞん}できませんでした。');
             u.examId = res.examId;
             u.settings = res.settings;
-            toast('{保存|ほぞん}しました');
+            if (save.want === sending) {          // 送っているあいだに、ほかの変更がなかった
+                save.want = null;
+                toast('{保存|ほぞん}しました');
+            } else {
+                sendSettings();                    // あとから押した内容を続けて送る
+            }
         }).catch(function () {
-            applySettings(u.settings);
-            toast('{通信|つうしん}に{失敗|しっぱい}しました。もう{一度|いちど}お{試|ため}しください。', true);
-            route();
+            save.busy = false;
+            failed('{通信|つうしん}に{失敗|しっぱい}しました。もう{一度|いちど}お{試|ため}しください。');
         });
+        function failed(text) {
+            save.want = null;
+            applySettings(u.settings);             // 最後に保存できた設定にもどす
+            toast(text, true);
+            if (state.page === 'mypage') route();
+        }
     }
+    window.addEventListener('beforeunload', function (e) {
+        if (save.want) { e.preventDefault(); e.returnValue = ''; }
+    });
 
     function applyLevel(lv) {
         var price = '¥' + Number(state.profile.prices[lv]).toLocaleString('ja-JP');

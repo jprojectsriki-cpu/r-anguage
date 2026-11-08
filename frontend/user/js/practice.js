@@ -54,6 +54,13 @@
     /* ===================== メニュー ===================== */
     function renderMenu(main) {
         P.quiz = null;
+        if (window.RPendingPractice) { // ホームの「続きから」
+            var pending = window.RPendingPractice;
+            window.RPendingPractice = null;
+            A.setTitle('{問題|もんだい}');
+            start(pending, function () { renderMenu(main); });
+            return;
+        }
         document.body.classList.remove('is-quiz');
         A.setTitle('{問題|もんだい}');
         A.withLoading('<ruby>問題<rt>もんだい</rt></ruby>を<ruby>読<rt>よ</rt></ruby>み<ruby>込<rt>こ</rt></ruby>んでいます', A.apiPost({ action: 'me.practiceMenu' }))
@@ -153,12 +160,12 @@
     }
 
     /* ===================== 始める ===================== */
-    function start(params) {
+    function start(params, onFail) {
         var req = Object.assign({ action: 'me.practiceStart' }, params);
         A.withLoading('<ruby>問題<rt>もんだい</rt></ruby>を<ruby>用意<rt>ようい</rt></ruby>しています', A.apiPost(req))
             .then(function (res) {
                 if (A.authFailed(res)) return;
-                if (!res || !res.ok) { A.toast((res && res.message) || '{始|はじ}められませんでした。', true); return; }
+                if (!res || !res.ok) { A.toast((res && res.message) || '{始|はじ}められませんでした。', true); if (onFail) onFail(); return; }
                 if (res.short && res.short.length && params.mode === 'set') {
                     var body = h('div', {}, [
                         h('p', { html: 'まだ{問題|もんだい}が{足|た}りない{大問|だいもん}があります。いまある{問題|もんだい}だけで{始|はじ}めます。' }),
@@ -174,6 +181,7 @@
             .catch(function (err) {
                 console.error(err);
                 A.toast('{通信|つうしん}に{失敗|しっぱい}しました。もう{一度|いちど}お{試|ため}しください。', true);
+                if (onFail) onFail();
             });
     }
 

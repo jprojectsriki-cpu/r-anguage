@@ -101,6 +101,8 @@ function doPost(e) {
         return json_(meMockSubmit_(req.token, req));
       case 'me.mockResult':
         return json_(meMockResult_(req.token, req.resultId));
+      case 'me.stats':
+        return json_(meStats_(req.token));
       case 'admin.examDates':
         return json_(adminListExamDates_(req.token));
       case 'admin.saveExamDate':

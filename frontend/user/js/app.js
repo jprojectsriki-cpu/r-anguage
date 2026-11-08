@@ -210,6 +210,9 @@
             return h('a', { class: 'quick-tile quick-' + x[0], href: '#' + x[0] }, [sticker(x[1]), h('span', { html: x[2] })]);
         })));
 
+        // 続きから（あとで読み込む）
+        main.append(h('div', { id: 'continueSlot' }));
+
         // 試験日までのカウントダウン
         var exam = p.exams.filter(function (e) { return e.examId === u.examId; })[0];
         if (exam) {
@@ -229,6 +232,9 @@
                 icon('i-chev')
             ]));
         }
+
+        // 学習の記録（あとで読み込む）
+        main.append(h('div', { id: 'statsSlot', class: 'stats-slot' }, [h('section', { class: 'card stats-loading' }, [h('p', { class: 'muted', html: '{学習|がくしゅう}の{記録|きろく}を{読|よ}み{込|こ}んでいます…' })])]));
 
         // お支払い待ちの申込
         p.pending.forEach(function (a) {
@@ -256,9 +262,112 @@
         }
         main.append(box);
 
-        main.append(h('section', { class: 'card soon-mini' }, [
-            h('p', { html: '{学習|がくしゅう}の{記録|きろく}（{連続|れんぞく}{日数|にっすう}・{正答率|せいとうりつ}・{続|つづ}きから）は、もうすぐ{使|つか}えるようになります。' })
+        loadStats(main);
+    }
+
+    /* ===================== 学習の記録（R-10e） ===================== */
+    var WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
+    var SECTION_ST = { '文字・語彙': 'moji', '文法': 'bunpo', '読解': 'dokkai', '聴解': 'choukai' };
+    var SECTION_RUBY = { '文字・語彙': '{文字|もじ}・{語彙|ごい}', '文法': '{文法|ぶんぽう}', '読解': '{読解|どっかい}', '聴解': '{聴解|ちょうかい}' };
+
+    function loadStats(main) {
+        apiPost({ action: 'me.stats' }).then(function (res) {
+            if (authFailed(res)) return;
+            if (state.page !== 'home') return;
+            if (!res || !res.ok) throw new Error('stats');
+            drawContinue(res);
+            drawStats(res);
+        }).catch(function (err) {
+            console.error(err);
+            var slot = $('statsSlot');
+            if (slot) slot.replaceChildren(h('section', { class: 'card' }, [h('p', { class: 'muted', html: '{学習|がくしゅう}の{記録|きろく}を{読|よ}み{込|こ}めませんでした。' })]));
+        });
+    }
+
+    /** 問題のページを開いて、すぐに始める */
+    function startPractice(params) {
+        window.RPendingPractice = params;
+        location.hash = '#practice';
+    }
+
+    function mockInProgress() {
+        try {
+            var raw = localStorage.getItem('ranguage_mock_' + state.profile.user.email);
+            var e = raw ? JSON.parse(raw) : null;
+            return e && e.papers ? e : null;
+        } catch (err) { return null; }
+    }
+
+    function drawContinue(st) {
+        var slot = $('continueSlot');
+        if (!slot) return;
+        var mk = mockInProgress();
+        var item = null;
+        if (mk) {
+            item = { st: 'st-mock', cls: 'cont-mock', title: mk.level + ' {模試|もし}の{続|つづ}き', sub: '{時間|じかん}は{止|と}まっています', go: function () { location.hash = '#mock'; } };
+        } else if (st.mistakes.count) {
+            item = { st: 'st-redo', cls: 'cont-redo', title: 'まちがい{復習|ふくしゅう} ' + st.mistakes.count + '{問|もん}', sub: 'まちがえた{問題|もんだい}を、もう{一度|いちど}', go: function () { startPractice({ mode: 'mistakes', level: st.mistakes.level }); } };
+        } else if (st.lastPractice) {
+            var lp = st.lastPractice;
+            item = { st: 'st-' + (SECTION_ST[lp.section] || 'practice'), cls: 'cont-last', title: '{前回|ぜんかい}の{続|つづ}き', sub: lp.level + ' ' + (SECTION_RUBY[lp.section] || lp.section) + (lp.mode === 'form' ? '・' + lp.form : ''),
+                go: function () { startPractice(lp.mode === 'form' ? { mode: 'form', level: lp.level, section: lp.section, form: lp.form } : { mode: 'set', level: lp.level, section: lp.section }); } };
+        }
+        if (!item) { slot.replaceChildren(); return; }
+        slot.replaceChildren(h('button', { type: 'button', class: 'card cont ' + item.cls, onclick: item.go }, [
+            sticker(item.st, 'cont-st'),
+            h('span', { class: 'cont-text' }, [
+                h('span', { class: 'cont-label', html: '{続|つづ}きから' }),
+                h('span', { class: 'cont-title', html: item.title }),
+                h('span', { class: 'cont-sub', html: item.sub })
+            ]),
+            h('span', { class: 'cont-go' }, [icon('i-chev')])
         ]));
+    }
+
+    function drawStats(st) {
+        var slot = $('statsSlot');
+        if (!slot) return;
+        var msg = st.doneToday ? '{今日|きょう}も{学習|がくしゅう}しました。すごい！' : st.streak ? '{今日|きょう}も{続|つづ}けよう！' : '{今日|きょう}から{始|はじ}めよう！';
+        var week = h('ol', { class: 'week' }, st.week.map(function (d) {
+            var p = d.date.split('-');
+            var wd = WEEKDAYS[new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])).getDay()];
+            return h('li', { class: (d.count ? 'is-done' : '') + (d.date === st.today ? ' is-today' : '') }, [
+                h('span', { class: 'week-dot' }, d.count ? [icon('i-check')] : []),
+                h('span', { class: 'week-day', html: d.date === st.today ? '{今日|きょう}' : wd })
+            ]);
+        }));
+        var streakCard = h('section', { class: 'card streak' }, [
+            h('div', { class: 'streak-top' }, [
+                sticker('st-fire', 'streak-st'),
+                h('div', {}, [
+                    h('p', { class: 'streak-num' }, [h('b', { text: String(st.streak) }), h('span', { html: '{日|にち}{連続|れんぞく}' })]),
+                    h('p', { class: 'streak-msg', html: msg })
+                ])
+            ]),
+            week
+        ]);
+
+        var rate = st.total.rate;
+        var ring = h('div', { class: 'ring', style: '--p:' + (rate || 0) }, [
+            h('span', { class: 'ring-num' }, rate === null ? [h('span', { text: '—' })] : [h('b', { text: String(rate) }), document.createTextNode('%')])
+        ]);
+        var rateCard = h('section', { class: 'card rate' }, [
+            h('h2', { class: 'card-title' }, [sticker('st-target', 'title-st'), h('span', { html: '{正答率|せいとうりつ}' })]),
+            h('div', { class: 'rate-body' }, [
+                ring,
+                h('ul', { class: 'rate-list' }, st.sections.map(function (s) {
+                    return h('li', {}, [
+                        sticker('st-' + SECTION_ST[s.section], 'rate-st'),
+                        h('span', { class: 'rate-name', html: SECTION_RUBY[s.section] }),
+                        h('span', { class: 'rate-bar' }, [h('span', { style: 'width:' + (s.rate || 0) + '%' })]),
+                        h('span', { class: 'rate-pct', text: s.rate === null ? '—' : s.rate + '%' })
+                    ]);
+                }))
+            ]),
+            h('p', { class: 'rate-foot', html: '{答|こた}えた{問題|もんだい} ' + st.total.answered + '{問|もん}・{覚|おぼ}えた{単語|たんご} ' + st.vocab.known + ' / ' + st.vocab.total +
+                (st.lastMock ? '・{最後|さいご}の{模試|もし} ' + st.lastMock.level + ' ' + st.lastMock.total + '{点|てん}' : '') })
+        ]);
+        slot.replaceChildren(streakCard, rateCard);
     }
 
     /* ===================== 準備中のページ ===================== */

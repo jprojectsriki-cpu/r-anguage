@@ -74,7 +74,7 @@
             var v = attrs[k];
             if (v === null || v === undefined || v === false) return;
             if (k === 'class') n.className = v;
-            else if (k === 'html') n.innerHTML = fg(v);
+            else if (k === 'html') n.innerHTML = '<span class="fg">' + fg(v) + '</span>'; // ひとまとまりにする（ボタン・見出しの中でも、ふりがなの高さがそろう）
             else if (k === 'text') n.textContent = v;
             else if (k.indexOf('on') === 0) n.addEventListener(k.slice(2), v);
             else n.setAttribute(k, v === true ? '' : v);
@@ -113,7 +113,7 @@
         var d = $('confirmDialog');
         $('confirmTitle').innerHTML = fg(opts.title);
         $('confirmBody').replaceChildren(opts.body);
-        $('confirmOk').innerHTML = fg(opts.ok);
+        $('confirmOk').innerHTML = '<span class="fg">' + fg(opts.ok) + '</span>';
         return new Promise(function (resolve) {
             d.addEventListener('close', function done() {
                 d.removeEventListener('close', done);

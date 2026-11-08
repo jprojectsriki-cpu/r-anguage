@@ -568,3 +568,10 @@ body::before {
 .v-sl-read { font-size: 0.85rem; color: var(--purple); }
 .v-sl-mean { font-family: var(--font-en), var(--font); font-weight: 500; font-size: 0.85rem; color: var(--dark-70); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .top-title { max-width: 58vw; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* ふりがな：まわりの文字と高さをそろえる（R-10c 修正）
+ * - ボタン・見出しの中の文は <span class="fg"> でひとまとまりにしてある（ふりがなの漢字が、ほかの文字とずれない）
+ * - ふりがなの行の高さは 1 にして、行の高さがふえないようにする */
+.fg { display: inline; }
+ruby { ruby-align: center; }
+rt { line-height: 1; white-space: nowrap; letter-spacing: -0.03em; }

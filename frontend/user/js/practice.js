@@ -93,14 +93,15 @@
         var lv = m.levels.filter(function (x) { return x.level === saved; })[0] || m.levels[0];
 
         // レベルの切り替え
-        if (m.levels.length > 1) {
-            var bar = h('div', { class: 'lv-tabs', role: 'tablist', 'aria-label': 'レベル' });
+        { // レベルは1つだけでも、いつも出す（どのレベルの画面かわかるように）
+            var bar = h('div', { class: 'lv-tabs', role: 'tablist', 'aria-label': 'レベル' }, [h('span', { class: 'lv-tabs-label', text: 'レベル' })]);
             m.levels.forEach(function (x) {
                 bar.append(h('button', {
                     type: 'button', role: 'tab', class: 'lv lv-' + x.level + ' lv-tab', 'aria-selected': String(x.level === lv.level), text: x.level,
                     onclick: function () { store(LEVEL_KEY, x.level); drawMenu(main); }
                 }));
             });
+            if (!m.isAdmin && m.levels.length < 4) bar.append(h('a', { class: 'lv-add', href: '#mypage', html: '＋レベルを{追加|ついか}' }));
             main.append(bar);
         }
 

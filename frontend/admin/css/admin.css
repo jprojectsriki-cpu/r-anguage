@@ -403,3 +403,28 @@ div.form-errors .btn { margin-top: 8px; }
 .e-form-actions { display: flex; justify-content: flex-end; gap: 10px; }
 .e-table tr.is-past td { color: var(--dark-50); }
 @media (max-width: 640px) { .e-form-row { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- まとめて登録 ---------- */
+#imTabs { margin-bottom: 16px; }
+.im-step { margin-bottom: 18px; padding: 18px 20px; }
+.im-step-title { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 1rem; }
+.im-no { display: inline-grid; place-items: center; width: 28px; height: 28px; border: 2px solid var(--dark); border-radius: 50%; background: var(--yellow); font-family: var(--font-en); font-size: 0.9rem; }
+.im-text { margin-bottom: 12px; font-size: 0.85rem; line-height: 1.9; color: var(--dark-70); }
+.im-paste { width: 100%; min-height: 160px; padding: 12px 14px; border: 2px solid var(--dark); border-radius: 14px; background: var(--cream); font-family: ui-monospace, Consolas, monospace; font-size: 0.8rem; line-height: 1.6; white-space: pre; overflow: auto; resize: vertical; }
+.im-paste:focus { outline: none; border-color: var(--pink); box-shadow: 0 0 0 3px rgba(255, 0, 110, 0.2); }
+.im-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; }
+.im-summary { margin-bottom: 10px; padding: 10px 14px; border-radius: 12px; font-size: 0.85rem; font-weight: 900; line-height: 1.8; }
+.im-summary.is-ok { background: #D6FBEF; }
+.im-summary.is-error { background: #FFE3EF; color: #B0004D; }
+.im-table tr.is-error td { background: #FFF0F6; }
+.im-table tr.is-warn td { background: #FFF8E1; }
+.im-text-cell { max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.im-msgs { display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
+.im-ok { align-self: flex-start; padding: 0 10px; border-radius: 999px; background: var(--mint); font-family: var(--font-en); font-weight: 700; font-size: 0.75rem; }
+.im-err { color: #B0004D; font-size: 0.78rem; font-weight: 700; line-height: 1.6; }
+.im-err::before { content: '× '; }
+.im-warn { color: #8A5A00; font-size: 0.78rem; font-weight: 700; line-height: 1.6; }
+.im-warn::before { content: '！ '; }
+.im-table td:nth-child(5) { white-space: nowrap; }
+#imTemplate { text-decoration: none; }
+.im-none { padding: 10px 14px; border: 2px dashed var(--dark); border-radius: 12px; background: #FFF8E1; font-size: 0.82rem; line-height: 1.9; }

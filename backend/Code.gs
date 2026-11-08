@@ -103,6 +103,12 @@ function doPost(e) {
         return json_(meMockResult_(req.token, req.resultId));
       case 'me.stats':
         return json_(meStats_(req.token));
+      case 'admin.importTemplates':
+        return json_(adminImportTemplates_(req.token));
+      case 'admin.importQuestions':
+        return json_(adminImportQuestions_(req.token, req.rows, req.dryRun === true));
+      case 'admin.importCards':
+        return json_(adminImportCards_(req.token, req.rows, req.dryRun === true));
       case 'admin.examDates':
         return json_(adminListExamDates_(req.token));
       case 'admin.saveExamDate':

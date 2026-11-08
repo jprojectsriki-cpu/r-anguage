@@ -60,6 +60,9 @@
                 <button type="button" class="nav-item" data-view="examDates">
                     <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>試験日</span>
                 </button>
+                <button type="button" class="nav-item" data-view="import">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg><span>まとめて登録</span>
+                </button>
             </nav>
             <div class="sidebar-foot">
                 <p class="who" id="whoAmI"></p>
@@ -583,6 +586,52 @@
                 </div>
             </section>
 
+            <!-- ===== まとめて登録 ===== -->
+            <section class="view" data-view="import" hidden>
+                <div class="page-head">
+                    <div>
+                        <h1 class="page-title">まとめて登録</h1>
+                        <p class="page-lead">テンプレート（Googleスプレッドシート）に書いた問題や単語カードを、コピーして貼り付けるだけで、まとめて登録できます。登録する前に、入力ミスがないかチェックします。</p>
+                    </div>
+                </div>
+
+                <div class="tabs" id="imTabs" role="tablist" aria-label="登録するもの">
+                    <button type="button" role="tab" class="tab" data-kind="questions" aria-selected="true">問題</button>
+                    <button type="button" role="tab" class="tab" data-kind="cards" aria-selected="false">単語カード</button>
+                </div>
+
+                <div class="card im-step">
+                    <h2 class="im-step-title"><span class="im-no">1</span>テンプレートに書く</h2>
+                    <p class="im-text" id="imTemplateText"></p>
+                    <a class="btn btn-white btn-sm" id="imTemplate" href="#" target="_blank" rel="noopener" hidden>テンプレートを開く（Googleスプレッドシート）</a>
+                    <p class="im-none" id="imTemplateNone" hidden>まだテンプレートがありません。GAS で <b>Templates.gs</b> の <b>createImportTemplates</b> を1回実行すると、Google ドライブにテンプレートができて、ここから開けるようになります。</p>
+                </div>
+
+                <div class="card im-step">
+                    <h2 class="im-step-title"><span class="im-no">2</span>コピーして貼り付ける</h2>
+                    <p class="im-text" id="imPasteText"></p>
+                    <textarea class="im-paste" id="imPaste" rows="8" spellcheck="false" placeholder="ここをクリックして、Ctrl+V で貼り付け"></textarea>
+                    <div class="im-actions">
+                        <button type="button" class="btn btn-white btn-sm" id="imClear">消す</button>
+                        <button type="button" class="btn btn-pink btn-sm" id="imCheck">チェックする</button>
+                    </div>
+                </div>
+
+                <div class="card im-step" id="imResult" hidden>
+                    <h2 class="im-step-title"><span class="im-no">3</span>チェックの結果</h2>
+                    <p class="im-summary" id="imSummary"></p>
+                    <div class="table-wrap">
+                        <table class="data-table im-table">
+                            <thead id="imHead"></thead>
+                            <tbody id="imRows"></tbody>
+                        </table>
+                    </div>
+                    <div class="im-actions">
+                        <button type="button" class="btn btn-pink" id="imSave" disabled>登録する</button>
+                    </div>
+                </div>
+            </section>
+
             <!-- ===== お知らせ：作成・編集 ===== -->
             <section class="view" data-view="noticeEdit" hidden>
                 <div class="page-head">
@@ -702,5 +751,6 @@
     <script src="js/vocab.js"></script>
     <script src="js/notices.js"></script>
     <script src="js/examdates.js"></script>
+    <script src="js/import.js"></script>
 </body>
 </html>

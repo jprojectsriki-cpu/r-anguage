@@ -187,7 +187,17 @@
     }
 
     /* ===================== ホーム ===================== */
+    /** ホーム：学習の記録を読み込み終わるまで、ローディングの画面を出す */
     function renderHome(main) {
+        if (state.statsReady) { state.statsReady = false; buildHome(main); return; }
+        withLoading('<ruby>読<rt>よ</rt></ruby>み<ruby>込<rt>こ</rt></ruby>んでいます', fetchStats()).then(function () {
+            if (state.page !== 'home') return;
+            main.replaceChildren();
+            buildHome(main);
+        }).catch(function (err) { if (err !== 'auth') console.error(err); });
+    }
+
+    function buildHome(main) {
         var p = state.profile;
         var u = p.user;
 
@@ -234,7 +244,7 @@
         }
 
         // 学習の記録（あとで読み込む）
-        main.append(h('div', { id: 'statsSlot', class: 'stats-slot' }, [h('section', { class: 'card stats-loading' }, [h('p', { class: 'muted', html: '{学習|がくしゅう}の{記録|きろく}を{読|よ}み{込|こ}んでいます…' })])]));
+        main.append(h('div', { id: 'statsSlot', class: 'stats-slot' }));
 
         // お支払い待ちの申込
         p.pending.forEach(function (a) {
@@ -262,7 +272,12 @@
         }
         main.append(box);
 
-        loadStats(main);
+        if (state.stats) {
+            drawContinue(state.stats);
+            drawStats(state.stats);
+        } else {
+            $('statsSlot').replaceChildren(h('section', { class: 'card' }, [h('p', { class: 'muted', html: '{学習|がくしゅう}の{記録|きろく}を{読|よ}み{込|こ}めませんでした。' })]));
+        }
     }
 
     /* ===================== 学習の記録（R-10e） ===================== */
@@ -270,17 +285,14 @@
     var SECTION_ST = { '文字・語彙': 'moji', '文法': 'bunpo', '読解': 'dokkai', '聴解': 'choukai' };
     var SECTION_RUBY = { '文字・語彙': '{文字|もじ}・{語彙|ごい}', '文法': '{文法|ぶんぽう}', '読解': '{読解|どっかい}', '聴解': '{聴解|ちょうかい}' };
 
-    function loadStats(main) {
-        apiPost({ action: 'me.stats' }).then(function (res) {
-            if (authFailed(res)) return;
-            if (state.page !== 'home') return;
-            if (!res || !res.ok) throw new Error('stats');
-            drawContinue(res);
-            drawStats(res);
-        }).catch(function (err) {
+    /** 学習の記録を読み込む（失敗しても、ホームは出す） */
+    function fetchStats() {
+        return apiPost({ action: 'me.stats' }).then(function (res) {
+            if (authFailed(res)) return Promise.reject('auth');
+            state.stats = res && res.ok ? res : null;
+        }, function (err) {
             console.error(err);
-            var slot = $('statsSlot');
-            if (slot) slot.replaceChildren(h('section', { class: 'card' }, [h('p', { class: 'muted', html: '{学習|がくしゅう}の{記録|きろく}を{読|よ}み{込|こ}めませんでした。' })]));
+            state.stats = null;
         });
     }
 
@@ -595,7 +607,12 @@
     function start() {
         if (!getToken() || !/^https:\/\//.test(CONFIG.API_URL || '')) { location.replace('login.html'); return; }
         initTabbar();
-        withLoading('<ruby>読<rt>よ</rt></ruby>み<ruby>込<rt>こ</rt></ruby>んでいます', loadProfile())
+        // 最初にホームを開くときは、学習の記録もいっしょに読み込む（ローディングの画面は1回だけ）
+        var firstKey = (location.hash || '#home').slice(1).split('?')[0];
+        var first = loadProfile().then(function () {
+            if (firstKey === 'home' || !PAGES[firstKey]) return fetchStats().then(function () { state.statsReady = true; });
+        });
+        withLoading('<ruby>読<rt>よ</rt></ruby>み<ruby>込<rt>こ</rt></ruby>んでいます', first)
             .then(function () {
                 window.addEventListener('hashchange', route);
                 route();

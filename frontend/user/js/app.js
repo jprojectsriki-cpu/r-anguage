@@ -91,6 +91,16 @@
         s.append(u);
         return s;
     }
+    /** 色つきのステッカーアイコン（app.html の st-…） */
+    function sticker(id, cls) {
+        var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        s.setAttribute('class', 'sticker' + (cls ? ' ' + cls : ''));
+        s.setAttribute('aria-hidden', 'true');
+        var u = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+        u.setAttribute('href', '#' + id);
+        s.append(u);
+        return s;
+    }
     function toast(text, isError) {
         var t = $('toast');
         t.innerHTML = fg(text);
@@ -181,24 +191,40 @@
         var p = state.profile;
         var u = p.user;
 
+        var hour = Number(new Date().getHours());
+        var greet = hour < 11 ? 'おはよう' : hour < 18 ? 'こんにちは' : 'こんばんは';
         main.append(h('section', { class: 'card hello' }, [
-            h('p', { class: 'hello-name', html: u.name + 'さん、こんにちは！' }),
+            h('span', { class: 'deco deco-1', 'aria-hidden': 'true' }), h('span', { class: 'deco deco-2', 'aria-hidden': 'true' }), h('span', { class: 'deco deco-3', 'aria-hidden': 'true' }),
+            h('p', { class: 'hello-sub', text: greet + '！' }),
+            h('p', { class: 'hello-name', html: u.name + 'さん' }),
+            h('p', { class: 'hello-msg', html: '{今日|きょう}も{少|すこ}しずつ、がんばろう！' }),
             h('div', { class: 'lv-row' }, u.levels.length ? u.levels.map(function (lv) { return h('span', { class: 'lv lv-' + lv, text: lv }); }) : [h('span', { class: 'muted', html: '{使|つか}えるレベルはまだありません' })])
         ]));
+
+        // すぐ始めるボタン
+        main.append(h('nav', { class: 'quick', 'aria-label': 'すぐ始める' }, [
+            ['practice', 'st-practice', '{問題|もんだい}を{解|と}く'],
+            ['vocab', 'st-vocab', '{単語|たんご}カード'],
+            ['mock', 'st-mock', '{模擬|もぎ}{試験|しけん}']
+        ].map(function (x) {
+            return h('a', { class: 'quick-tile quick-' + x[0], href: '#' + x[0] }, [sticker(x[1]), h('span', { html: x[2] })]);
+        })));
 
         // 試験日までのカウントダウン
         var exam = p.exams.filter(function (e) { return e.examId === u.examId; })[0];
         if (exam) {
             var left = daysBetween(p.today, exam.date);
             main.append(h('section', { class: 'card count' }, [
-                h('p', { class: 'count-label' }, [icon('i-flag'), h('span', { text: exam.name })]),
+                sticker('st-cal', 'count-st'),
+                h('p', { class: 'count-label' }, [h('span', { text: exam.name })]),
                 left > 0 ? h('p', { class: 'count-num' }, [document.createTextNode('あと'), h('b', { text: String(left) }), h('span', { html: '{日|にち}' })])
                     : h('p', { class: 'count-num', html: left === 0 ? '{今日|きょう}が{試験|しけん}の{日|ひ}です。がんばって！' : 'この{試験|しけん}は{終|お}わりました' }),
                 h('p', { class: 'count-date', html: '{試験日|しけんび}：' + ymd(exam.date) })
             ]));
         } else {
             main.append(h('a', { class: 'card count count-empty', href: '#mypage?exam' }, [
-                h('p', { class: 'count-label' }, [icon('i-flag'), h('span', { html: '{試験日|しけんび}を{選|えら}びましょう' })]),
+                sticker('st-cal', 'count-st'),
+                h('p', { class: 'count-label' }, [h('span', { html: '{試験日|しけんび}を{選|えら}びましょう' })]),
                 h('p', { class: 'count-sub', html: 'マイページで{試験日|しけんび}を{選|えら}ぶと、{残|のこ}りの{日数|にっすう}が{出|で}ます。' }),
                 icon('i-chev')
             ]));
@@ -213,7 +239,7 @@
         });
 
         // お知らせ
-        var box = h('section', { class: 'card notices' }, [h('h2', { class: 'card-title' }, [icon('i-bell'), h('span', { html: 'お{知|し}らせ' })])]);
+        var box = h('section', { class: 'card notices' }, [h('h2', { class: 'card-title' }, [sticker('st-news', 'title-st'), h('span', { html: 'お{知|し}らせ' })])]);
         if (!p.notices.length) {
             box.append(h('p', { class: 'muted', html: 'いまはお{知|し}らせはありません。' }));
         } else {
@@ -238,7 +264,7 @@
     /* ===================== 準備中のページ ===================== */
     function renderSoon(main, key) {
         main.append(h('section', { class: 'card soon' }, [
-            h('p', { class: 'soon-icon' }, [icon({ practice: 'i-book', vocab: 'i-cards', mock: 'i-timer' }[key])]),
+            h('p', { class: 'soon-icon' }, [sticker('st-' + key)]),
             h('h2', { class: 'soon-title', html: PAGES[key].title }),
             h('p', { class: 'muted', html: 'ただいま{準備中|じゅんびちゅう}です。もうしばらくお{待|ま}ちください。' })
         ]));
@@ -473,7 +499,7 @@
 
     /* ほかのページ（js/practice.js など）から使う道具 */
     window.RApp = {
-        state: state, h: h, fg: fg, icon: icon, toast: toast, confirmBox: confirmBox,
+        state: state, h: h, fg: fg, icon: icon, sticker: sticker, toast: toast, confirmBox: confirmBox,
         apiPost: apiPost, withLoading: withLoading, authFailed: authFailed, setTitle: function (t) { $('topTitle').innerHTML = fg(t); }
     };
 

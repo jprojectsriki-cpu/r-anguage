@@ -22,12 +22,8 @@
 </head>
 <body>
     <!-- R-ANGUAGE 受講生の画面（ホーム／問題／単語／模試／マイページ）。中身は js/app.js が描く -->
+    <!-- 線のアイコン（小さい記号）と、色つきのステッカーアイコン（st-…）。ステッカーは手描き風のイラスト -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-        <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
-        <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5z"/><path d="M12 6v13"/></symbol>
-        <symbol id="i-cards" viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/></symbol>
-        <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></symbol>
-        <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
         <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
         <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
         <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
@@ -37,6 +33,87 @@
         <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
         <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></symbol>
         <symbol id="i-redo" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4.5h4.5"/></symbol>
+        <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></symbol>
+        <symbol id="i-flip" viewBox="0 0 24 24"><path d="M4 7h13l-3-3M20 17H7l3 3"/></symbol>
+
+        <!-- ステッカー：ホーム（家） -->
+        <symbol id="st-home" viewBox="0 0 48 48"><g stroke="#1E1B4B" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M8 22L24 9l16 13v17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2z" fill="#FFBE0B"/>
+            <path d="M5 23L24 7l19 16" fill="none"/>
+            <path d="M19 41V30h10v11" fill="#FF006E"/>
+            <circle cx="33" cy="25" r="3" fill="#fff"/></g></symbol>
+        <!-- ステッカー：問題（えんぴつと紙） -->
+        <symbol id="st-practice" viewBox="0 0 48 48"><g stroke="#1E1B4B" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+            <rect x="6" y="6" width="26" height="34" rx="4" fill="#fff" transform="rotate(-6 19 23)"/>
+            <path d="M12 15l13-1.4M12.7 21l13-1.4M13.3 27l8-.9" fill="none"/>
+            <path d="M27 40l14-19 5 3.6-14 19-6.5 2.4z" fill="#4CC9F0"/>
+            <path d="M41 21l2.5-3.4a2 2 0 0 1 2.8-.4l1 .7a2 2 0 0 1 .4 2.8L45 24.6" fill="#FF006E"/>
+            <path d="M27 40l5.5 4-6.5 2.4z" fill="#FFD9B0"/></g></symbol>
+        <!-- ステッカー：単語（重なったカード） -->
+        <symbol id="st-vocab" viewBox="0 0 48 48"><g stroke="#1E1B4B" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+            <rect x="15" y="5" width="25" height="32" rx="4" fill="#06D6A0" transform="rotate(10 27 21)"/>
+            <rect x="7" y="11" width="25" height="32" rx="4" fill="#fff" transform="rotate(-6 19 27)"/>
+            <path d="M14 22.5c2-4 6-4 8 0M15 30.5l9-1M15.6 36l6-.6" fill="none"/>
+            <circle cx="18" cy="21" r="0.6" fill="#1E1B4B"/></g></symbol>
+        <!-- ステッカー：模試（ストップウォッチ） -->
+        <symbol id="st-mock" viewBox="0 0 48 48"><g stroke="#1E1B4B" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+            <rect x="19" y="3.5" width="10" height="5" rx="1.5" fill="#FF006E"/>
+            <path d="M37 12l3-3" fill="none"/>
+            <circle cx="24" cy="27" r="17" fill="#FFBE0B"/>
+            <circle cx="24" cy="27" r="12" fill="#fff"/>
+            <path d="M24 19v8l5.5 3.5" fill="none"/></g></symbol>
+        <!-- ステッカー：マイページ（にこにこの顔） -->
+        <symbol id="st-mypage" viewBox="0 0 48 48"><g stroke="#1E1B4B" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+            <circle cx="24" cy="24" r="18" fill="#8338EC"/>
+            <path d="M10 18c4-9 22-11 28-2-6-2-11 1-16-1-4-1.5-8 1-12 3z" fill="#1E1B4B"/>
+            <circle cx="18" cy="25" r="2" fill="#fff" stroke="none"/><circle cx="30" cy="25" r="2" fill="#fff" stroke="none"/>
+            <path d="M18 31.5c3 3.5 9 3.5 12 0" fill="none" stroke="#fff"/>
+            <circle cx="13" cy="30" r="2.6" fill="#FF8FC0" stroke="none"/><circle cx="35" cy="30" r="2.6" fill="#FF8FC0" stroke="none"/></g></symbol>
+
+        <!-- ステッカー：文字・語彙（えんぴつで「あ」を書いた紙） -->
+        <symbol id="st-moji" viewBox="0 0 48 48"><g stroke="#1E1B4B" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+            <rect x="5" y="7" width="30" height="34" rx="5" fill="#FFBE0B" transform="rotate(-5 20 24)"/>
+            <path d="M12 18.5h13M18 15c-.5 6 0 14 3.5 18M24 22c-6-1.5-12 3-10 8 1.8 4.4 10 1.5 11.5-4 1-3.5-1-6-4-6.5" fill="none"/>
+            <path d="M30 41l11-15 4.5 3.2-11 15-6 2z" fill="#fff"/>
+            <path d="M30 41l4.5 3.2-6 2z" fill="#1E1B4B"/></g></symbol>
+        <!-- ステッカー：文法（パズル） -->
+        <symbol id="st-bunpo" viewBox="0 0 48 48"><g stroke="#1E1B4B" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M4 13h18v6a4.5 4.5 0 0 1 0 9v6H4z" fill="#4CC9F0"/>
+            <path d="M22 13h21v21H22v-6a4.5 4.5 0 0 0 0-9z" fill="#FF006E" transform="translate(3 -3) rotate(7 32 24)"/>
+            <circle cx="11" cy="20" r="1.2" fill="#1E1B4B" stroke="none"/></g></symbol>
+        <!-- ステッカー：読解（開いた本としおり） -->
+        <symbol id="st-dokkai" viewBox="0 0 48 48"><g stroke="#1E1B4B" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M24 14c-5-4-13-4.5-19-2.5v26c6-2 14-1.5 19 2.5z" fill="#fff"/>
+            <path d="M24 14c5-4 13-4.5 19-2.5v26c-6-2-14-1.5-19 2.5z" fill="#06D6A0"/>
+            <path d="M9.5 18c3-.7 7-.5 10 .8M9.5 24c3-.7 7-.5 10 .8M9.5 30c3-.7 7-.5 10 .8" fill="none"/>
+            <path d="M33 10v11l3-2.2 3 2.2V10.6" fill="#FFBE0B"/></g></symbol>
+        <!-- ステッカー：聴解（ヘッドホンと音符） -->
+        <symbol id="st-choukai" viewBox="0 0 48 48"><g stroke="#1E1B4B" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M8 29v-5a16 16 0 0 1 32 0v5" fill="none"/>
+            <rect x="4" y="26" width="10" height="15" rx="4" fill="#FF006E"/>
+            <rect x="34" y="26" width="10" height="15" rx="4" fill="#FF006E"/>
+            <path d="M22 37V22l8-2v13" fill="none"/>
+            <ellipse cx="19.5" cy="37.5" rx="3" ry="2.4" fill="#8338EC"/><ellipse cx="27.5" cy="33.5" rx="3" ry="2.4" fill="#8338EC"/></g></symbol>
+        <!-- ステッカー：まちがい復習（付せんとくるっと矢印） -->
+        <symbol id="st-redo" viewBox="0 0 48 48"><g stroke="#1E1B4B" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M8 8h32v24l-8 8H8z" fill="#FF8FC0" transform="rotate(-5 24 24)"/>
+            <path d="M32 40v-8h8" fill="#fff" transform="rotate(-5 24 24)"/>
+            <path d="M15 24a8 8 0 1 0 3-7" fill="none"/><path d="M14 13v5h5" fill="none"/></g></symbol>
+        <!-- ステッカー：お気に入り（星） -->
+        <symbol id="st-star" viewBox="0 0 48 48"><g stroke="#1E1B4B" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M24 5l5.6 11.4 12.6 1.8-9.1 8.9 2.2 12.5L24 33.7l-11.3 5.9 2.2-12.5-9.1-8.9 12.6-1.8z" fill="#FFBE0B"/>
+            <path d="M18 20.5l3-1" fill="none" stroke="#fff"/></g></symbol>
+        <!-- ステッカー：カレンダー（試験日） -->
+        <symbol id="st-cal" viewBox="0 0 48 48"><g stroke="#1E1B4B" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+            <rect x="6" y="9" width="36" height="33" rx="5" fill="#fff"/>
+            <path d="M6 14a5 5 0 0 1 5-5h26a5 5 0 0 1 5 5v5H6z" fill="#FF006E"/>
+            <path d="M15 5v8M33 5v8" fill="none"/>
+            <path d="M24 24l2 4.2 4.6.6-3.3 3.2.8 4.5-4.1-2.2-4.1 2.2.8-4.5-3.3-3.2 4.6-.6z" fill="#FFBE0B"/></g></symbol>
+        <!-- ステッカー：お知らせ（メガホン） -->
+        <symbol id="st-news" viewBox="0 0 48 48"><g stroke="#1E1B4B" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M8 20h7l18-10v28L15 28H8z" fill="#4CC9F0"/>
+            <path d="M13 28l3 11h5l-2-11" fill="#fff"/>
+            <path d="M38 17c2 2 2 8 0 10M41.5 13.5c4 4 4 13 0 17" fill="none"/></g></symbol>
     </svg>
 
     <header class="top">
@@ -51,11 +128,11 @@
 
     <!-- 下のメニュー（スマホファースト。下にスクロールすると隠れ、上にスクロールすると出る） -->
     <nav class="tabbar" id="tabbar" aria-label="メニュー">
-        <a href="#home" class="tab" data-page="home"><svg class="icon"><use href="#i-home"/></svg><span>ホーム</span></a>
-        <a href="#practice" class="tab" data-page="practice"><svg class="icon"><use href="#i-book"/></svg><span><ruby>問題<rt>もんだい</rt></ruby></span></a>
-        <a href="#vocab" class="tab" data-page="vocab"><svg class="icon"><use href="#i-cards"/></svg><span><ruby>単語<rt>たんご</rt></ruby></span></a>
-        <a href="#mock" class="tab" data-page="mock"><svg class="icon"><use href="#i-timer"/></svg><span><ruby>模試<rt>もし</rt></ruby></span></a>
-        <a href="#mypage" class="tab" data-page="mypage"><svg class="icon"><use href="#i-user"/></svg><span>マイページ</span></a>
+        <a href="#home" class="tab tab-home" data-page="home"><svg class="sticker"><use href="#st-home"/></svg><span>ホーム</span></a>
+        <a href="#practice" class="tab tab-practice" data-page="practice"><svg class="sticker"><use href="#st-practice"/></svg><span><ruby>問題<rt>もんだい</rt></ruby></span></a>
+        <a href="#vocab" class="tab tab-vocab" data-page="vocab"><svg class="sticker"><use href="#st-vocab"/></svg><span><ruby>単語<rt>たんご</rt></ruby></span></a>
+        <a href="#mock" class="tab tab-mock" data-page="mock"><svg class="sticker"><use href="#st-mock"/></svg><span><ruby>模試<rt>もし</rt></ruby></span></a>
+        <a href="#mypage" class="tab tab-mypage" data-page="mypage"><svg class="sticker"><use href="#st-mypage"/></svg><span>マイページ</span></a>
     </nav>
 
     <!-- 確かめるダイアログ -->
@@ -76,5 +153,6 @@
     <script src="js/loading.js"></script>
     <script src="js/app.js"></script>
     <script src="js/practice.js"></script>
+    <script src="js/vocab.js"></script>
 </body>
 </html>

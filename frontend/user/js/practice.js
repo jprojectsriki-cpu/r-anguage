@@ -11,7 +11,7 @@
     var A = window.RApp;
     var h = function (t, a, c) { return A.h(t, a, c); };
     var LEVEL_KEY = 'ranguage_plevel';
-    var SECTION_ICON = { '文字・語彙': '字', '文法': '文', '読解': '読', '聴解': '聴' };
+    var SECTION_ICON = { '文字・語彙': 'moji', '文法': 'bunpo', '読解': 'dokkai', '聴解': 'choukai' };
     var SECTION_RUBY = { '文字・語彙': '{文字|もじ}・{語彙|ごい}', '文法': '{文法|ぶんぽう}', '読解': '{読解|どっかい}', '聴解': '{聴解|ちょうかい}' };
     var MODE_TITLE = { mistakes: 'まちがい{復習|ふくしゅう}', favorites: 'お{気|き}に{入|い}り', retry: 'まちがえた{問題|もんだい}をもう{一度|いちど}' };
 
@@ -103,15 +103,15 @@
 
         // まちがい復習・お気に入り
         main.append(h('div', { class: 'review-row' }, [
-            reviewButton('mistakes', 'まちがい{復習|ふくしゅう}', lv.mistakes, 'i-redo', lv.level),
-            reviewButton('favorites', 'お{気|き}に{入|い}り', lv.favorites, 'i-star', lv.level)
+            reviewButton('mistakes', 'まちがい{復習|ふくしゅう}', lv.mistakes, 'st-redo', lv.level),
+            reviewButton('favorites', 'お{気|き}に{入|い}り', lv.favorites, 'st-star', lv.level)
         ]));
 
         // 科目ごと
         lv.sections.forEach(function (s) {
-            var card = h('section', { class: 'card sec-card' }, [
+            var card = h('section', { class: 'card sec-card sec-' + SECTION_ICON[s.section] }, [
                 h('div', { class: 'sec-head' }, [
-                    h('span', { class: 'sec-icon sec-' + SECTION_ICON[s.section], text: SECTION_ICON[s.section] || '' }),
+                    A.sticker('st-' + SECTION_ICON[s.section], 'sec-st'),
                     h('h2', { class: 'sec-title', html: sectionTitle(s.section) })
                 ])
             ]);
@@ -146,7 +146,7 @@
             type: 'button', class: 'card review-btn review-' + mode, disabled: !count,
             onclick: function () { start({ mode: mode, level: level }); }
         }, [
-            A.icon(iconId),
+            A.sticker(iconId, 'review-st'),
             h('span', { class: 'review-label', html: label }),
             h('span', { class: 'review-num', html: count + '{問|もん}' })
         ]);
@@ -208,7 +208,7 @@
 
         var card = h('section', { class: 'card quiz-card' });
         card.append(h('p', { class: 'quiz-form' }, [
-            h('span', { class: 'sec-icon sec-' + SECTION_ICON[q.section], text: SECTION_ICON[q.section] || '' }),
+            A.sticker('st-' + SECTION_ICON[q.section], 'form-st'),
             h('span', { text: q.form || q.section })
         ]));
 
@@ -320,6 +320,7 @@
         document.body.classList.remove('is-quiz');
         flush();
 
+        if (pct >= 60) confetti();
         main.append(h('section', { class: 'card result-top ' + (pct >= 60 ? 'is-good' : '') }, [
             h('p', { class: 'result-title', html: z.title }),
             h('p', { class: 'result-score' }, [h('b', { text: String(ok) }), document.createTextNode(' / ' + rs.length)]),
@@ -365,6 +366,18 @@
         main.append(acts);
         window.scrollTo(0, 0);
     }
+
+    /** 紙ふぶき（よくできたとき） */
+    function confetti() {
+        var box = h('div', { class: 'confetti', 'aria-hidden': 'true' });
+        var colors = ['#FFBE0B', '#FF006E', '#8338EC', '#06D6A0', '#4CC9F0'];
+        for (var i = 0; i < 36; i++) {
+            box.append(h('i', { style: 'left:' + (Math.random() * 100) + '%;background:' + colors[i % 5] + ';animation-delay:' + (Math.random() * 0.6).toFixed(2) + 's;animation-duration:' + (1.6 + Math.random() * 1.2).toFixed(2) + 's;transform:rotate(' + Math.round(Math.random() * 360) + 'deg)' }));
+        }
+        document.body.append(box);
+        window.setTimeout(function () { box.remove(); }, 3600);
+    }
+    window.RApp.confetti = confetti;
 
     window.RPages = window.RPages || {};
     window.RPages.practice = renderMenu;

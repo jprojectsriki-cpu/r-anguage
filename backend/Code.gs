@@ -87,6 +87,12 @@ function doPost(e) {
         return json_(meSaveAnswers_(req.token, req));
       case 'me.favorite':
         return json_(meFavorite_(req.token, req.questionId, req.on === true));
+      case 'me.vocabMenu':
+        return json_(meVocabMenu_(req.token));
+      case 'me.vocabStart':
+        return json_(meVocabStart_(req.token, req));
+      case 'me.vocabMark':
+        return json_(meVocabMark_(req.token, req));
       case 'admin.examDates':
         return json_(adminListExamDates_(req.token));
       case 'admin.saveExamDate':

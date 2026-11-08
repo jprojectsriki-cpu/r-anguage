@@ -737,3 +737,13 @@ rt { line-height: 1; white-space: nowrap; letter-spacing: -0.03em; }
 .count.count-empty { background: #fff; color: var(--dark); }
 .ring-num { display: flex; align-items: baseline; justify-content: center; padding-top: 34px; }
 .rate-list li { grid-template-columns: auto minmax(0, 5.8em) 1fr auto; }
+/* 正答率：％をグラフのまん中に／下の記録を1行ずつ（R-10e 修正） */
+.ring-num { display: flex; align-items: center; justify-content: center; padding: 0; }
+.ring-val { display: inline-flex; align-items: baseline; line-height: 1; }
+.ring-val b { font-size: 1.7rem; line-height: 1; }
+.ring-val small { margin-left: 1px; font-size: 0.85rem; font-weight: 700; }
+.rate-foot { list-style: none; display: grid; gap: 2px; }
+.rate-foot li { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 4px 0; }
+.rate-foot li + li { border-top: 1.5px dotted rgba(30, 27, 75, 0.2); }
+.rf-label { font-size: 0.82rem; font-weight: 900; color: var(--dark-70); }
+.rf-val { font-family: var(--font-en), var(--font); font-size: 0.95rem; font-weight: 700; color: var(--dark); text-align: right; }

@@ -349,7 +349,7 @@
 
         var rate = st.total.rate;
         var ring = h('div', { class: 'ring', style: '--p:' + (rate || 0) }, [
-            h('span', { class: 'ring-num' }, rate === null ? [h('span', { text: '—' })] : [h('b', { text: String(rate) }), document.createTextNode('%')])
+            h('span', { class: 'ring-num' }, [h('span', { class: 'ring-val' }, rate === null ? [h('span', { text: '—' })] : [h('b', { text: String(rate) }), h('small', { text: '%' })])])
         ]);
         var rateCard = h('section', { class: 'card rate' }, [
             h('h2', { class: 'card-title' }, [sticker('st-target', 'title-st'), h('span', { html: '{正答率|せいとうりつ}' })]),
@@ -364,8 +364,11 @@
                     ]);
                 }))
             ]),
-            h('p', { class: 'rate-foot', html: '{答|こた}えた{問題|もんだい} ' + st.total.answered + '{問|もん}・{覚|おぼ}えた{単語|たんご} ' + st.vocab.known + ' / ' + st.vocab.total +
-                (st.lastMock ? '・{最後|さいご}の{模試|もし} ' + st.lastMock.level + ' ' + st.lastMock.total + '{点|てん}' : '') })
+            h('ul', { class: 'rate-foot' }, [
+                h('li', {}, [h('span', { class: 'rf-label', html: '{答|こた}えた{問題|もんだい}' }), h('span', { class: 'rf-val', html: st.total.answered + ' {問|もん}' })]),
+                h('li', {}, [h('span', { class: 'rf-label', html: '{覚|おぼ}えた{単語|たんご}' }), h('span', { class: 'rf-val', html: st.vocab.known + ' / ' + st.vocab.total + ' {枚|まい}' })]),
+                h('li', {}, [h('span', { class: 'rf-label', html: '{最後|さいご}の{模試|もし}' }), h('span', { class: 'rf-val', html: st.lastMock ? st.lastMock.level + '　' + st.lastMock.total + ' / 180 {点|てん}' : 'まだ{受|う}けていません' })])
+            ])
         ]);
         slot.replaceChildren(streakCard, rateCard);
     }

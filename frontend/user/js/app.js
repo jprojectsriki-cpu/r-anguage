@@ -171,6 +171,7 @@
         main.replaceChildren();
         if (key === 'home') renderHome(main);
         else if (key === 'mypage') renderMyPage(main);
+        else if (window.RPages && window.RPages[key]) window.RPages[key](main);
         else renderSoon(main, key);
         window.scrollTo(0, 0);
     }
@@ -469,6 +470,12 @@
                 ]));
             });
     }
+
+    /* ほかのページ（js/practice.js など）から使う道具 */
+    window.RApp = {
+        state: state, h: h, fg: fg, icon: icon, toast: toast, confirmBox: confirmBox,
+        apiPost: apiPost, withLoading: withLoading, authFailed: authFailed, setTitle: function (t) { $('topTitle').innerHTML = fg(t); }
+    };
 
     document.addEventListener('DOMContentLoaded', start);
 })();

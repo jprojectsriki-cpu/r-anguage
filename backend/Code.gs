@@ -79,6 +79,14 @@ function doPost(e) {
         return json_(meApplyLevel_(req.token, req.level));
       case 'me.saveSettings':
         return json_(meSaveSettings_(req.token, req));
+      case 'me.practiceMenu':
+        return json_(mePracticeMenu_(req.token));
+      case 'me.practiceStart':
+        return json_(mePracticeStart_(req.token, req));
+      case 'me.saveAnswers':
+        return json_(meSaveAnswers_(req.token, req));
+      case 'me.favorite':
+        return json_(meFavorite_(req.token, req.questionId, req.on === true));
       case 'admin.examDates':
         return json_(adminListExamDates_(req.token));
       case 'admin.saveExamDate':

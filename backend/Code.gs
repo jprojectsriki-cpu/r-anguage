@@ -93,6 +93,14 @@ function doPost(e) {
         return json_(meVocabStart_(req.token, req));
       case 'me.vocabMark':
         return json_(meVocabMark_(req.token, req));
+      case 'me.mockMenu':
+        return json_(meMockMenu_(req.token));
+      case 'me.mockStart':
+        return json_(meMockStart_(req.token, req.level));
+      case 'me.mockSubmit':
+        return json_(meMockSubmit_(req.token, req));
+      case 'me.mockResult':
+        return json_(meMockResult_(req.token, req.resultId));
       case 'admin.examDates':
         return json_(adminListExamDates_(req.token));
       case 'admin.saveExamDate':

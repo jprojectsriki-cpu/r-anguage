@@ -105,6 +105,42 @@
     }
 
     /* ===================== 一覧 ===================== */
+    /* ---------- まとめて公開・まとめて下書きに（いま表示している問題が対象） ---------- */
+    function drawBulk(rows) {
+        var drafts = rows.filter(function (x) { return x.status === '下書き' && !(x.errors && x.errors.length); });
+        var pubs = rows.filter(function (x) { return x.status === '公開'; });
+        var ng = rows.filter(function (x) { return x.status === '下書き' && x.errors && x.errors.length; }).length;
+        q.bulk = { drafts: drafts, pubs: pubs };
+        $('qBulkText').textContent = '表示中：下書き ' + (drafts.length + ng) + '件・公開 ' + pubs.length + '件' + (ng ? '（入力ミスのある ' + ng + '件は公開できません）' : '') + '。絞り込み（レベル・科目・状態・検索）で対象を変えられます。';
+        $('qBulkPub').disabled = !drafts.length;
+        $('qBulkPub').textContent = '下書き ' + drafts.length + '件をまとめて公開';
+        $('qBulkDraft').disabled = !pubs.length;
+        $('qBulkDraft').textContent = '公開 ' + pubs.length + '件をまとめて下書きに';
+    }
+    function bulkStatus(status) {
+        var list = status === '公開' ? q.bulk.drafts : q.bulk.pubs;
+        if (!list.length) return;
+        A.confirmAction({
+            title: list.length + '件を「' + status + '」にしますか？',
+            rows: [['対象', 'いま一覧に表示している問題のうち、' + (status === '公開' ? '下書き' : '公開') + 'のもの'], ['数', list.length + '件']],
+            text: status === '公開' ? '公開にすると、すぐに受講生に出ます。' : '下書きにすると、受講生には出なくなります（答えの記録は残ります）。',
+            ok: status === '公開' ? 'まとめて公開' : 'まとめて下書きに'
+        }).then(function (yes) {
+            if (!yes) return;
+            A.withLoading(list.length + '件を「' + status + '」にしています', A.apiPost({ action: 'admin.setQuestionsStatus', token: A.getToken(), status: status, ids: list.map(function (x) { return x.questionId; }) }))
+                .then(function (res) {
+                    if (A.handleAuthError(res)) return;
+                    if (!res || !res.ok) { A.notice((res && res.message) || '変えられませんでした。', 'error'); return; }
+                    A.notice(res.changed + '件を「' + status + '」にしました。' + (res.skipped && res.skipped.length ? '入力ミスのある ' + res.skipped.length + '件は変えていません。' : ''), 'ok');
+                    return load();
+                })
+                .catch(function (err) {
+                    console.error(err);
+                    A.notice('通信に失敗しました。「最新の情報に更新」で確かめてください。', 'error');
+                });
+        });
+    }
+
     function renderList() {
         var list = q.list;
         var withErrors = list.filter(function (x) { return x.errors && x.errors.length; });
@@ -140,6 +176,7 @@
             return (x.questionId + ' ' + x.form + ' ' + plain(x.question) + ' ' + plain(x.passage)).toLowerCase().indexOf(word) !== -1;
         });
         rows.sort(function (a, b) { return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0); });
+        drawBulk(rows);
 
         var tbody = $('qRows');
         tbody.replaceChildren();
@@ -449,6 +486,8 @@
 
     /* ===================== 準備 ===================== */
     function init() {
+        $('qBulkPub').addEventListener('click', function () { bulkStatus('公開'); });
+        $('qBulkDraft').addEventListener('click', function () { bulkStatus('下書き'); });
         $('qReload').addEventListener('click', function () { A.notice(''); load(); });
         $('qNew').addEventListener('click', function () {
             openEditor(null, { level: q.level || 'N4', section: q.section || '文字・語彙', status: '下書き' });

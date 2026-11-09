@@ -105,6 +105,10 @@ function doPost(e) {
         return json_(meStats_(req.token));
       case 'admin.importTemplates':
         return json_(adminImportTemplates_(req.token));
+      case 'admin.setQuestionsStatus':
+        return json_(adminSetQuestionsStatus_(req.token, req.ids, req.status));
+      case 'admin.setCardsStatus':
+        return json_(adminSetCardsStatus_(req.token, req.ids, req.status));
       case 'admin.importQuestions':
         return json_(adminImportQuestions_(req.token, req.rows, req.dryRun === true));
       case 'admin.importCards':

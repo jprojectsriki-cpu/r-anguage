@@ -164,3 +164,65 @@ function finishImport_(items, dryRun, write, summary) {
   result.saved = items.length;
   return result;
 }
+
+/* =========================================================
+ * まとめて公開・まとめて下書きに（管理画面の「問題」「単語カード」）
+ * ids: 変える問題ID／カードIDの一覧、status: '公開' か '下書き'
+ * 公開にするのは、入力ミスのないものだけ（ミスがあるものは skipped に入る）
+ * ========================================================= */
+function adminSetQuestionsStatus_(token, ids, status) {
+  return setStatusBulk_(token, ids, status, {
+    sheet: SHEET_QUESTIONS, statusCol: 14, updatedCol: 16,
+    read: readQuestions_, id: function (x) { return x.questionId; }, check: validateQuestion_
+  });
+}
+function adminSetCardsStatus_(token, ids, status) {
+  return setStatusBulk_(token, ids, status, {
+    sheet: SHEET_VOCAB, statusCol: 8, updatedCol: 10,
+    read: readCards_, id: function (x) { return x.cardId; }, check: validateCard_
+  });
+}
+
+function setStatusBulk_(token, ids, status, o) {
+  const auth = requireAdmin_(token);
+  if (!auth.ok) return auth;
+  status = String(status || '');
+  if (Q_STATUS.indexOf(status) === -1) return { ok: false, message: '状態は「公開」か「下書き」にしてください。' };
+  const want = {};
+  (Array.isArray(ids) ? ids : []).slice(0, 2000).forEach(function (id) { want[String(id)] = true; });
+  if (!Object.keys(want).length) return { ok: false, message: '変えるものが選ばれていません。' };
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const list = o.read();
+    const sheet = getSheet_(o.sheet);
+    const last = sheet.getLastRow();
+    if (last < 2) return { ok: true, changed: 0, skipped: [] };
+    const statusRange = sheet.getRange(2, o.statusCol, last - 1, 1);
+    const updatedRange = sheet.getRange(2, o.updatedCol, last - 1, 1);
+    const statusVals = statusRange.getValues();
+    const updatedVals = updatedRange.getValues();
+    const now = new Date();
+    let changed = 0;
+    const skipped = [];
+    list.forEach(function (x) {
+      const id = o.id(x);
+      if (!want[id] || x.status === status) return;
+      if (status === '公開') {
+        const errs = o.check(Object.assign({}, x, { status: '公開' }));
+        if (errs.length) { skipped.push(id); return; }
+      }
+      statusVals[x.row - 2][0] = status;
+      updatedVals[x.row - 2][0] = now;
+      changed++;
+    });
+    if (changed) {
+      statusRange.setValues(statusVals);
+      updatedRange.setValues(updatedVals);
+    }
+    return { ok: true, changed: changed, skipped: skipped };
+  } finally {
+    lock.releaseLock();
+  }
+}

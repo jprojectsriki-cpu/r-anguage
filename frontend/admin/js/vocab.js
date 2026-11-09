@@ -85,6 +85,42 @@
     }
 
     /* ===================== 一覧 ===================== */
+    /* ---------- まとめて公開・まとめて下書きに（いま表示しているカードが対象） ---------- */
+    function drawBulk(rows) {
+        var drafts = rows.filter(function (x) { return x.status === '下書き' && !(x.errors && x.errors.length); });
+        var pubs = rows.filter(function (x) { return x.status === '公開'; });
+        var ng = rows.filter(function (x) { return x.status === '下書き' && x.errors && x.errors.length; }).length;
+        v.bulk = { drafts: drafts, pubs: pubs };
+        $('vBulkText').textContent = '表示中：下書き ' + (drafts.length + ng) + '枚・公開 ' + pubs.length + '枚' + (ng ? '（入力ミスのある ' + ng + '枚は公開できません）' : '') + '。絞り込み（レベル・科目・状態・検索）で対象を変えられます。';
+        $('vBulkPub').disabled = !drafts.length;
+        $('vBulkPub').textContent = '下書き ' + drafts.length + '枚をまとめて公開';
+        $('vBulkDraft').disabled = !pubs.length;
+        $('vBulkDraft').textContent = '公開 ' + pubs.length + '枚をまとめて下書きに';
+    }
+    function bulkStatus(status) {
+        var list = status === '公開' ? v.bulk.drafts : v.bulk.pubs;
+        if (!list.length) return;
+        A.confirmAction({
+            title: list.length + '枚を「' + status + '」にしますか？',
+            rows: [['対象', 'いま一覧に表示しているカードのうち、' + (status === '公開' ? '下書き' : '公開') + 'のもの'], ['数', list.length + '枚']],
+            text: status === '公開' ? '公開にすると、すぐに受講生に出ます。' : '下書きにすると、受講生には出なくなります（答えの記録は残ります）。',
+            ok: status === '公開' ? 'まとめて公開' : 'まとめて下書きに'
+        }).then(function (yes) {
+            if (!yes) return;
+            A.withLoading(list.length + '枚を「' + status + '」にしています', A.apiPost({ action: 'admin.setCardsStatus', token: A.getToken(), status: status, ids: list.map(function (x) { return x.cardId; }) }))
+                .then(function (res) {
+                    if (A.handleAuthError(res)) return;
+                    if (!res || !res.ok) { A.notice((res && res.message) || '変えられませんでした。', 'error'); return; }
+                    A.notice(res.changed + '枚を「' + status + '」にしました。' + (res.skipped && res.skipped.length ? '入力ミスのある ' + res.skipped.length + '枚は変えていません。' : ''), 'ok');
+                    return load();
+                })
+                .catch(function (err) {
+                    console.error(err);
+                    A.notice('通信に失敗しました。「最新の情報に更新」で確かめてください。', 'error');
+                });
+        });
+    }
+
     function renderList() {
         var list = v.list;
         var errors = list.filter(function (c) { return c.errors && c.errors.length; }).length;
@@ -118,6 +154,7 @@
             return (c.cardId + ' ' + c.word + ' ' + c.reading + ' ' + c.meaning + ' ' + plain(c.example)).toLowerCase().indexOf(word) !== -1;
         });
         rows.sort(function (a, b) { return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0); });
+        drawBulk(rows);
 
         var tbody = $('vRows');
         tbody.replaceChildren();
@@ -332,6 +369,8 @@
 
     /* ===================== 準備 ===================== */
     function init() {
+        $('vBulkPub').addEventListener('click', function () { bulkStatus('公開'); });
+        $('vBulkDraft').addEventListener('click', function () { bulkStatus('下書き'); });
         $('vReload').addEventListener('click', function () { A.notice(''); load(); });
         $('vNew').addEventListener('click', function () { openEditor(null, { level: v.level || 'N4', status: '下書き' }); });
         $('vLevelTabs').addEventListener('click', function (e) {

@@ -67,6 +67,7 @@
     function fg(text) {
         return esc(text).replace(/\{([^{}|]+)\|([^{}|]+)\}/g, '<ruby>$1<rt>$2</rt></ruby>')
             .replace(/__(.+?)__/g, '<u class="ul">$1</u>') // __ことば__ は下線（本番の問題と同じ）
+            .replace(/［\s*([0-9０-９]{1,2})\s*］/g, '<span class="blank" data-n="$1">$1</span>') // 文章の文法の空欄［１］
             .replace(/\n/g, '<br>');
     }
     /** 要素を作る。html に {漢字|よみ} を書くと、ふりがなが付く */

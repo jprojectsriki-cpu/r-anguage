@@ -243,6 +243,9 @@
             }, [h('span', { class: 'choice-num', text: String(idx + 1) }), h('span', { class: 'choice-text', html: c })])]));
         });
         card.append(choices);
+        // 文章の文法：いま答えている空欄に色を付ける
+        var bm = String(q.question || '').match(/［\s*([0-9０-９]{1,2})\s*］/);
+        if (bm) card.querySelectorAll('.quiz-passage .blank[data-n="' + bm[1] + '"]').forEach(function (b) { b.classList.add('is-now'); });
         card.append(h('div', { id: 'quizAfter' }));
         main.append(card);
         window.scrollTo(0, 0);

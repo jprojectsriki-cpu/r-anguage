@@ -133,12 +133,13 @@ function meMockStart_(token, level) {
   const counts = readQuestionCounts_().filter(function (c) { return c.level === level; });
   const all = readPublicQuestions_().filter(function (q) { return q.level === level; });
   let total = 0;
+  const lastAt = lastAnsweredMap_(me.user.userId); // まだ解いていない問題を先に
   const papers = MOCK_PAPERS[level].map(function (p) {
     const list = [];
     counts.filter(function (c) { return p.sections.indexOf(c.section) >= 0; })
       .sort(function (a, b) { return p.sections.indexOf(a.section) - p.sections.indexOf(b.section); })
       .forEach(function (c) {
-        Array.prototype.push.apply(list, pickUnits_(all.filter(function (q) { return q.section === c.section && q.form === c.form; }), c.count));
+        Array.prototype.push.apply(list, pickUnits_(all.filter(function (q) { return q.section === c.section && q.form === c.form; }), c.count, lastAt));
       });
     total += list.length;
     return { key: p.key, name: p.name, minutes: p.minutes, questions: list.map(toMockQuestion_) };

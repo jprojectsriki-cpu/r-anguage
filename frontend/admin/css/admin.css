@@ -428,3 +428,4 @@ div.form-errors .btn { margin-top: 8px; }
 .im-table td:nth-child(5) { white-space: nowrap; }
 #imTemplate { text-decoration: none; }
 .im-none { padding: 10px 14px; border: 2px dashed var(--dark); border-radius: 12px; background: #FFF8E1; font-size: 0.82rem; line-height: 1.9; }
+u.ul { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.25em; }

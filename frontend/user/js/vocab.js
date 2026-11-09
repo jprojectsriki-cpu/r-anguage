@@ -27,7 +27,7 @@
     var canSpeak = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
     /** {漢字|よみ} は「よみ」にして読む（読みまちがいをふせぐ） */
     function speakText(text) {
-        return String(text || '').replace(/\{([^{}|]+)\|([^{}|]+)\}/g, '$2');
+        return String(text || '').replace(/\{([^{}|]+)\|([^{}|]+)\}/g, '$2').replace(/__/g, '');
     }
     function speak(text) {
         if (!canSpeak) return;

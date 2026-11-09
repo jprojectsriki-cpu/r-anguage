@@ -753,3 +753,6 @@ rt { line-height: 1; white-space: nowrap; letter-spacing: -0.03em; }
 .lv-tab:only-of-type { cursor: default; }
 .lv-add { margin-left: auto; padding: 2px 12px; border: 2px dashed var(--dark); border-radius: 999px; background: #fff; font-size: 0.78rem; font-weight: 900; line-height: 1.9; text-decoration: none; }
 .lv-add:hover { background: #FFF1C2; }
+/* 本番と同じ形：下線と、大問ごとの指示文 */
+u.ul { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.3em; text-decoration-skip-ink: none; }
+.form-guide { margin-bottom: 12px; padding: 8px 12px; border-left: 4px solid var(--purple); border-radius: 0 10px 10px 0; background: #F4EEFF; font-size: 0.82rem; font-weight: 700; line-height: 1.9; }

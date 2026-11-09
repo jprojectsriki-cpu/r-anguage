@@ -291,6 +291,7 @@
 
         var card = h('section', { class: 'card quiz-card' });
         card.append(h('p', { class: 'quiz-form' }, [A.sticker('st-' + (SECTION_ST[q.section] || 'mock'), 'form-st'), h('span', { text: q.form || q.section })]));
+        if (A.FORM_GUIDE[q.form]) card.append(h('p', { class: 'form-guide', html: A.FORM_GUIDE[q.form] }));
         if (q.audio) card.append(audioBlock(q));
         if (String(q.passage || '').trim()) card.append(h('div', { class: 'quiz-passage', html: q.passage }));
         card.append(h('p', { class: 'quiz-question', html: q.question }));

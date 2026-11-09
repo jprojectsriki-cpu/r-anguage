@@ -221,6 +221,7 @@
             h('span', { text: q.form || q.section })
         ]));
 
+        if (A.FORM_GUIDE[q.form]) card.append(h('p', { class: 'form-guide', html: A.FORM_GUIDE[q.form] }));
         if (q.audio) {
             var audio = h('audio', { controls: true, preload: 'auto', src: 'audio/' + encodeURIComponent(q.audio), class: 'quiz-audio' });
             var speed = Number(((A.state.profile || {}).user || {}).settings ? A.state.profile.user.settings.speed : 1) || 1;

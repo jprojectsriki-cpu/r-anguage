@@ -39,6 +39,14 @@
     // 「{漢字|よみ}」を <ruby> に、改行を <br> にして node に入れる（HTMLとしては解釈しない）
     function renderRuby(node, text) {
         node.replaceChildren();
+        // __ことば__ は下線（本番の問題と同じ）。下線の中もふりがなにする
+        String(text || '').split(/__(.+?)__/).forEach(function (part, i) {
+            if (i % 2 === 1) { var u = document.createElement('u'); u.className = 'ul'; node.append(rubyInto(u, part)); }
+            else rubyInto(node, part);
+        });
+        return node;
+    }
+    function rubyInto(node, text) {
         var re = /\{([^{}|\n]+)\|([^{}|\n]+)\}/g;
         var src = String(text || '');
         var last = 0, m;
@@ -62,7 +70,7 @@
         return node;
     }
     function ruby(tag, cls, text) { return renderRuby(el(tag, cls), text); }
-    function plain(text) { return String(text || '').replace(/\{([^{}|\n]+)\|[^{}|\n]+\}/g, '$1'); }
+    function plain(text) { return String(text || '').replace(/\{([^{}|\n]+)\|[^{}|\n]+\}/g, '$1').replace(/__/g, ''); }
 
     /* ===================== 入力チェック（GASと同じ内容） ===================== */
     function validate(d) {

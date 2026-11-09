@@ -213,13 +213,34 @@ function shuffle_(a) {
   return a;
 }
 
-/** まとまりを、want 問をこえないようにランダムに選ぶ（まとまりの中の順番はそのまま） */
-function pickUnits_(list, want) {
+/**
+ * まとまりを、want 問をこえないように選ぶ（まとまりの中の順番はそのまま）
+ * lastAt（問題ID → 最後に答えた時刻）を渡すと、まだ解いていない問題を先に、
+ * 次に、答えたのが古い問題を選ぶ（同じ問題ばかり出ないように）。同じ条件の中ではランダム
+ */
+function pickUnits_(list, want, lastAt) {
   const picked = [];
-  shuffle_(groupUnits_(list)).forEach(function (u) {
+  let units = shuffle_(groupUnits_(list));
+  if (lastAt) {
+    const when = function (u) { return u.reduce(function (m, q) { return Math.max(m, lastAt[q.questionId] || 0); }, 0); };
+    units = units.map(function (u, i) { return { u: u, t: when(u), i: i }; })
+      .sort(function (a, b) { return a.t - b.t || a.i - b.i; })
+      .map(function (x) { return x.u; });
+  }
+  units.forEach(function (u) {
     if (picked.length + u.length <= want) Array.prototype.push.apply(picked, u);
   });
   return picked;
+}
+
+/** この受講生が、それぞれの問題に最後に答えた時刻 { 問題ID: ミリ秒 } */
+function lastAnsweredMap_(userId) {
+  const map = {};
+  readMyAnswers_(userId).forEach(function (a) {
+    const t = a.at instanceof Date ? a.at.getTime() : 0;
+    if (t > (map[a.questionId] || 0)) map[a.questionId] = t;
+  });
+  return map;
 }
 
 /** 受講生の画面に送る形 */
@@ -260,8 +281,9 @@ function mePracticeStart_(token, input) {
       return c.level === level && c.section === section && (mode === 'set' || c.form === form);
     });
     if (!counts.length) return { ok: false, message: 'この問題形式は、問題数の表にありません。' };
+    const lastAt = lastAnsweredMap_(me.user.userId);
     counts.forEach(function (c) {
-      const got = pickUnits_(all.filter(function (q) { return q.section === section && q.form === c.form; }), c.count);
+      const got = pickUnits_(all.filter(function (q) { return q.section === section && q.form === c.form; }), c.count, lastAt);
       if (got.length < c.count) short.push({ form: c.form, want: c.count, got: got.length });
       Array.prototype.push.apply(picked, got);
     });

@@ -77,11 +77,13 @@
         var e = [];
         if (LEVELS.indexOf(d.level) === -1) e.push('レベルを選んでください。');
         if (SECTIONS.indexOf(d.section) === -1) e.push('科目を選んでください。');
-        if (d.section === '聴解' && !d.audio.trim()) e.push('聴解の問題には音声ファイル名を入力してください。');
+        var isL = d.section === '聴解';
+        var three = isL && ['発話表現', '即時応答'].indexOf(d.form) !== -1 && !d.choices[3].trim(); // 選択肢3つでもよい
+        if (isL && d.form !== '発話表現' && !d.audio.trim() && !d.passage.trim()) e.push('聴解の問題には、音声ファイル名か、読み上げるスクリプト（本文）を入力してください。');
         if (d.section === '読解' && !d.passage.trim()) e.push('読解の問題には本文を入力してください。');
-        if (!d.question.trim()) e.push('問題文を入力してください。');
-        d.choices.forEach(function (c, i) { if (!c.trim()) e.push('選択肢' + (i + 1) + 'を入力してください。'); });
-        if (['1', '2', '3', '4'].indexOf(d.answer) === -1) e.push('正解の番号を選んでください。');
+        if (!d.question.trim() && !(isL && d.form === '即時応答')) e.push('問題文を入力してください。');
+        d.choices.forEach(function (c, i) { if (!(three && i === 3) && !c.trim()) e.push('選択肢' + (i + 1) + 'を入力してください。'); });
+        if (three ? ['1', '2', '3'].indexOf(d.answer) === -1 : ['1', '2', '3', '4'].indexOf(d.answer) === -1) e.push(three ? '選択肢が3つの問題なので、正解は 1〜3 から選んでください。' : '正解の番号を選んでください。');
         if (['公開', '下書き'].indexOf(d.status) === -1) e.push('状態を選んでください。');
         var bad = (d.passage + d.question + d.explanation + d.choices.join('')).match(/\{[^}]*$|\{[^|}]*\}/m);
         if (bad) e.push('ふりがなの書き方を確認してください：「' + bad[0].slice(0, 20) + '」（正しくは {漢字|よみ}）');
@@ -352,11 +354,11 @@
         $('qAudioField').hidden = s !== '聴解';
 
         var label = { '読解': '本文', '聴解': 'スクリプト' }[s] || '本文';
-        var req = s === '読解' ? ' <em class="req">必須</em>' : ' <em>任意</em>';
+        var req = s === '読解' ? ' <em class="req">必須</em>' : s === '聴解' ? ' <em>音声ファイルがないときは必須</em>' : ' <em>任意</em>';
         $('qPassageLabel').innerHTML = label + req;
         $('qPassageHint').textContent = {
             '読解': '読む文章を入力します。',
-            '聴解': '音声の内容（スクリプト）。受講生には、解答したあとに表示します。',
+            '聴解': '1行に1つのせりふを「男：〜」「女：〜」の形で書きます（場面の説明は「：」なし）。音声ファイルがないときは、これをブラウザが読み上げます。受講生には、解答したあとに表示します。',
             '文法': '「文章の文法」のように、文章を読んで答える問題のときに入力します。',
             '文字・語彙': 'ふつうは空欄で大丈夫です。'
         }[s] || '';
@@ -388,8 +390,18 @@
                 miss.hidden = true;
                 audio.addEventListener('error', function () { miss.hidden = false; });
                 au.append(audio, miss);
+            } else if ((d.passage.trim() || d.form === '発話表現') && window.RListen && window.RListen.can) {
+                var tts = el('button', 'btn btn-white btn-sm pv-tts', '▶ 読み上げを試す');
+                tts.type = 'button';
+                var ctl = null;
+                tts.addEventListener('click', function () {
+                    if (ctl) { ctl.stop(); ctl = null; tts.textContent = '▶ 読み上げを試す'; return; }
+                    tts.textContent = '■ 止める';
+                    ctl = window.RListen.playQuestion(d, { rate: 1, onEnd: function () { ctl = null; tts.textContent = '▶ 読み上げを試す'; } });
+                });
+                au.append(tts, el('small', 'pv-muted', '受講生の画面と同じ順番で、スクリプト（本文）を読み上げます。'));
             } else {
-                au.append(el('small', 'pv-warn', '音声ファイル名を入力すると、ここで再生できます。'));
+                au.append(el('small', 'pv-warn', 'スクリプト（本文）を書くと読み上げます。音声ファイルを使うときは、ファイル名を入力します。'));
             }
             box.append(au);
         }
@@ -399,6 +411,7 @@
 
         var ol = el('ol', 'pv-choices');
         d.choices.forEach(function (c, i) {
+            if (i === 3 && !c && d.section === '聴解' && ['発話表現', '即時応答'].indexOf(d.form) !== -1) return; // 選択肢3つ
             var li = el('li', d.answer === String(i + 1) ? 'is-answer' : '');
             li.append(el('span', 'pv-no', String(i + 1)), ruby('span', '', c || '（選択肢' + (i + 1) + '）'));
             ol.append(li);

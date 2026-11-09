@@ -282,7 +282,7 @@
                         <li>入力ミスがある問題は、一覧の上に件数が表示されます。「編集」から直せます。</li>
                     </ol>
                     <p class="help-sub">ふりがなは、付けたい漢字だけ <code>{漢字|よみ}</code> と書きます。例：<code>{日本語|にほんご}を{勉強|べんきょう}する</code><br>
-                    聴解の音声ファイルは、GitHub の <code>frontend/user/audio/</code> フォルダに入れ、ファイル名（例：<code>N3_L001.mp3</code>）を F列に書きます。</p>
+                    聴解は、E列（本文）にスクリプトを書くと、ブラウザが読み上げます（1行に1つのせりふ。例：<code>男：すみません。</code>）。音声ファイルを使うときは、GitHub の <code>frontend/user/audio/</code> フォルダに入れ、ファイル名（例：<code>N3_L001.mp3</code>）を F列に書きます。</p>
                 </details>
             </section>
 
@@ -310,9 +310,9 @@
                             </label>
                         </div>
 
-                        <label class="field" id="qAudioField"><span>音声ファイル名 <em class="req">必須</em></span>
+                        <label class="field" id="qAudioField"><span>音声ファイル名 <em>任意</em></span>
                             <input type="text" name="audio" maxlength="100" placeholder="例：N3_L001.mp3" autocomplete="off" spellcheck="false">
-                            <small class="hint">GitHub の <code>frontend/user/audio/</code> に入れたファイルの名前</small>
+                            <small class="hint">空のままにすると、スクリプト（本文）をブラウザが読み上げます。音声ファイルを使うときは、GitHub の <code>frontend/user/audio/</code> に入れたファイルの名前を書きます</small>
                         </label>
 
                         <div class="field">
@@ -762,6 +762,7 @@
 
     <script src="../user/js/config.js"></script>
     <script src="../user/js/loading.js"></script>
+    <script src="../user/js/listen.js"></script>
     <script src="js/admin.js"></script>
     <script src="js/questions.js"></script>
     <script src="js/vocab.js"></script>

@@ -292,11 +292,17 @@
         var card = h('section', { class: 'card quiz-card' });
         card.append(h('p', { class: 'quiz-form' }, [A.sticker('st-' + (SECTION_ST[q.section] || 'mock'), 'form-st'), h('span', { text: q.form || q.section })]));
         if (A.FORM_GUIDE[q.form]) card.append(h('p', { class: 'form-guide', html: A.FORM_GUIDE[q.form] }));
-        if (q.audio) card.append(audioBlock(q));
-        if (String(q.passage || '').trim()) card.append(h('div', { class: 'quiz-passage', html: q.passage }));
-        card.append(h('p', { class: 'quiz-question', html: q.question }));
-        var choices = h('ol', { class: 'choices' });
+        var L = window.RListen;
+        var isL = q.section === '聴解';
+        var numOnly = isL && L && L.hideChoices(q);
+        if (isL) card.append(audioBlock(q));
+        // 聴解は、スクリプトを見せない。問題文は発話表現（場面の文）だけ見せる
+        if (!isL && String(q.passage || '').trim()) card.append(h('div', { class: 'quiz-passage', html: q.passage }));
+        if (!isL || (L && L.showQuestion(q))) card.append(h('p', { class: 'quiz-question' + (isL ? ' listen-scene' : ''), html: q.question }));
+        if (numOnly) card.append(h('p', { class: 'note listen-hint', html: 'せんたくしは{音声|おんせい}で{流|なが}れます。{聞|き}いて、{番号|ばんごう}を{選|えら}んでください。' }));
+        var choices = h('ol', { class: 'choices' + (numOnly ? ' is-num' : '') });
         q.choices.forEach(function (c, idx) {
+            if (!String(c || '').trim()) return; // せんたくしが3つの問題
             var n = idx + 1;
             choices.append(h('li', {}, [h('button', {
                 type: 'button', class: 'choice', 'aria-pressed': String(e.answers[q.questionId] === n),
@@ -305,7 +311,7 @@
                     save();
                     choices.querySelectorAll('.choice').forEach(function (b, k) { b.setAttribute('aria-pressed', String(k + 1 === n)); });
                 }
-            }, [h('span', { class: 'choice-num', text: String(n) }), h('span', { class: 'choice-text', html: c })])]));
+            }, [h('span', { class: 'choice-num', text: String(n) }), numOnly ? null : h('span', { class: 'choice-text', html: c })])]));
         });
         card.append(choices);
         // 文章の文法：いま答えている空欄に色を付ける
@@ -340,7 +346,8 @@
     /** 聴解の音声（1回だけ） */
     function audioBlock(q) {
         var e = M.exam;
-        var key = q.audio;
+        var key = q.audio || ('tts:' + q.questionId); // 音声ファイルがないときは、スクリプトを読み上げる
+        var L = window.RListen;
         var box = h('div', { class: 'm-audio' });
         function drawState(state) {
             box.replaceChildren();
@@ -358,7 +365,23 @@
                 h('p', { class: 'note', html: '{押|お}すと{最後|さいご}まで{流|なが}れます。とちゅうで{止|と}めたり、もう{一度|いちど}{聞|き}いたりはできません。' })
             );
         }
+        function playTts() {
+            if (!L || !L.can) {
+                A.toast('この{端末|たんまつ}では{音声|おんせい}の{読|よ}み{上|あ}げが{使|つか}えません。Chrome や Safari で{開|ひら}いてください。', true);
+                return;
+            }
+            e.played[key] = true;
+            save();
+            M.playing = true;
+            drawState('playing');
+            M.audioEl = L.playQuestion(q, {
+                rate: 1, // 本番と同じ速さ
+                onProgress: function (f) { var bar = $('mAudioBar'); if (bar) bar.style.width = Math.round(f * 100) + '%'; },
+                onEnd: function () { M.playing = false; M.audioEl = null; if (box.isConnected) drawState('played'); }
+            });
+        }
         function play() {
+            if (!q.audio) { playTts(); return; }
             var audio = new Audio('audio/' + encodeURIComponent(key));
             audio.playbackRate = 1;
             M.audioEl = audio;
@@ -482,6 +505,7 @@
     }
 
     function drawResult(r, fresh) {
+        if (window.RListen) window.RListen.stop();
         var main = $('main');
         main.replaceChildren();
         A.setTitle('{模試|もし}の{結果|けっか}');
@@ -523,6 +547,7 @@
     }
 
     function drawReview(r, filter) {
+        if (window.RListen) window.RListen.stop();
         var main = $('main');
         main.replaceChildren();
         A.setTitle('{答|こた}えと{解説|かいせつ}');
@@ -540,10 +565,12 @@
                 h('span', { class: 'm-rv-form', text: x.form || x.section }),
                 h('span', { class: 'm-rv-mark', html: x.correct ? '{正解|せいかい}' : x.chosen ? '{不正解|ふせいかい}' : '{答|こた}えなし' })
             ]));
-            if (x.audio) card.append(h('audio', { controls: true, preload: 'none', src: 'audio/' + encodeURIComponent(x.audio), class: 'quiz-audio' }));
-            if (String(x.passage || '').trim()) card.append(h('details', { class: 'm-rv-passage' }, [h('summary', { html: '{本文|ほんぶん}を{見|み}る' }), h('div', { class: 'quiz-passage', html: x.passage })]));
+            var xl = x.section === '聴解';
+            if (xl) card.append(A.listenBox(x));
+            if (String(x.passage || '').trim()) card.append(h('details', { class: 'm-rv-passage', open: xl }, [h('summary', { html: xl ? 'スクリプトを{見|み}る' : '{本文|ほんぶん}を{見|み}る' }), h('div', { class: 'quiz-passage', html: x.passage })]));
             card.append(h('p', { class: 'quiz-question', html: x.question }));
             card.append(h('ol', { class: 'm-rv-choices' }, x.choices.map(function (c, k) {
+                if (!String(c || '').trim()) return null; // せんたくしが3つの問題
                 var n = k + 1;
                 var cls = n === x.answer ? 'is-answer' : n === x.chosen ? 'is-chosen' : '';
                 return h('li', { class: cls }, [h('span', { class: 'choice-num', text: String(n) }), h('span', { html: c }),

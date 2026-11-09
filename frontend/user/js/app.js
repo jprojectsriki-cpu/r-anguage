@@ -649,12 +649,61 @@
         '課題理解': 'まず{質問|しつもん}を{聞|き}いてください。それから{話|はなし}を{聞|き}いて、１から４の{中|なか}から、{最|もっと}もよいものを{一|ひと}つえらんでください。',
         'ポイント理解': 'まず{質問|しつもん}を{聞|き}いてください。そのあと、せんたくしを{読|よ}んでください。それから{話|はなし}を{聞|き}いて、１から４の{中|なか}から、{最|もっと}もよいものを{一|ひと}つえらんでください。',
         '概要理解': '{話|はなし}の{前|まえ}に{質問|しつもん}はありません。まず{話|はなし}を{聞|き}いてください。それから、{質問|しつもん}とせんたくしを{聞|き}いて、１から４の{中|なか}から、{最|もっと}もよいものを{一|ひと}つえらんでください。',
-        '発話表現': '{絵|え}を{見|み}ながら{質問|しつもん}を{聞|き}いてください。→（やじるし）の{人|ひと}は{何|なん}と{言|い}いますか。１から３の{中|なか}から、{最|もっと}もよいものを{一|ひと}つえらんでください。',
+        '発話表現': '{場面|ばめん}の{文|ぶん}を{読|よ}みながら{質問|しつもん}を{聞|き}いてください。その{人|ひと}は{何|なん}と{言|い}いますか。１から３の{中|なか}から、{最|もっと}もよいものを{一|ひと}つえらんでください。（{本番|ほんばん}では{絵|え}を{見|み}ます）',
         '即時応答': 'まず{文|ぶん}を{聞|き}いてください。それから、その{返事|へんじ}を{聞|き}いて、１から３の{中|なか}から、{最|もっと}もよいものを{一|ひと}つえらんでください。'
     };
 
+    /* 聴解：何回でも聞ける再生ボタン（練習・模試の見直しで使う。速さはマイページの設定） */
+    function userSpeed() {
+        var s = ((state.profile || {}).user || {}).settings || {};
+        return Number(s.speed) || 1;
+    }
+    function listenBox(q) {
+        var speed = userSpeed();
+        if (q.audio) {
+            var audio = h('audio', { controls: true, preload: 'auto', src: 'audio/' + encodeURIComponent(q.audio), class: 'quiz-audio' });
+            var setRate = function () { try { audio.playbackRate = speed; } catch (e) { /* 対応していないブラウザ */ } };
+            audio.addEventListener('loadedmetadata', setRate);
+            audio.addEventListener('play', setRate);
+            var miss = h('p', { class: 'note', hidden: true, html: '{音声|おんせい}を{読|よ}み{込|こ}めませんでした。' });
+            audio.addEventListener('error', function () { miss.hidden = false; });
+            return h('div', { class: 'quiz-audio-box' }, [audio, miss]);
+        }
+        var L = window.RListen;
+        var box = h('div', { class: 'listen-box' });
+        if (!L || !L.can) {
+            box.append(h('p', { class: 'note', html: 'この{端末|たんまつ}では{音声|おんせい}の{読|よ}み{上|あ}げが{使|つか}えません。Chrome や Safari で{開|ひら}いてください。' }));
+            return box;
+        }
+        var ctl = null;
+        function draw(playing) {
+            box.replaceChildren(
+                h('button', {
+                    type: 'button', class: 'pop-btn ' + (playing ? 'btn-white' : 'btn-pink') + ' btn-block listen-btn',
+                    onclick: playing ? stopIt : startIt
+                }, [icon('i-sound'), h('span', { html: playing ? '{止|と}める' : '{音声|おんせい}を{聞|き}く' })]),
+                playing
+                    ? h('div', { class: 'quiz-bar listen-bar' }, [h('span', { style: 'width:0%' })])
+                    : h('p', { class: 'note', html: '{何回|なんかい}でも{聞|き}けます（{速|はや}さ ' + speed + '{倍|ばい}・マイページで{変|か}えられます）' })
+            );
+        }
+        function startIt() {
+            draw(true);
+            var bar = box.querySelector('.listen-bar span');
+            ctl = L.playQuestion(q, {
+                rate: speed,
+                onProgress: function (f) { if (bar) bar.style.width = Math.round(f * 100) + '%'; },
+                onEnd: function () { ctl = null; if (box.isConnected) draw(false); }
+            });
+        }
+        function stopIt() { if (ctl) ctl.stop(); ctl = null; draw(false); }
+        draw(false);
+        return box;
+    }
+
     /* ほかのページ（js/practice.js など）から使う道具 */
     window.RApp = {
+        listenBox: listenBox,
         state: state, h: h, fg: fg, icon: icon, sticker: sticker, FORM_GUIDE: FORM_GUIDE, toast: toast, confirmBox: confirmBox,
         apiPost: apiPost, withLoading: withLoading, authFailed: authFailed, setTitle: function (t) { $('topTitle').innerHTML = fg(t); }
     };

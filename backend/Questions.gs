@@ -61,19 +61,33 @@ function rowToQuestion_(r, rowNumber) {
   };
 }
 
+/** 選択肢が3つでもよい聴解の形式 */
+const LISTEN_THREE_FORMS = ['発話表現', '即時応答'];
+
 /** 問題の入力内容をチェックし、問題点の一覧を返す（問題なければ空の配列） */
 function validateQuestion_(q) {
   const errors = [];
   if (LEVEL_LIST.indexOf(q.level) === -1) errors.push('レベルは N4／N3／N2／N1 のどれかにしてください。');
   if (SECTIONS.indexOf(q.section) === -1) errors.push('科目は 文字・語彙／文法／読解／聴解 のどれかにしてください。');
-  if (!String(q.question || '').trim()) errors.push('問題文を入力してください。');
-  (q.choices || []).forEach(function (c, i) {
+  const isListening = q.section === '聴解';
+  const choices = q.choices || [];
+  // 聴解の発話表現・即時応答は、本番と同じく選択肢3つでもよい（選択肢4を空にする）
+  const three = isListening && LISTEN_THREE_FORMS.indexOf(q.form) !== -1 && !String(choices[3] || '').trim();
+  // 即時応答は、問題文がなくてもよい（本文のせりふを聞いて返事を選ぶ）
+  if (!String(q.question || '').trim() && !(isListening && q.form === '即時応答')) errors.push('問題文を入力してください。');
+  choices.forEach(function (c, i) {
+    if (three && i === 3) return;
     if (!String(c || '').trim()) errors.push('選択肢' + (i + 1) + 'を入力してください。');
   });
-  if (['1', '2', '3', '4'].indexOf(String(q.answer)) === -1) errors.push('正解は 1〜4 のどれかにしてください。');
+  if (three) {
+    if (['1', '2', '3'].indexOf(String(q.answer)) === -1) errors.push('選択肢が3つの問題なので、正解は 1〜3 のどれかにしてください。');
+  } else if (['1', '2', '3', '4'].indexOf(String(q.answer)) === -1) errors.push('正解は 1〜4 のどれかにしてください。');
   if (Q_STATUS.indexOf(q.status) === -1) errors.push('状態は「公開」か「下書き」にしてください。');
   if (q.section === '読解' && !String(q.passage || '').trim()) errors.push('読解の問題には本文を入力してください。');
-  if (q.section === '聴解' && !String(q.audio || '').trim()) errors.push('聴解の問題には音声ファイル名を入力してください。');
+  // 発話表現は、問題文（場面）と選択肢を読むので、スクリプトがなくてもよい
+  if (isListening && q.form !== '発話表現' && !String(q.audio || '').trim() && !String(q.passage || '').trim()) {
+    errors.push('聴解の問題には、音声ファイル名か、読み上げるスクリプト（本文）を入力してください。');
+  }
   return errors;
 }
 

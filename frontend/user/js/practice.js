@@ -222,25 +222,23 @@
         ]));
 
         if (A.FORM_GUIDE[q.form]) card.append(h('p', { class: 'form-guide', html: A.FORM_GUIDE[q.form] }));
-        if (q.audio) {
-            var audio = h('audio', { controls: true, preload: 'auto', src: 'audio/' + encodeURIComponent(q.audio), class: 'quiz-audio' });
-            var speed = Number(((A.state.profile || {}).user || {}).settings ? A.state.profile.user.settings.speed : 1) || 1;
-            var setRate = function () { try { audio.playbackRate = speed; } catch (e) { /* 対応していないブラウザ */ } };
-            audio.addEventListener('loadedmetadata', setRate);
-            audio.addEventListener('play', setRate);
-            var miss = h('p', { class: 'note', hidden: true, html: '{音声|おんせい}を{読|よ}み{込|こ}めませんでした。' });
-            audio.addEventListener('error', function () { miss.hidden = false; });
-            card.append(h('div', { class: 'quiz-audio-box' }, [audio, miss]));
-        }
-        if (String(q.passage || '').trim()) card.append(h('div', { class: 'quiz-passage', html: q.passage }));
-        card.append(h('p', { class: 'quiz-question', html: q.question }));
+        var L = window.RListen;
+        if (L) L.stop();
+        var isL = q.section === '聴解';
+        var numOnly = isL && L && L.hideChoices(q);
+        if (isL) card.append(A.listenBox(q));
+        // 聴解は、答える前はスクリプトを見せない（本番と同じ）
+        if (!isL && String(q.passage || '').trim()) card.append(h('div', { class: 'quiz-passage', html: q.passage }));
+        if (!isL || (L && L.showQuestion(q))) card.append(h('p', { class: 'quiz-question' + (isL ? ' listen-scene' : ''), html: q.question }));
+        if (numOnly) card.append(h('p', { class: 'note listen-hint', html: 'せんたくしは{音声|おんせい}で{流|なが}れます。{聞|き}いて、{番号|ばんごう}を{選|えら}んでください。' }));
 
-        var choices = h('ol', { class: 'choices' });
+        var choices = h('ol', { class: 'choices' + (numOnly ? ' is-num' : '') });
         q.choices.forEach(function (c, idx) {
+            if (!String(c || '').trim()) return; // せんたくしが3つの問題
             choices.append(h('li', {}, [h('button', {
                 type: 'button', class: 'choice', 'data-n': String(idx + 1),
                 onclick: function () { answer(idx + 1); }
-            }, [h('span', { class: 'choice-num', text: String(idx + 1) }), h('span', { class: 'choice-text', html: c })])]));
+            }, [h('span', { class: 'choice-num', text: String(idx + 1) }), h('span', { class: 'choice-text', hidden: numOnly, html: c })])]));
         });
         card.append(choices);
         // 文章の文法：いま答えている空欄に色を付ける
@@ -273,7 +271,21 @@
 
         var last = z.i === z.list.length - 1;
         var after = document.getElementById('quizAfter');
+        // 聴解：答えたら、スクリプト・問題文・せんたくしを見せる
+        var reveal = null;
+        if (q.section === '聴解') {
+            var list = document.querySelector('.choices.is-num');
+            if (list) list.classList.remove('is-num');
+            document.querySelectorAll('.choice .choice-text').forEach(function (t) { t.hidden = false; });
+            var showQ = window.RListen && window.RListen.showQuestion(q);
+            reveal = h('div', { class: 'listen-reveal' }, [
+                h('p', { class: 'listen-reveal-title', html: 'スクリプト' }),
+                String(q.passage || '').trim() ? h('div', { class: 'quiz-passage', html: q.passage }) : null,
+                !showQ && String(q.question || '').trim() ? h('p', { class: 'quiz-question', html: q.question }) : null
+            ]);
+        }
         after.replaceChildren(
+            reveal || '',
             h('div', { class: 'feedback ' + (correct ? 'is-correct' : 'is-wrong') }, [
                 h('p', { class: 'feedback-title' }, [A.icon(correct ? 'i-check' : 'i-x'), h('span', { html: correct ? '{正解|せいかい}！' : '{不正解|ふせいかい}　{正解|せいかい}は ' + q.answer + ' です' })]),
                 q.explanation ? h('div', { class: 'feedback-body', html: q.explanation }) : null
@@ -288,6 +300,7 @@
 
     function next() {
         var z = P.quiz;
+        if (window.RListen) window.RListen.stop();
         if (z.i < z.list.length - 1) { z.i++; drawQuestion(); } else drawResult();
     }
 
@@ -323,6 +336,7 @@
 
     /* ===================== 結果 ===================== */
     function drawResult() {
+        if (window.RListen) window.RListen.stop();
         var z = P.quiz;
         var rs = z.results.filter(Boolean);
         var ok = rs.filter(function (r) { return r.correct; }).length;

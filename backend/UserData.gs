@@ -11,7 +11,8 @@
  *   ans … 問題ごとの最後の答え         { 問題ID: [最後に答えた時刻（秒）, 正解なら1] }
  *   voc … 単語カードごとの記録         { カードID: [覚えたなら1, 覚えた回数, まだの回数, 時刻（秒）] }
  *   sum … 学習記録                    { days: {日付: 回数}, sec: {科目: [答えた数, 正解数]}, tot: [答えた数, 正解数],
- *                                       lp: 前回の問題, lm: 最後の模試 }
+ *                                       lp: 前回の問題, lm: 最後の模試,
+ *                                       lv: {レベル: { sec: {...}, tot: [...] }}, lmv: {レベル: そのレベルの最後の模試} }
  * - 回答の記録（1問1行）は、月ごとの別のスプレッドシート「R-ANGUAGE 回答の記録 YYYY-MM」に書く
  *   （本体のスプレッドシートが大きくならないように。ファイルはマイドライブに自動で作られる）
  *
@@ -91,7 +92,7 @@ function udAns_(uid) { return udRead_(uid + '|ans', {}); }
 function udVoc_(uid) { return udRead_(uid + '|voc', {}); }
 function udSum_(uid) {
   const s = udRead_(uid + '|sum', null) || {};
-  return { days: s.days || {}, sec: s.sec || {}, tot: s.tot || [0, 0], lp: s.lp || null, lm: s.lm || null };
+  return { days: s.days || {}, sec: s.sec || {}, tot: s.tot || [0, 0], lp: s.lp || null, lm: s.lm || null, lv: s.lv || {}, lmv: s.lmv || {} };
 }
 
 /** 学習した日に数を足す（古い日は消す） */
@@ -117,6 +118,15 @@ function udAddAnswers_(uid, items, mode, now, ans, sum) {
     sum.sec[it.section] = s;
     sum.tot[0]++;
     if (it.correct) sum.tot[1]++;
+    // レベルごと
+    if (!sum.lv) sum.lv = {};
+    const L = sum.lv[it.level] || (sum.lv[it.level] = { sec: {}, tot: [0, 0] });
+    const ls = L.sec[it.section] || [0, 0];
+    ls[0]++;
+    if (it.correct) ls[1]++;
+    L.sec[it.section] = ls;
+    L.tot[0]++;
+    if (it.correct) L.tot[1]++;
     if (mode === 'set' || mode === 'form') sum.lp = { mode: mode, level: it.level, section: it.section, form: it.form };
   });
   if (items.length) udMarkDay_(sum, now, items.length);
@@ -170,7 +180,7 @@ function setupUserData() {
   udSheet_();
   const users = {};
   function u(uid) {
-    if (!users[uid]) users[uid] = { ans: {}, voc: {}, sum: { days: {}, sec: {}, tot: [0, 0], lp: null, lm: null } };
+    if (!users[uid]) users[uid] = { ans: {}, voc: {}, sum: { days: {}, sec: {}, tot: [0, 0], lp: null, lm: null, lv: {}, lmv: {} } };
     return users[uid];
   }
 
@@ -216,9 +226,10 @@ function setupUserData() {
       if (!uid || !(r[3] instanceof Date)) return;
       const x = u(uid);
       udMarkDay_(x.sum, r[3], 1);
-      if (!x.sum.lm || new Date(x.sum.lm.at).getTime() < r[3].getTime()) {
-        x.sum.lm = { level: String(r[2]), total: Number(r[4]), result: String(r[6]), at: r[3].toISOString() };
-      }
+      const m = { level: String(r[2]), total: Number(r[4]), result: String(r[6]), at: r[3].toISOString() };
+      if (!x.sum.lm || new Date(x.sum.lm.at).getTime() < r[3].getTime()) x.sum.lm = m;
+      const lvm = x.sum.lmv[m.level];
+      if (!lvm || new Date(lvm.at).getTime() < r[3].getTime()) x.sum.lmv[m.level] = m;
     });
   }
 
@@ -235,4 +246,67 @@ function setupUserData() {
     lock.releaseLock();
   }
   Logger.log('UserData を作りました：受講生 ' + Object.keys(users).length + '人・答え ' + nAns + '件・単語カード ' + nVoc + '件');
+}
+
+/* =========================================================
+ * 【1回だけ実行】レベルごとの正答率・最後の模試を、今までの記録から作る（2026-11 追加）
+ *   今までの記録 ＝ 本体の Answers シート（UserData に切りかえる前）＋ 月ごとの「回答の記録」
+ *   ほかのまとめ（まちがい復習・単語カード・連続日数）は変えない。何回実行しても同じ結果になる
+ * ========================================================= */
+function setupLevelStats() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const lv = {};   // uid → { レベル: { sec, tot } }
+  const lmv = {};  // uid → { レベル: 最後の模試 }
+  let n = 0;
+  function addRows(rows) {
+    rows.forEach(function (r) {
+      const uid = String(r[0]);
+      if (!uid) return;
+      const level = String(r[2]), section = String(r[3]);
+      const ok = r[6] === true || String(r[6]).toUpperCase() === 'TRUE';
+      const u = lv[uid] || (lv[uid] = {});
+      const L = u[level] || (u[level] = { sec: {}, tot: [0, 0] });
+      const s = L.sec[section] || [0, 0];
+      s[0]++; if (ok) s[1]++;
+      L.sec[section] = s;
+      L.tot[0]++; if (ok) L.tot[1]++;
+      n++;
+    });
+  }
+  const old = ss.getSheetByName(SHEET_ANSWERS);
+  if (old && old.getLastRow() >= 2) addRows(old.getRange(2, 1, old.getLastRow() - 1, ANS_HEADERS.length).getValues());
+  const props = PropertiesService.getScriptProperties().getProperties();
+  let files = 0;
+  Object.keys(props).filter(function (k) { return k.indexOf('ANSWER_LOG_') === 0; }).forEach(function (k) {
+    try {
+      const sh = SpreadsheetApp.openById(props[k]).getSheetByName(SHEET_ANSWERS);
+      if (sh && sh.getLastRow() >= 2) addRows(sh.getRange(2, 1, sh.getLastRow() - 1, ANS_HEADERS.length).getValues());
+      files++;
+    } catch (e) { console.error('回答の記録を開けませんでした：' + k); }
+  });
+  const mr = ss.getSheetByName(SHEET_MOCK_RESULTS);
+  if (mr && mr.getLastRow() >= 2) {
+    mr.getRange(2, 1, mr.getLastRow() - 1, 7).getValues().forEach(function (r) {
+      const uid = String(r[1]);
+      if (!uid || !(r[3] instanceof Date)) return;
+      const m = { level: String(r[2]), total: Number(r[4]), result: String(r[6]), at: r[3].toISOString() };
+      const u = lmv[uid] || (lmv[uid] = {});
+      if (!u[m.level] || new Date(u[m.level].at).getTime() < r[3].getTime()) u[m.level] = m;
+    });
+  }
+  const uids = {};
+  Object.keys(lv).concat(Object.keys(lmv)).forEach(function (u) { uids[u] = true; });
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    Object.keys(uids).forEach(function (uid) {
+      const sum = udSum_(uid);
+      sum.lv = lv[uid] || {};
+      sum.lmv = lmv[uid] || {};
+      udWrite_(uid + '|sum', sum);
+    });
+  } finally {
+    lock.releaseLock();
+  }
+  Logger.log('レベルごとの記録を作りました：受講生 ' + Object.keys(uids).length + '人・答え ' + n + '件（回答の記録のファイル ' + files + '個）');
 }

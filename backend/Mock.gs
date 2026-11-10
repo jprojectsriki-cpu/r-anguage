@@ -204,6 +204,7 @@ function meMockSubmit_(token, input) {
     }), 'mock', now, ans, sum);
     if (!answered.length) udMarkDay_(sum, now, 1);
     sum.lm = { level: level, total: graded.total, result: graded.result, at: now.toISOString() };
+    sum.lmv[level] = sum.lm;
     udWrite_(uid + '|ans', ans);
     udWrite_(uid + '|sum', sum);
     var logRows = answered.map(function (it) {

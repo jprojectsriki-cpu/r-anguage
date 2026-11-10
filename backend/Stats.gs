@@ -58,8 +58,26 @@ function meStats_(token) {
   let mistakeLevel = '';
   Object.keys(mistakeLevels).forEach(function (lv) { if (!mistakeLevel || mistakeLevels[lv] > mistakeLevels[mistakeLevel]) mistakeLevel = lv; });
 
+  // レベルごと（複数のレベルを受けている受講生は、ホームで切りかえて見る）
+  const byLevel = levels.map(function (lv) {
+    const L = sum.lv[lv] || { sec: {}, tot: [0, 0] };
+    const lvCards = cards.filter(function (c) { return c.level === lv; });
+    return {
+      level: lv,
+      total: { answered: L.tot[0], correct: L.tot[1], rate: L.tot[0] ? Math.round(L.tot[1] / L.tot[0] * 100) : null },
+      sections: SECTIONS.map(function (sec) {
+        const v = L.sec[sec] || [0, 0];
+        return { section: sec, answered: v[0], correct: v[1], rate: v[0] ? Math.round(v[1] / v[0] * 100) : null };
+      }),
+      vocab: { known: lvCards.filter(function (c) { return mine[c.cardId] && mine[c.cardId].state === '覚えた'; }).length, total: lvCards.length },
+      mistakes: mistakeLevels[lv] || 0,
+      lastMock: sum.lmv[lv] || null
+    };
+  });
+
   return {
     ok: true,
+    byLevel: byLevel,
     today: todayKey,
     streak: streak,
     doneToday: !!days[todayKey],

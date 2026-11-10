@@ -345,15 +345,41 @@
         } catch (err) { return null; }
     }
 
+    /* ホームで見るレベル（複数のレベルを受けている受講生だけ切りかえる。選んだレベルは覚えておく） */
+    var HOME_LV_KEY = 'ranguage_home_level';
+    function homeLevelView(st) {
+        var list = st.byLevel || [];
+        if (!list.length) return null;
+        var saved = '';
+        try { saved = localStorage.getItem(HOME_LV_KEY) || ''; } catch (e) { saved = ''; }
+        var hit = list.filter(function (x) { return x.level === (state.homeLevel || saved); })[0];
+        if (!hit) {
+            // 答えた数がいちばん多いレベル（まだなければ最初のレベル）
+            hit = list.slice().sort(function (a, b) { return b.total.answered - a.total.answered; })[0];
+        }
+        state.homeLevel = hit.level;
+        return hit;
+    }
+    function setHomeLevel(lv) {
+        state.homeLevel = lv;
+        try { localStorage.setItem(HOME_LV_KEY, lv); } catch (e) { /* 使えないブラウザ */ }
+        drawContinue(state.stats);
+        drawStats(state.stats);
+    }
+
     function drawContinue(st) {
         var slot = $('continueSlot');
         if (!slot) return;
         var mk = mockInProgress();
         var item = null;
+        var lvView = homeLevelView(st);
+        var multi = (st.byLevel || []).length > 1;
         if (mk) {
             item = { st: 'st-mock', cls: 'cont-mock', title: mk.level + ' {模試|もし}の{続|つづ}き', sub: '{時間|じかん}は{止|と}まっています', go: function () { location.hash = '#mock'; } };
-        } else if (st.mistakes.count) {
-            item = { st: 'st-redo', cls: 'cont-redo', title: 'まちがい{復習|ふくしゅう} ' + st.mistakes.count + '{問|もん}', sub: 'まちがえた{問題|もんだい}を、もう{一度|いちど}', go: function () { startPractice({ mode: 'mistakes', level: st.mistakes.level }); } };
+        } else if ((lvView ? lvView.mistakes : st.mistakes.count)) {
+            var mkCount = lvView ? lvView.mistakes : st.mistakes.count;
+            var mkLevel = lvView ? lvView.level : st.mistakes.level;
+            item = { st: 'st-redo', cls: 'cont-redo', title: (multi ? mkLevel + ' ' : '') + 'まちがい{復習|ふくしゅう} ' + mkCount + '{問|もん}', sub: 'まちがえた{問題|もんだい}を、もう{一度|いちど}', go: function () { startPractice({ mode: 'mistakes', level: mkLevel }); } };
         } else if (st.lastPractice) {
             var lp = st.lastPractice;
             item = { st: 'st-' + (SECTION_ST[lp.section] || 'practice'), cls: 'cont-last', title: '{前回|ぜんかい}の{続|つづ}き', sub: lp.level + ' ' + (SECTION_RUBY[lp.section] || lp.section) + (lp.mode === 'form' ? '・' + lp.form : ''),
@@ -394,15 +420,27 @@
             week
         ]);
 
-        var rate = st.total.rate;
+        var view = homeLevelView(st);
+        var multi = (st.byLevel || []).length > 1;
+        var total = view ? view.total : st.total;
+        var sections = view ? view.sections : st.sections;
+        var vocab = view ? view.vocab : st.vocab;
+        var lastMock = view ? view.lastMock : st.lastMock;
+        var rate = total.rate;
         var ring = h('div', { class: 'ring', style: '--p:' + (rate || 0) }, [
             h('span', { class: 'ring-num' }, [h('span', { class: 'ring-val' }, rate === null ? [h('span', { text: '—' })] : [h('b', { text: String(rate) }), h('small', { text: '%' })])])
         ]);
+        var lvTabs = multi ? h('div', { class: 'lv-tabs', role: 'tablist', 'aria-label': 'レベル' }, st.byLevel.map(function (x) {
+            var on = x.level === view.level;
+            return h('button', { type: 'button', role: 'tab', class: 'lv-tab' + (on ? ' is-on' : ''), 'aria-selected': on ? 'true' : 'false',
+                onclick: function () { if (!on) setHomeLevel(x.level); } }, [h('span', { text: x.level })]);
+        })) : null;
         var rateCard = h('section', { class: 'card rate' }, [
-            h('h2', { class: 'card-title' }, [sticker('st-target', 'title-st'), h('span', { html: '{正答率|せいとうりつ}' })]),
+            h('h2', { class: 'card-title' }, [sticker('st-target', 'title-st'), h('span', { html: (multi ? view.level + ' の' : '') + '{正答率|せいとうりつ}' })]),
+            lvTabs,
             h('div', { class: 'rate-body' }, [
                 ring,
-                h('ul', { class: 'rate-list' }, st.sections.map(function (s) {
+                h('ul', { class: 'rate-list' }, sections.map(function (s) {
                     return h('li', {}, [
                         sticker('st-' + SECTION_ST[s.section], 'rate-st'),
                         h('span', { class: 'rate-name', html: SECTION_RUBY[s.section] }),
@@ -412,9 +450,9 @@
                 }))
             ]),
             h('ul', { class: 'rate-foot' }, [
-                h('li', {}, [h('span', { class: 'rf-label', html: '{答|こた}えた{問題|もんだい}' }), h('span', { class: 'rf-val', html: st.total.answered + ' {問|もん}' })]),
-                h('li', {}, [h('span', { class: 'rf-label', html: '{覚|おぼ}えた{単語|たんご}' }), h('span', { class: 'rf-val', html: st.vocab.known + ' / ' + st.vocab.total + ' {枚|まい}' })]),
-                h('li', {}, [h('span', { class: 'rf-label', html: '{最後|さいご}の{模試|もし}' }), h('span', { class: 'rf-val', html: st.lastMock ? st.lastMock.level + '　' + st.lastMock.total + ' / 180 {点|てん}' : 'まだ{受|う}けていません' })])
+                h('li', {}, [h('span', { class: 'rf-label', html: '{答|こた}えた{問題|もんだい}' }), h('span', { class: 'rf-val', html: total.answered + ' {問|もん}' })]),
+                h('li', {}, [h('span', { class: 'rf-label', html: '{覚|おぼ}えた{単語|たんご}' }), h('span', { class: 'rf-val', html: vocab.known + ' / ' + vocab.total + ' {枚|まい}' })]),
+                h('li', {}, [h('span', { class: 'rf-label', html: '{最後|さいご}の{模試|もし}' }), h('span', { class: 'rf-val', html: lastMock ? lastMock.level + '　' + lastMock.total + ' / 180 {点|てん}' : 'まだ{受|う}けていません' })])
             ])
         ]);
         slot.replaceChildren(streakCard, rateCard);

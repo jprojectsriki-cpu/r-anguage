@@ -769,3 +769,9 @@ u.ul { text-decoration: underline; text-decoration-thickness: 2px; text-underlin
 /* 文章の文法の空欄［１］（いま答えている空欄は黄色） */
 .blank { display: inline-block; min-width: 2.6em; margin: 0 2px; padding: 0 6px; border: 2px solid var(--dark); border-radius: 6px; background: #fff; font-family: var(--font-en); font-weight: 700; line-height: 1.5; text-align: center; white-space: nowrap; }
 .blank.is-now { background: var(--yellow); box-shadow: 2px 2px 0 var(--dark); }
+
+/* ホーム：レベルの切りかえ（複数のレベルを受けている受講生） */
+.lv-tabs { display: flex; gap: 8px; margin: 4px 0 14px; flex-wrap: wrap; }
+.lv-tab { flex: 1 1 0; min-width: 64px; padding: 8px 10px; border: 2.5px solid var(--dark); border-radius: 999px; background: #fff; font-weight: 900; font-size: 1rem; cursor: pointer; box-shadow: 0 3px 0 var(--dark); }
+.lv-tab.is-on { background: var(--yellow, #FFD84D); }
+.lv-tab:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--dark); }

@@ -807,3 +807,76 @@ main, .site-footer { position: relative; z-index: 1; }
     .trust-badges li { animation: none; }
     .trust-badges li.tb-clone { display: none; }
 }
+
+/* =========================================================
+ * ヒーロー：ダッシュボードのイメージ（受講生の画面のホームと同じデザインのスマホ）
+ * ========================================================= */
+.phone { position: relative; width: min(340px, 100%); margin: 0 auto; padding: 12px; border: var(--line); border-radius: 44px; background: var(--dark); box-shadow: 12px 12px 0 rgba(30, 27, 75, 0.25); transform: rotate(2deg); }
+.phone-notch { position: absolute; top: 12px; left: 50%; z-index: 3; width: 96px; height: 20px; transform: translateX(-50%); border-radius: 0 0 14px 14px; background: var(--dark); }
+.phone-screen { position: relative; display: flex; flex-direction: column; height: 600px; overflow: hidden; border-radius: 34px; background: var(--cream);
+    background-image: radial-gradient(circle at 8% 12%, rgba(255, 190, 11, 0.28) 0 60px, transparent 61px), radial-gradient(circle at 96% 40%, rgba(76, 201, 240, 0.25) 0 70px, transparent 71px), radial-gradient(circle at 6% 86%, rgba(255, 0, 110, 0.14) 0 70px, transparent 71px); }
+.pm-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 26px 14px 10px; border-bottom: 3px solid var(--dark); background: rgba(255, 249, 235, 0.95); }
+.pm-brand { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-en); font-size: 0.95rem; font-weight: 700; }
+.pm-mark { display: grid; place-items: center; width: 26px; height: 26px; border: 2.5px solid var(--dark); border-radius: 9px; background: var(--yellow); box-shadow: 2px 2px 0 var(--dark); transform: rotate(-6deg); font-size: 0.85rem; }
+.pm-title { padding: 0 10px; border: 2px solid var(--dark); border-radius: 999px; background: #fff; box-shadow: 2px 2px 0 var(--dark); font-size: 0.7rem; font-weight: 900; line-height: 1.9; }
+.pm-scroll { flex: 1; overflow: hidden; }
+.pm-body { display: grid; gap: 12px; padding: 14px 14px 90px; animation: pm-scroll 16s ease-in-out 1.2s infinite; }
+@keyframes pm-scroll { 0%, 18% { transform: translateY(0); } 48%, 70% { transform: translateY(-300px); } 100% { transform: translateY(0); } }
+.pm-st { width: 1.6em; height: 1.6em; flex: none; overflow: visible; }
+.pm-card { position: relative; padding: 14px; border: 3px solid var(--dark); border-radius: 20px; background: #fff; box-shadow: 4px 4px 0 var(--dark); }
+.pm-hello { overflow: hidden; background: linear-gradient(135deg, #FFD23F 0%, #FFBE0B 60%, #FF9F1C 100%); }
+.pm-deco { position: absolute; border: 2.5px solid var(--dark); }
+.pm-deco-1 { right: -16px; top: -16px; width: 70px; height: 70px; border-radius: 50%; background: var(--pink); }
+.pm-deco-2 { right: 44px; top: 16px; width: 16px; height: 16px; border-radius: 5px; background: var(--teal); transform: rotate(20deg); }
+.pm-hello-sub { position: relative; display: inline-block; padding: 0 10px; border: 2px solid var(--dark); border-radius: 999px; background: #fff; font-size: 0.68rem; font-weight: 900; line-height: 1.9; transform: rotate(-3deg); }
+.pm-hello-name { position: relative; margin-top: 4px; font-size: 1.2rem; font-weight: 900; line-height: 1.5; }
+.pm-hello-msg { position: relative; font-size: 0.72rem; line-height: 2; }
+.pm-lv { position: relative; display: inline-block; margin-top: 4px; padding: 0 10px; border: 2px solid var(--dark); border-radius: 999px; background: var(--dark); color: #fff; font-family: var(--font-en); font-size: 0.7rem; line-height: 1.9; }
+.pm-quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pm-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 84px; padding: 6px 4px; border: 3px solid var(--dark); border-radius: 18px; box-shadow: 3px 3px 0 var(--dark); text-align: center; font-size: 0.66rem; font-weight: 900; line-height: 1.6; }
+.pm-tile .pm-st { width: 36px; height: 36px; }
+.pm-t-practice { background: #DDF5FD; }
+.pm-t-vocab { background: #D6FBEF; }
+.pm-t-mock { background: #FFE3EF; }
+.pm-cont { display: flex; align-items: center; gap: 10px; background: #FFF1C2; }
+.pm-cont-st { width: 40px; height: 40px; transform: rotate(-8deg); }
+.pm-cont-text { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.pm-cont-label { align-self: flex-start; padding: 0 8px; border: 2px solid var(--dark); border-radius: 999px; background: #fff; font-size: 0.6rem; font-weight: 900; line-height: 1.9; }
+.pm-cont-title { font-size: 0.85rem; font-weight: 900; line-height: 1.9; }
+.pm-cont-go { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border: 2.5px solid var(--dark); border-radius: 50%; background: var(--pink); color: #fff; box-shadow: 2px 2px 0 var(--dark); font-family: var(--font-en); font-size: 1.2rem; line-height: 1; }
+.pm-streak { background: #FFF6E5; }
+.pm-streak-top { display: flex; align-items: center; gap: 10px; }
+.pm-streak-st { width: 44px; height: 44px; transform: rotate(-6deg); }
+.pm-streak-num { font-size: 0.8rem; font-weight: 900; }
+.pm-streak-num b { margin-right: 3px; font-family: var(--font-en); font-size: 2rem; color: var(--pink); line-height: 1.1; }
+.pm-week { list-style: none; display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-top: 8px; padding: 0; }
+.pm-week li { display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: 0.58rem; font-weight: 900; color: var(--dark-60); }
+.pm-week i { display: grid; place-items: center; width: 24px; height: 24px; border: 2px solid var(--dark); border-radius: 50%; background: #fff; }
+.pm-week li.is-done i { background: var(--mint); }
+.pm-week li.is-done i::after { content: ''; width: 8px; height: 4px; margin-top: -2px; border-left: 2.5px solid var(--dark); border-bottom: 2.5px solid var(--dark); transform: rotate(-45deg); }
+.pm-week li.is-today i { box-shadow: 0 0 0 3px var(--yellow); }
+.pm-week li.is-today { color: var(--dark); }
+.pm-card-title { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 0.85rem; font-weight: 900; }
+.pm-title-st { width: 24px; height: 24px; transform: rotate(-8deg); }
+.pm-rate-body { display: flex; align-items: center; gap: 12px; }
+.pm-ring { --p: 0; position: relative; flex: none; width: 80px; height: 80px; border: 3px solid var(--dark); border-radius: 50%; background: conic-gradient(var(--purple) calc(var(--p) * 1%), #EDE3FF 0); }
+.pm-ring::after { content: ''; position: absolute; inset: 12px; border: 3px solid var(--dark); border-radius: 50%; background: #fff; }
+.pm-ring span { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; font-family: var(--font-en); }
+.pm-ring b { font-size: 1.3rem; line-height: 1; }
+.pm-ring small { font-size: 0.65rem; }
+.pm-rate-list { flex: 1; min-width: 0; list-style: none; display: grid; gap: 5px; padding: 0; }
+.pm-rate-list li { display: grid; grid-template-columns: auto 4.4em 1fr; align-items: center; gap: 5px; font-size: 0.6rem; font-weight: 900; }
+.pm-rate-st { width: 18px; height: 18px; }
+.pm-rate-list li > span { overflow: hidden; white-space: nowrap; }
+.pm-rate-list i { height: 8px; border: 2px solid var(--dark); border-radius: 999px; background: #fff; overflow: hidden; }
+.pm-rate-list em { display: block; height: 100%; background: var(--mint); }
+.pm-rate-foot { list-style: none; margin-top: 8px; padding: 6px 0 0; border-top: 2px dashed rgba(30, 27, 75, 0.2); }
+.pm-rate-foot li { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; font-size: 0.66rem; font-weight: 900; color: var(--dark-60); }
+.pm-rate-foot b { font-family: var(--font-en); color: var(--dark); font-weight: 600; }
+.pm-tabbar { position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr); padding: 5px 6px 10px; border-top: 3px solid var(--dark); background: #fff; }
+.pm-tabbar span { display: flex; flex-direction: column; align-items: center; gap: 0; padding: 3px 0; border-radius: 12px; font-size: 0.52rem; font-weight: 900; }
+.pm-tabbar .pm-st { width: 24px; height: 24px; filter: grayscale(0.9); opacity: 0.55; }
+.pm-tabbar .is-on { background: #FFF1C2; }
+.pm-tabbar .is-on .pm-st { filter: none; opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .pm-body { animation: none; } }
+@media (max-width: 600px) { .phone { transform: none; } .phone-screen { height: 540px; } }

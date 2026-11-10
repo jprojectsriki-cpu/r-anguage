@@ -880,3 +880,8 @@ main, .site-footer { position: relative; z-index: 1; }
 .pm-tabbar .is-on .pm-st { filter: none; opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .pm-body { animation: none; } }
 @media (max-width: 600px) { .phone { transform: none; } .phone-screen { height: 540px; } }
+
+/* レベル：R-ANGUAGE の単語カードの数（合格の目安とは分けて書く） */
+.level-cards { margin-top: 12px; padding: 10px 12px; border: 2.5px dashed var(--dark); border-radius: 14px; background: #fff; font-size: 0.82rem; line-height: 2; }
+.level-cards-label { display: block; font-size: 0.72rem; font-weight: 900; color: var(--purple); }
+.level-cards b, .plan .check-list b { font-family: var(--font-en); color: var(--pink); }

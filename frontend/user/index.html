@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/lp.css?v=20261110b">
-    <link rel="stylesheet" href="css/loading.css?v=20261110b">
+    <link rel="stylesheet" href="css/lp.css?v=20261110c">
+    <link rel="stylesheet" href="css/loading.css?v=20261110c">
     <script>
         document.documentElement.classList.add('js');
         try { if (localStorage.getItem('ranguage_furigana') === 'off') document.documentElement.classList.add('furigana-off'); } catch (e) {}
@@ -509,6 +509,22 @@
                 </div>
 
                 <div class="grid-4 pricing-grid">
+                    <article class="pop-card plan plan-bundle reveal reveal-flip" data-level="まとめて">
+                        <span class="plan-ribbon">いちばんお<ruby>得<rt>とく</rt></ruby></span>
+                        <span class="level-badge bg-dark">N4〜N1 まとめて</span>
+                        <h3>まとめてプラン</h3>
+                        <p class="plan-price">¥13,000<small>（<ruby>税込<rt>ぜいこみ</rt></ruby>）</small></p>
+                        <p class="plan-once"><ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>り・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い　<span class="plan-save">4つ<ruby>別々<rt>べつべつ</rt></ruby>より ¥2,000 お<ruby>得<rt>とく</rt></ruby></span></p>
+                        <ul class="check-list">
+                            <li>N4・N3・N2・N1 の<ruby>全部<rt>ぜんぶ</rt></ruby>が<ruby>使<rt>つか</rt></ruby>える</li>
+                            <li><ruby>全<rt>ぜん</rt></ruby>レベルの<ruby>語彙<rt>ごい</rt></ruby>・<ruby>文法<rt>ぶんぽう</rt></ruby>・<ruby>読解<rt>どっかい</rt></ruby>・<ruby>聴解<rt>ちょうかい</rt></ruby></li>
+                            <li><ruby>全<rt>ぜん</rt></ruby>レベルの<ruby>模擬<rt>もぎ</rt></ruby><ruby>試験<rt>しけん</rt></ruby></li>
+                            <li><ruby>単語<rt>たんご</rt></ruby>カード：<ruby>合計<rt>ごうけい</rt></ruby> <b>9,800<ruby>語<rt>ご</rt></ruby></b>を<ruby>搭載<rt>とうさい</rt></ruby></li>
+                            <li><ruby>学習<rt>がくしゅう</rt></ruby>ダッシュボード</li>
+                        </ul>
+                        <p class="plan-note">※ <ruby>新<rt>あたら</rt></ruby>しくお<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>みの<ruby>方<rt>かた</rt></ruby>だけのプランです。</p>
+                        <button type="button" class="pop-btn btn-pink btn-block" data-apply="ALL"><span>まとめてプランを<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>む</span></button>
+                    </article>
                     <article class="pop-card plan reveal reveal-flip" data-level="N4">
                         <span class="level-badge bg-teal">N4 <ruby>初中級<rt>しょちゅうきゅう</rt></ruby></span>
                         <h3>N4プラン</h3>
@@ -678,6 +694,7 @@
                     <label><input type="radio" name="level" value="N3" checked><span><b>N3</b>¥3,500</span></label>
                     <label><input type="radio" name="level" value="N2"><span><b>N2</b>¥4,000</span></label>
                     <label><input type="radio" name="level" value="N1"><span><b>N1</b>¥4,500</span></label>
+                    <label class="level-bundle"><input type="radio" name="level" value="ALL"><span><b>N4〜N1 まとめて</b>¥13,000</span></label>
                 </div>
             </fieldset>
 
@@ -729,7 +746,7 @@
                 <dt>所在地</dt><dd>〒902-0062<br>沖縄県那覇市字松川362番地9　シティテラス松川402号</dd>
                 <dt>電話番号</dt><dd>080-9107-4916<br>※お問い合わせは、なるべく下のお問い合わせフォームからお願いいたします。</dd>
                 <dt>お問い合わせ</dt><dd><a href="https://jprojectsriki-cpu.github.io/rikis_collection/#contact" target="_blank" rel="noopener">お問い合わせフォーム</a>からご連絡ください。</dd>
-                <dt>販売価格</dt><dd>N4プラン 3,000円／N3プラン 3,500円／N2プラン 4,000円／N1プラン 4,500円（いずれも税込・買い切り）</dd>
+                <dt>販売価格</dt><dd>N4プラン 3,000円／N3プラン 3,500円／N2プラン 4,000円／N1プラン 4,500円／N4〜N1 まとめてプラン 13,000円（新規のお申し込みのみ）（いずれも税込・買い切り）</dd>
                 <dt>商品代金以外の必要料金</dt><dd>・インターネット接続料金および通信費用（お客様ご負担）<br>・銀行振込の手数料（お客様ご負担）</dd>
                 <dt>お支払い方法</dt><dd>銀行振込（お申し込み後に、振込先の口座をメールでお知らせします）</dd>
                 <dt>代金の支払時期</dt><dd>お申し込み後、ご案内する期限までにお支払いください。期限までにお支払いが確認できない場合、お申し込みは自動的に取り消されます。</dd>
@@ -838,8 +855,8 @@
     </dialog>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="js/config.js?v=20261110b"></script>
-    <script src="js/loading.js?v=20261110b"></script>
-    <script src="js/lp.js?v=20261110b"></script>
+    <script src="js/config.js?v=20261110c"></script>
+    <script src="js/loading.js?v=20261110c"></script>
+    <script src="js/lp.js?v=20261110c"></script>
 </body>
 </html>

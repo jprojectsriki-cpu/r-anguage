@@ -105,7 +105,7 @@ function adminIssue_(token, applicationId) {
 
     // アカウント：有効にして、レベルを追加する
     const levels = String(u[7] || '').split(',').filter(String);
-    if (levels.indexOf(app.level) === -1) levels.push(app.level);
+    levelsOf_(app.level).forEach(function (lv) { if (levels.indexOf(lv) === -1) levels.push(lv); }); // まとめてプランは N4〜N1 のすべて
     const order = ['N4', 'N3', 'N2', 'N1'];
     levels.sort(function (a, b) { return order.indexOf(a) - order.indexOf(b); });
 
@@ -117,7 +117,7 @@ function adminIssue_(token, applicationId) {
     // 同じアカウントに、ほかの「入金待ち」の申込がないか（申し込み直したあとなど。二重の入金に気づくため）
     app.others = readApplications_().filter(function (x) {
       return x.userId === app.userId && x.applicationId !== app.applicationId && (x.status === 'awaiting_payment' || x.status === 'paid');
-    }).map(function (x) { return x.applicationId + '（' + x.level + '）'; });
+    }).map(function (x) { return x.applicationId + '（' + levelLabel_(x.level) + '）'; });
   } finally {
     lock.releaseLock();
   }
@@ -139,7 +139,7 @@ function sendIssueMail_(app) {
       'R-ANGUAGE のアカウントを発行しましたので、お知らせします。',
       '',
       '■ 申込番号　　　：' + app.applicationId,
-      '■ 追加したレベル：' + app.level,
+      '■ 追加したレベル：' + levelLabel_(app.level),
       '■ ご利用中のレベル：' + app.levels.join('、'),
       '■ ログインID　　：' + app.email,
       '',

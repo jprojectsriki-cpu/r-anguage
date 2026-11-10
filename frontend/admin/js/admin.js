@@ -393,7 +393,7 @@
             var c2 = td('申込日時', 'cell-nowrap'); c2.textContent = fmt(a.createdAt);
             var c3 = td('お名前／メール');
             var w = el('div'); w.append(el('span', '', a.name), el('span', 'cell-sub', a.email)); c3.append(w);
-            var c4 = td('レベル'); c4.append(el('span', 'level-pill lv-' + a.level, a.level));
+            var c4 = td('レベル'); c4.append(el('span', 'level-pill lv-' + a.level, a.level === 'ALL' ? 'N4〜N1 まとめて' : a.level));
             var c5 = td('金額', 'cell-nowrap'); c5.textContent = yen(a.amount);
             var c6 = td('お支払い', 'cell-nowrap'); c6.textContent = PAYMENT[a.paymentMethod] || a.paymentMethod;
             var c7 = td('支払期限', 'cell-nowrap');
@@ -436,7 +436,7 @@
     }
 
     function appRows(a) {
-        return [['申込番号', a.applicationId], ['お名前', a.name], ['メール', a.email], ['レベル', a.level], ['金額', yen(a.amount)], ['お支払い', PAYMENT[a.paymentMethod] || a.paymentMethod]];
+        return [['申込番号', a.applicationId], ['お名前', a.name], ['メール', a.email], ['レベル', a.level === 'ALL' ? 'N4〜N1 まとめて（N4・N3・N2・N1）' : a.level], ['金額', yen(a.amount)], ['お支払い', PAYMENT[a.paymentMethod] || a.paymentMethod]];
     }
 
     function issueApplication(a) {

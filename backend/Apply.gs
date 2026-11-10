@@ -6,6 +6,14 @@
 
 // レベルごとの料金（税込・買い切り）
 const PRICES = { N4: 3000, N3: 3500, N2: 4000, N1: 4500 };
+// N4〜N1 まとめてプラン（2026-11-10 追加・新規の申し込みだけ。発行すると N4〜N1 のすべてが使える）
+const BUNDLE = { code: 'ALL', price: 13000, levels: ['N4', 'N3', 'N2', 'N1'], label: 'N4〜N1 まとめて' };
+// 新規の申し込みで選べるプラン（マイページの追加申込は PRICES だけ）
+const PLAN_PRICES = Object.assign({}, PRICES, { ALL: BUNDLE.price });
+/** 申込のレベルの表示名（ALL →「N4〜N1 まとめて」） */
+function levelLabel_(level) { return level === BUNDLE.code ? BUNDLE.label : String(level); }
+/** 申込を発行したときに使えるようになるレベル */
+function levelsOf_(level) { return level === BUNDLE.code ? BUNDLE.levels.slice() : [String(level)]; }
 // お支払い方法の名前（konbini は、銀行振込だけにする前の申込を表示するために残す）
 const PAYMENT_METHODS = { bank_transfer: '銀行振込', konbini: 'コンビニ払い' };
 const PAYMENT_DEFAULT = 'bank_transfer'; // 新しい申込は、すべて銀行振込
@@ -38,7 +46,7 @@ function apply_(req) {
   const password = String(req.password || '');
 
   // ---- 入力チェック ----
-  if (!PRICES[level]) return { ok: false, message: 'レベルを選択してください。' };
+  if (!PLAN_PRICES[level]) return { ok: false, message: 'レベルを選択してください。' };
   if (!name || name.length > 50) return { ok: false, message: 'お名前を50文字以内で入力してください。' };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) {
     return { ok: false, message: 'メールアドレスの形式を確認してください。' };
@@ -105,7 +113,7 @@ function apply_(req) {
     application = {
       applicationId: makeApplicationId_(),
       level: level,
-      amount: PRICES[level],
+      amount: PLAN_PRICES[level],
       payment: payment,
       expiresAt: expiresAt
     };
@@ -186,7 +194,7 @@ function sendApplyMails_(name, email, a) {
       '以下の内容でお申し込みを受け付けました。',
       '',
       '■ 申込番号：' + a.applicationId,
-      '■ レベル　：' + a.level,
+      '■ レベル　：' + levelLabel_(a.level),
       '■ 金額　　：' + amount + '円（税込・買い切り）',
       '■ お支払い：' + PAYMENT_METHODS[a.payment],
       '■ 支払期限：' + deadline,
@@ -217,7 +225,7 @@ function sendApplyMails_(name, email, a) {
         '申込番号：' + a.applicationId,
         'お名前　：' + name,
         'メール　：' + email,
-        'レベル　：' + a.level + '（' + amount + '円）',
+        'レベル　：' + levelLabel_(a.level) + '（' + amount + '円）',
         'お支払い：' + PAYMENT_METHODS[a.payment],
         '支払期限：' + deadline
       ].join('\n')

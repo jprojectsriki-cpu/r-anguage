@@ -885,3 +885,12 @@ main, .site-footer { position: relative; z-index: 1; }
 .level-cards { margin-top: 12px; padding: 10px 12px; border: 2.5px dashed var(--dark); border-radius: 14px; background: #fff; font-size: 0.82rem; line-height: 2; }
 .level-cards-label { display: block; font-size: 0.72rem; font-weight: 900; color: var(--purple); }
 .level-cards b, .plan .check-list b { font-family: var(--font-en); color: var(--pink); }
+
+/* N4〜N1 まとめてプラン */
+.plan-bundle { --plan-accent: linear-gradient(90deg, var(--teal), var(--yellow), var(--pink), var(--purple)); position: relative; }
+.plan-bundle::before { background: var(--plan-accent); }
+.plan-ribbon { position: absolute; top: 18px; right: -8px; padding: 2px 12px; border: 2.5px solid var(--dark); border-radius: 8px; background: var(--pink); color: #fff; font-size: 0.75rem; font-weight: 900; box-shadow: 3px 3px 0 var(--dark); transform: rotate(4deg); }
+.bg-dark { background: var(--dark); color: #fff; }
+.plan-save { display: inline-block; margin-left: 4px; color: var(--pink); }
+.plan-note { margin: -10px 0 16px; font-size: 0.72rem; color: var(--dark-60); line-height: 2; }
+.level-select .level-bundle { grid-column: 1 / -1; }

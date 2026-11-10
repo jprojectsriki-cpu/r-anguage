@@ -252,7 +252,7 @@
         // お支払い待ちの申込
         p.pending.forEach(function (a) {
             main.append(h('section', { class: 'card pending' }, [
-                h('p', { class: 'pending-title', html: a.level + '：お{支払|しはら}い{待|ま}ち（{申込番号|もうしこみばんごう} ' + a.applicationId + '）' }),
+                h('p', { class: 'pending-title', html: (a.level === 'ALL' ? 'N4〜N1 まとめて' : a.level) + '：お{支払|しはら}い{待|ま}ち（{申込番号|もうしこみばんごう} ' + a.applicationId + '）' }),
                 h('p', { class: 'pending-text', html: '{支払期限|しはらいきげん}：' + dateText(a.expiresAt) + '。{振込先|ふりこみさき}は、{受付|うけつけ}メールを{見|み}てください。{入金|にゅうきん}を{確認|かくにん}したら、メールでお{知|し}らせします。' })
             ]));
         });

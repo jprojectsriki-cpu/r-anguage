@@ -434,3 +434,6 @@ u.ul { text-decoration: underline; text-decoration-thickness: 2px; text-underlin
 .bulk-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-bottom: 12px; padding: 10px 14px; border: 2px dashed var(--dark); border-radius: 14px; background: #fff; }
 .bulk-text { flex: 1 1 320px; font-size: 0.8rem; line-height: 1.8; color: var(--dark-70); }
 .bulk-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* N4〜N1 まとめてプラン */
+.level-pill.lv-ALL { background: linear-gradient(90deg, #4CC9F0, #FFBE0B, #FF006E, #8338EC); color: #fff; white-space: nowrap; }

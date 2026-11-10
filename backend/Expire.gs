@@ -105,7 +105,7 @@ function sendExpiredMail_(a) {
       'お支払いの期限までに入金を確認できなかったため、以下のお申し込みを取り消しました。',
       '',
       '■ 申込番号：' + a.applicationId,
-      '■ レベル　：' + a.level,
+      '■ レベル　：' + levelLabel_(a.level),
       '■ 支払期限：' + formatLimit_(a.expiresAt),
       '',
       'あらためてご利用いただく場合は、同じメールアドレスで、もう一度お申し込みいただけます。',
@@ -133,7 +133,7 @@ function sendReminderMail_(a, today) {
       'お支払いの期限が' + (isToday ? '今日' : '明日') + 'になりましたので、お知らせします。',
       '',
       '■ 申込番号：' + a.applicationId,
-      '■ レベル　：' + a.level,
+      '■ レベル　：' + levelLabel_(a.level),
       '■ 金額　　：' + Number(a.amount).toLocaleString('ja-JP') + '円（税込・買い切り）',
       '■ お支払い：' + (PAYMENT_METHODS[a.paymentMethod] || a.paymentMethod),
       '■ 支払期限：' + formatLimit_(a.expiresAt),
@@ -154,7 +154,7 @@ function sendReminderMail_(a, today) {
 function sendCheckSummaryMail_(expired, reminded) {
   const adminEmail = PropertiesService.getScriptProperties().getProperty('ADMIN_EMAIL');
   if (!adminEmail) return;
-  const line = function (a) { return '・' + a.applicationId + '　' + a.name + '　' + a.level + '　期限 ' + formatLimit_(a.expiresAt); };
+  const line = function (a) { return '・' + a.applicationId + '　' + a.name + '　' + levelLabel_(a.level) + '　期限 ' + formatLimit_(a.expiresAt); };
   MailApp.sendEmail({
     to: adminEmail,
     subject: '【R-ANGUAGE管理】支払期限の処理：期限切れ ' + expired.length + '件・リマインド ' + reminded.length + '件',

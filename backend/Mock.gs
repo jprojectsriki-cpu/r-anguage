@@ -70,10 +70,19 @@ function toMockQuestion_(q) {
 }
 
 /** この受講生の模試の結果（新しい順） */
+/** 1回の模試の「くわしい結果」（JSON の文字）を、結果IDで探して読む */
+function readMockDetail_(resultId) {
+  const sheet = getSheet_(SHEET_MOCK_RESULTS);
+  if (sheet.getLastRow() < 2) return '';
+  const hit = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).createTextFinder(String(resultId)).matchEntireCell(true).findNext();
+  return hit ? String(sheet.getRange(hit.getRow(), MR_HEADERS.length).getValue() || '') : '';
+}
+
 function readMyMockResults_(userId) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_MOCK_RESULTS);
   if (!sheet || sheet.getLastRow() < 2) return [];
-  return sheet.getRange(2, 1, sheet.getLastRow() - 1, MR_HEADERS.length).getValues()
+  // 「くわしい結果」（11列目・長い）は読まない。必要なときは readMockDetail_ で1行だけ読む
+  return sheet.getRange(2, 1, sheet.getLastRow() - 1, MR_HEADERS.length - 1).getValues()
     .filter(function (r) { return String(r[1]) === userId; })
     .map(function (r) {
       let divisions = [];
@@ -81,7 +90,7 @@ function readMyMockResults_(userId) {
       return {
         resultId: String(r[0]), level: String(r[2]), at: r[3] instanceof Date ? r[3].toISOString() : String(r[3]),
         total: Number(r[4]), pass: Number(r[5]), result: String(r[6]), divisions: divisions,
-        correct: Number(r[8]), count: Number(r[9]), detail: String(r[10] || '')
+        correct: Number(r[8]), count: Number(r[9])
       };
     })
     .reverse();
@@ -185,17 +194,25 @@ function meMockSubmit_(token, input) {
       resultId, me.user.userId, level, now, graded.total, graded.pass, graded.result,
       JSON.stringify(graded.divisions), graded.correct, items.length, JSON.stringify(detail)
     ]);
-    // 答えた問題は Answers シートにも残す（まちがい復習に入る）
-    const rows = items.filter(function (it) { return it.chosen; }).map(function (it) {
-      return [me.user.userId, it.q.questionId, it.q.level, it.q.section, it.q.form, it.chosen, it.correct, now, 'mock'];
+    // 答えた問題は、受講生ごとのまとめにも入れる（まちがい復習・正答率に入る）
+    const answered = items.filter(function (it) { return it.chosen; });
+    const uid = me.user.userId;
+    const ans = udAns_(uid);
+    const sum = udSum_(uid);
+    udAddAnswers_(uid, answered.map(function (it) {
+      return { questionId: it.q.questionId, level: it.q.level, section: it.q.section, form: it.q.form, correct: it.correct };
+    }), 'mock', now, ans, sum);
+    if (!answered.length) udMarkDay_(sum, now, 1);
+    sum.lm = { level: level, total: graded.total, result: graded.result, at: now.toISOString() };
+    udWrite_(uid + '|ans', ans);
+    udWrite_(uid + '|sum', sum);
+    var logRows = answered.map(function (it) {
+      return [uid, it.q.questionId, it.q.level, it.q.section, it.q.form, it.chosen, it.correct, now, 'mock'];
     });
-    if (rows.length) {
-      const ans = getSheet_(SHEET_ANSWERS);
-      ans.getRange(ans.getLastRow() + 1, 1, rows.length, ANS_HEADERS.length).setValues(rows);
-    }
   } finally {
     lock.releaseLock();
   }
+  writeAnswerLog_(logRows || [], now);
   return Object.assign({ ok: true, resultId: resultId, level: level, at: now.toISOString() }, graded, { count: items.length, review: reviewItems_(items) });
 }
 
@@ -238,7 +255,7 @@ function meMockResult_(token, resultId) {
   const r = readMyMockResults_(me.user.userId).filter(function (x) { return x.resultId === String(resultId || ''); })[0];
   if (!r) return { ok: false, message: 'この結果は見つかりません。' };
   let detail = [];
-  try { detail = JSON.parse(r.detail || '[]'); } catch (e) { detail = []; }
+  try { detail = JSON.parse(readMockDetail_(r.resultId) || '[]'); } catch (e) { detail = []; }
   const byId = {};
   readQuestions_().forEach(function (q) { byId[q.questionId] = q; });
   const items = detail.map(function (d) {

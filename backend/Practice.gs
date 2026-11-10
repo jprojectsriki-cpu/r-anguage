@@ -3,7 +3,8 @@
  *
  * - QuestionCounts シート：レベル・科目・問題形式（大問）ごとの問題数。JLPT の「問題数の目安」に合わせてある
  *   （行の順番が、出題する順番。公式の数が変わったら、このシートの数字を直すだけでよい）
- * - Answers シート：受講生が答えた記録（1問ごとに1行）
+ * - 答えの記録：受講生ごとのまとめは UserData シート、1問1行の記録は月ごとのスプレッドシート（UserData.gs）
+ *   ※ 本体の Answers シートは、前の記録（2026年11月まで）。いまは読み書きしない
  * - Favorites シート：お気に入り（☆）の問題
  * - まちがい復習：いちばん新しい答えが不正解の問題（次に正解すると、復習から外れる）
  * - 管理者のアカウントは、すべてのレベルを解ける（画面の確認用。記録は残る）
@@ -105,26 +106,6 @@ function practiceLevels_(user) {
   return LEVEL_LIST.filter(function (lv) { return user.levels.indexOf(lv) >= 0; });
 }
 
-/** この受講生の答えの記録（古い順） */
-function readMyAnswers_(userId) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ANSWERS);
-  if (!sheet || sheet.getLastRow() < 2) return [];
-  return sheet.getRange(2, 1, sheet.getLastRow() - 1, ANS_HEADERS.length).getValues()
-    .filter(function (r) { return String(r[0]) === userId; })
-    .map(function (r) {
-      return { questionId: String(r[1]), level: String(r[2]), section: String(r[3]), form: String(r[4]), chosen: String(r[5]), correct: r[6] === true || String(r[6]).toUpperCase() === 'TRUE', at: r[7] };
-    });
-}
-
-/** まちがい復習の問題ID（いちばん新しい答えが不正解のもの。まちがえた順） */
-function mistakeIds_(answers) {
-  const last = {};
-  answers.forEach(function (a, i) { last[a.questionId] = { correct: a.correct, i: i }; });
-  return Object.keys(last)
-    .filter(function (id) { return !last[id].correct; })
-    .sort(function (a, b) { return last[a].i - last[b].i; });
-}
-
 /** この受講生のお気に入りの問題ID（登録した順） */
 function readMyFavorites_(userId) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_FAVORITES);
@@ -151,7 +132,7 @@ function mePracticeMenu_(token) {
   const questions = readPublicQuestions_();
   const byId = {};
   questions.forEach(function (q) { byId[q.questionId] = q; });
-  const mistakes = mistakeIds_(readMyAnswers_(me.user.userId)).map(function (id) { return byId[id]; }).filter(Boolean);
+  const mistakes = mistakeIdsOf_(udAns_(me.user.userId)).map(function (id) { return byId[id]; }).filter(Boolean);
   const favorites = readMyFavorites_(me.user.userId).map(function (id) { return byId[id]; }).filter(Boolean);
 
   const have = {};
@@ -233,16 +214,6 @@ function pickUnits_(list, want, lastAt) {
   return picked;
 }
 
-/** この受講生が、それぞれの問題に最後に答えた時刻 { 問題ID: ミリ秒 } */
-function lastAnsweredMap_(userId) {
-  const map = {};
-  readMyAnswers_(userId).forEach(function (a) {
-    const t = a.at instanceof Date ? a.at.getTime() : 0;
-    if (t > (map[a.questionId] || 0)) map[a.questionId] = t;
-  });
-  return map;
-}
-
 /** 受講生の画面に送る形 */
 function toClientQuestion_(q, favs) {
   return {
@@ -289,7 +260,7 @@ function mePracticeStart_(token, input) {
     });
   } else {
     let ids;
-    if (mode === 'mistakes') ids = mistakeIds_(readMyAnswers_(me.user.userId));
+    if (mode === 'mistakes') ids = mistakeIdsOf_(udAns_(me.user.userId));
     else if (mode === 'favorites') ids = favs.slice();
     else ids = (Array.isArray(input.ids) ? input.ids : []).map(String);
     picked = ids.map(function (id) { return byId[id]; }).filter(Boolean);
@@ -328,21 +299,30 @@ function meSaveAnswers_(token, input) {
   readPublicQuestions_().forEach(function (q) { byId[q.questionId] = q; });
   const now = new Date();
   const rows = [];
+  const items = [];
   list.forEach(function (a) {
     const q = byId[String(a.questionId)];
     const chosen = String(a.chosen);
     if (!q || levels.indexOf(q.level) === -1 || ['1', '2', '3', '4'].indexOf(chosen) === -1) return;
-    rows.push([me.user.userId, q.questionId, q.level, q.section, q.form, Number(chosen), chosen === String(q.answer), now, mode]);
+    const correct = chosen === String(q.answer);
+    rows.push([me.user.userId, q.questionId, q.level, q.section, q.form, Number(chosen), correct, now, mode]);
+    items.push({ questionId: q.questionId, level: q.level, section: q.section, form: q.form, correct: correct });
   });
   if (!rows.length) return { ok: true, saved: 0 };
+  const uid = me.user.userId;
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
-    const sheet = getSheet_(SHEET_ANSWERS);
-    sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, ANS_HEADERS.length).setValues(rows);
+    // 受講生ごとのまとめ（UserData.gs）
+    const ans = udAns_(uid);
+    const sum = udSum_(uid);
+    udAddAnswers_(uid, items, mode, now, ans, sum);
+    udWrite_(uid + '|ans', ans);
+    udWrite_(uid + '|sum', sum);
   } finally {
     lock.releaseLock();
   }
+  writeAnswerLog_(rows, now); // 月ごとの回答の記録
   return { ok: true, saved: rows.length };
 }
 

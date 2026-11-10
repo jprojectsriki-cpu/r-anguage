@@ -1,7 +1,8 @@
 /**
  * R-ANGUAGE API - 受講生の「単語カード」（R-10c）
  *
- * - VocabProgress シート：受講生ごと・カードごとに「覚えた／まだ」を1行で持つ（同じカードは上書き）
+ * - 覚えた／まだ の記録は、受講生ごとのまとめ（UserData シート、UserData.gs）に持つ
+ *   ※ VocabProgress シートは前の記録（2026年11月まで）。いまは読み書きしない
  * - 1回に出すカードは 30枚まで（VOCAB_PER_ROUND）
  * - 出し方
  *     new   … まだ覚えていないカード（「まだ」を押したカードを先に、次に一度も見ていないカード）
@@ -31,14 +32,13 @@ function readPublicCards_() {
   return readCards_().filter(function (c) { return c.status === '公開' && validateCard_(c).length === 0; });
 }
 
-/** この受講生の記録 { cardId: { row, state, known, still, at } } */
+/** この受講生の記録 { cardId: { state, known, still, at } }（UserData.gs のまとめから） */
 function readMyVocab_(userId) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_VOCAB_PROGRESS);
+  const voc = udVoc_(userId);
   const map = {};
-  if (!sheet || sheet.getLastRow() < 2) return map;
-  sheet.getRange(2, 1, sheet.getLastRow() - 1, VP_HEADERS.length).getValues().forEach(function (r, i) {
-    if (String(r[0]) !== userId) return;
-    map[String(r[1])] = { row: i + 2, state: String(r[3]), known: Number(r[4]) || 0, still: Number(r[5]) || 0, at: r[6] instanceof Date ? r[6].getTime() : 0 };
+  Object.keys(voc).forEach(function (id) {
+    const v = voc[id];
+    map[id] = { state: Number(v[0]) === 1 ? '覚えた' : 'まだ', known: Number(v[1]) || 0, still: Number(v[2]) || 0, at: (Number(v[3]) || 0) * 1000 };
   });
   return map;
 }
@@ -119,36 +119,30 @@ function meVocabMark_(token, input) {
   readPublicCards_().forEach(function (c) { byId[c.cardId] = c; });
   const now = new Date();
 
+  const uid = me.user.userId;
+  const t = Math.floor(now.getTime() / 1000);
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   let saved = 0;
   try {
-    const sheet = getSheet_(SHEET_VOCAB_PROGRESS);
-    const mine = readMyVocab_(me.user.userId);
-    const appends = [];
-    const pending = {}; // まだシートにない行（同じ回に2回押したとき用）
+    const voc = udVoc_(uid);
     marks.forEach(function (m) {
       const c = byId[String(m.cardId)];
       if (!c || levels.indexOf(c.level) === -1) return;
       const known = m.known === true;
-      const state = known ? '覚えた' : 'まだ';
-      const p = mine[c.cardId];
-      if (p) {
-        p.state = state;
-        if (known) p.known++; else p.still++;
-        sheet.getRange(p.row, 4, 1, 4).setValues([[state, p.known, p.still, now]]);
-      } else if (pending[c.cardId]) {
-        const row = pending[c.cardId];
-        row[3] = state;
-        if (known) row[4]++; else row[5]++;
-      } else {
-        const row = [me.user.userId, c.cardId, c.level, state, known ? 1 : 0, known ? 0 : 1, now];
-        pending[c.cardId] = row;
-        appends.push(row);
-      }
+      const v = voc[c.cardId] || [0, 0, 0, 0];
+      v[0] = known ? 1 : 0;
+      if (known) v[1] = (Number(v[1]) || 0) + 1; else v[2] = (Number(v[2]) || 0) + 1;
+      v[3] = t;
+      voc[c.cardId] = v;
       saved++;
     });
-    if (appends.length) sheet.getRange(sheet.getLastRow() + 1, 1, appends.length, VP_HEADERS.length).setValues(appends);
+    if (saved) {
+      const sum = udSum_(uid);
+      udMarkDay_(sum, now, saved);
+      udWrite_(uid + '|voc', voc);
+      udWrite_(uid + '|sum', sum);
+    }
   } finally {
     lock.releaseLock();
   }

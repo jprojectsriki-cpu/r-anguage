@@ -101,20 +101,11 @@
             ]));
             return;
         }
-        var saved = load(LEVEL_KEY);
-        var lv = m.levels.filter(function (x) { return x.level === saved; })[0] || m.levels[0];
-
-        { // レベルは1つだけでも、いつも出す（どのレベルの画面かわかるように）
-            var bar = h('div', { class: 'lv-tabs', role: 'tablist', 'aria-label': 'レベル' }, [h('span', { class: 'lv-tabs-label', text: 'レベル' })]);
-            m.levels.forEach(function (x) {
-                bar.append(h('button', {
-                    type: 'button', role: 'tab', class: 'lv lv-' + x.level + ' lv-tab', 'aria-selected': String(x.level === lv.level), text: x.level,
-                    onclick: function () { store(LEVEL_KEY, x.level); drawMenu(main); }
-                }));
-            });
-            if (!m.isAdmin && m.levels.length < 4) bar.append(h('a', { class: 'lv-add', href: '#mypage', html: '＋レベルを{追加|ついか}' }));
-            main.append(bar);
-        }
+        var lvNames = m.levels.map(function (x) { return x.level; });
+        var lv = m.levels.filter(function (x) { return x.level === A.studyLevel(lvNames, LEVEL_KEY); })[0] || m.levels[0];
+        // いま勉強しているレベル（2つ以上なら「レベルを変える」。ページを開いたときは大きなボタンで選んでもらう）
+        main.append(A.levelBar(lvNames, lv.level, { isAdmin: m.isAdmin, onChange: function () { drawMenu(main); } }));
+        A.askLevelIfNeeded(lvNames, lv.level, function () { drawMenu(main); });
         if (m.isAdmin) main.append(h('p', { class: 'admin-note', text: '管理者アカウントなので、すべてのレベルを使えます（確認用）。「覚えた／まだ」の記録も残ります。' }));
 
         // 覚えた割合

@@ -775,3 +775,18 @@ u.ul { text-decoration: underline; text-decoration-thickness: 2px; text-underlin
 .lv-tab { flex: 1 1 0; min-width: 64px; padding: 8px 10px; border: 2.5px solid var(--dark); border-radius: 999px; background: #fff; font-weight: 900; font-size: 1rem; cursor: pointer; box-shadow: 0 3px 0 var(--dark); }
 .lv-tab.is-on { background: var(--yellow, #FFD84D); }
 .lv-tab:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--dark); }
+
+/* いま勉強しているレベル（問題・単語・模試のいちばん上） */
+.lv-now { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px; padding: 10px 14px; border: 3px solid var(--dark); border-radius: 18px; background: #fff; box-shadow: 4px 4px 0 var(--dark); }
+.lv-now-label { font-size: 0.78rem; font-weight: 900; color: var(--dark-70); }
+.lv-now-pill { min-width: 64px; font-size: 1.2rem; box-shadow: 2px 2px 0 var(--dark); }
+.lv-now .lv-change, .lv-now .lv-add { margin-left: auto; }
+/* レベルを選ぶ画面 */
+.lv-pick-note { margin: 4px 0 14px; font-size: 0.85rem; color: var(--dark-70); line-height: 2; }
+.lv-pick { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.lv-pick-btn { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 96px; padding: 10px; border: 3px solid var(--dark); border-radius: 20px; box-shadow: 4px 4px 0 var(--dark); cursor: pointer; font: inherit; color: var(--dark); }
+.lv-pick-btn b { font-family: var(--font-en); font-size: 2rem; line-height: 1.1; }
+.lv-pick-btn span { font-size: 0.8rem; font-weight: 900; }
+.lv-pick-btn small { position: absolute; top: -10px; right: -6px; padding: 0 8px; border: 2px solid var(--dark); border-radius: 999px; background: var(--pink); color: #fff; font-size: 0.68rem; font-weight: 900; line-height: 1.8; transform: rotate(6deg); }
+.lv-pick-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--dark); }
+.lv-pick-btn:focus-visible { outline: 4px solid var(--purple); outline-offset: 3px; }

@@ -28,6 +28,7 @@
     function getToken() { try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; } }
     function setToken(t) { try { if (t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); } catch (e) { /* 無視 */ } }
     function store(key, value) { try { localStorage.setItem(key, value); } catch (e) { /* 保存できなくても表示は変わる */ } }
+    function load(key) { try { return localStorage.getItem(key) || ''; } catch (e) { return ''; } }
 
     function apiPost(data) {
         data.token = getToken();
@@ -173,6 +174,8 @@
     function route() {
         var key = (location.hash || '#home').slice(1).split('?')[0];
         if (!PAGES[key]) key = 'home';
+        // ほかのページから来たときだけ、レベルを選ぶ画面を出す（同じページの中で戻ったときは出さない）
+        state.askLevel = state.page !== key;
         state.page = key;
         document.querySelectorAll('.tab').forEach(function (t) {
             var on = t.getAttribute('data-page') === key;
@@ -345,13 +348,90 @@
         } catch (err) { return null; }
     }
 
-    /* ホームで見るレベル（複数のレベルを受けている受講生だけ切りかえる。選んだレベルは覚えておく） */
+    /* =====================================================================
+     * 勉強するレベル（ホーム・問題・単語・模試で共通。選んだレベルは覚えておく）
+     * 複数のレベルを使える受講生は、問題・単語・模試のページを開いたとき、大きなボタンで選んでもらう
+     * ===================================================================== */
+    var STUDY_KEY = 'ranguage_study_level';
+    function studyLevel(levels, legacyKey) {
+        var saved = load(STUDY_KEY) || (legacyKey ? load(legacyKey) : '') || state.homeLevel || '';
+        return levels.indexOf(saved) >= 0 ? saved : levels[0];
+    }
+    function setStudyLevel(lv) {
+        state.homeLevel = lv;
+        store(STUDY_KEY, lv);
+    }
+    function takeAskLevel() { var a = !!state.askLevel; state.askLevel = false; return a; }
+
+    var LEVEL_NOTE = { N4: '{基本|きほん}', N3: '{中級|ちゅうきゅう}', N2: '{中上級|ちゅうじょうきゅう}', N1: '{上級|じょうきゅう}' };
+    /** レベルを選ぶ画面（大きなボタン）。選んだレベルを返す（閉じたら null） */
+    function chooseLevel(levels, current) {
+        var d = $('levelDialog');
+        if (!d) {
+            d = h('dialog', { class: 'modal lv-modal', id: 'levelDialog', 'aria-labelledby': 'levelDialogTitle' });
+            document.body.append(d);
+        }
+        return new Promise(function (resolve) {
+            var picked = null;
+            var grid = h('div', { class: 'lv-pick' }, levels.map(function (lv) {
+                return h('button', {
+                    type: 'button', class: 'lv-pick-btn lv-' + lv + (lv === current ? ' is-last' : ''),
+                    onclick: function () { picked = lv; d.close(); }
+                }, [h('b', { text: lv }), h('span', { html: LEVEL_NOTE[lv] || '' }), lv === current ? h('small', { html: '{前回|ぜんかい}' }) : null]);
+            }));
+            d.replaceChildren(h('div', { class: 'modal-box' }, [
+                h('h2', { class: 'modal-title', id: 'levelDialogTitle', html: 'どのレベルを{勉強|べんきょう}しますか？' }),
+                h('p', { class: 'lv-pick-note', html: 'ボタンを{押|お}してください。あとから「レベルを{変|か}える」で{変|か}えられます。' }),
+                grid
+            ]));
+            d.addEventListener('close', function done() {
+                d.removeEventListener('close', done);
+                resolve(picked);
+            });
+            d.showModal();
+            var first = d.querySelector('.is-last') || d.querySelector('.lv-pick-btn');
+            if (first) first.focus();
+        });
+    }
+    /**
+     * ページの上の「いま勉強しているレベル」（複数あるときは「レベルを変える」ボタン）
+     * opts: { isAdmin, onChange(lv) }
+     */
+    function levelBar(levels, current, opts) {
+        opts = opts || {};
+        var kids = [
+            h('span', { class: 'lv-now-label', html: 'いま{勉強|べんきょう}しているレベル' }),
+            h('span', { class: 'lv lv-' + current + ' lv-now-pill', text: current })
+        ];
+        if (levels.length > 1) {
+            kids.push(h('button', {
+                type: 'button', class: 'pop-btn btn-white btn-sm lv-change', html: 'レベルを{変|か}える',
+                onclick: function () {
+                    chooseLevel(levels, current).then(function (lv) {
+                        if (lv && lv !== current) { setStudyLevel(lv); if (opts.onChange) opts.onChange(lv); }
+                    });
+                }
+            }));
+        } else if (!opts.isAdmin) {
+            kids.push(h('a', { class: 'lv-add', href: '#mypage', html: '＋レベルを{追加|ついか}' }));
+        }
+        return h('div', { class: 'lv-now' }, kids);
+    }
+    /** ページを開いたとき、レベルが2つ以上なら選んでもらう */
+    function askLevelIfNeeded(levels, current, onChange) {
+        if (!takeAskLevel() || levels.length < 2) return;
+        chooseLevel(levels, current).then(function (lv) {
+            if (!lv) return;
+            setStudyLevel(lv);
+            if (lv !== current && onChange) onChange(lv);
+        });
+    }
+
     var HOME_LV_KEY = 'ranguage_home_level';
     function homeLevelView(st) {
         var list = st.byLevel || [];
         if (!list.length) return null;
-        var saved = '';
-        try { saved = localStorage.getItem(HOME_LV_KEY) || ''; } catch (e) { saved = ''; }
+        var saved = load(STUDY_KEY) || load(HOME_LV_KEY) || '';
         var hit = list.filter(function (x) { return x.level === (state.homeLevel || saved); })[0];
         if (!hit) {
             // 答えた数がいちばん多いレベル（まだなければ最初のレベル）
@@ -361,8 +441,7 @@
         return hit;
     }
     function setHomeLevel(lv) {
-        state.homeLevel = lv;
-        try { localStorage.setItem(HOME_LV_KEY, lv); } catch (e) { /* 使えないブラウザ */ }
+        setStudyLevel(lv);
         drawContinue(state.stats);
         drawStats(state.stats);
     }
@@ -773,6 +852,7 @@
 
     /* ほかのページ（js/practice.js など）から使う道具 */
     window.RApp = {
+        studyLevel: studyLevel, setStudyLevel: setStudyLevel, chooseLevel: chooseLevel, levelBar: levelBar, askLevelIfNeeded: askLevelIfNeeded,
         listenBox: listenBox, registerDrain: registerDrain, afterSaves: afterSaves, makeDrain: makeDrain,
         state: state, h: h, fg: fg, icon: icon, sticker: sticker, FORM_GUIDE: FORM_GUIDE, toast: toast, confirmBox: confirmBox,
         apiPost: apiPost, withLoading: withLoading, authFailed: authFailed, setTitle: function (t) { $('topTitle').innerHTML = fg(t); }

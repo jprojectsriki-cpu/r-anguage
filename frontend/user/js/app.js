@@ -288,9 +288,41 @@
     var SECTION_ST = { '文字・語彙': 'moji', '文法': 'bunpo', '読解': 'dokkai', '聴解': 'choukai' };
     var SECTION_RUBY = { '文字・語彙': '{文字|もじ}・{語彙|ごい}', '文法': '{文法|ぶんぽう}', '読解': '{読解|どっかい}', '聴解': '{聴解|ちょうかい}' };
 
+    /*
+     * 送っている途中の記録（答え・覚えた単語）があれば、送り終わるのを待つ
+     * （待たずに数を読むと、押したばかりの分がまだ入っていないことがある）
+     */
+    var drains = [];
+    function registerDrain(fn) { drains.push(fn); }
+    function afterSaves() {
+        var all = Promise.all(drains.map(function (fn) {
+            try { return Promise.resolve(fn()).catch(function () {}); } catch (e) { return Promise.resolve(); }
+        }));
+        return Promise.race([all, new Promise(function (r) { setTimeout(r, 10000); })]);
+    }
+    /** outbox（{ list, busy }）が空になるまで待つ関数を作る */
+    function makeDrain(outbox, flush) {
+        return function () {
+            return new Promise(function (resolve) {
+                var t0 = Date.now();
+                var tried = false;
+                (function tick() {
+                    if (!outbox.list.length && !outbox.busy) return resolve();
+                    if (Date.now() - t0 > 9000) return resolve();
+                    if (!outbox.busy) {
+                        if (tried) return resolve(); // 送れなかった（通信の失敗など）。待たずに進む
+                        tried = true;
+                        flush();
+                    }
+                    setTimeout(tick, 150);
+                })();
+            });
+        };
+    }
+
     /** 学習の記録を読み込む（失敗しても、ホームは出す） */
     function fetchStats() {
-        return apiPost({ action: 'me.stats' }).then(function (res) {
+        return afterSaves().then(function () { return apiPost({ action: 'me.stats' }); }).then(function (res) {
             if (authFailed(res)) return Promise.reject('auth');
             state.stats = res && res.ok ? res : null;
         }, function (err) {
@@ -703,7 +735,7 @@
 
     /* ほかのページ（js/practice.js など）から使う道具 */
     window.RApp = {
-        listenBox: listenBox,
+        listenBox: listenBox, registerDrain: registerDrain, afterSaves: afterSaves, makeDrain: makeDrain,
         state: state, h: h, fg: fg, icon: icon, sticker: sticker, FORM_GUIDE: FORM_GUIDE, toast: toast, confirmBox: confirmBox,
         apiPost: apiPost, withLoading: withLoading, authFailed: authFailed, setTitle: function (t) { $('topTitle').innerHTML = fg(t); }
     };

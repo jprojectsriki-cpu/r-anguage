@@ -68,12 +68,13 @@
     window.addEventListener('beforeunload', function (e) {
         if (outbox.list.length) { e.preventDefault(); e.returnValue = ''; }
     });
+    A.registerDrain(A.makeDrain(outbox, flush)); // ホームの数を読む前に、送り終わるのを待つ
 
     /* ===================== メニュー ===================== */
     function renderMenu(main) {
         V.round = null;
         A.setTitle('{単語|たんご}カード');
-        A.withLoading('カードを<ruby>読<rt>よ</rt></ruby>み<ruby>込<rt>こ</rt></ruby>んでいます', A.apiPost({ action: 'me.vocabMenu' }))
+        A.withLoading('カードを<ruby>読<rt>よ</rt></ruby>み<ruby>込<rt>こ</rt></ruby>んでいます', A.afterSaves().then(function () { return A.apiPost({ action: 'me.vocabMenu' }); }))
             .then(function (res) {
                 if (A.authFailed(res)) return;
                 if (!res || !res.ok) throw new Error((res && res.message) || 'menu failed');

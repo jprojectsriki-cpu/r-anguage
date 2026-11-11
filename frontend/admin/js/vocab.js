@@ -426,5 +426,8 @@
         onLogout: function () { v.list = []; v.loaded = false; v.editing = null; v.saved = ''; }
     });
 
+    // まとめて登録のあとは、一覧を読み込み直す（古い一覧のまま「0件」と出ないように）
+    document.addEventListener('ra:data-changed', function (e) { if (e.detail === 'cards') v.loaded = false; });
+
     document.addEventListener('DOMContentLoaded', init);
 })();

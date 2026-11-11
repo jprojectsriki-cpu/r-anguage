@@ -217,6 +217,8 @@
                     if (A.handleAuthError(r)) return;
                     if (!r || !r.ok) { A.notice((r && r.message) || '登録できませんでした。', 'error'); return; }
                     if (!r.saved) { S.checked = r; draw(r); A.notice('エラーがあったので、登録しませんでした。結果を見て直してください。', 'error'); return; }
+                    // 「問題」「単語カード」のページを次に開いたとき、新しいデータを読み込み直す（読み込み終わるまでローディングを出す）
+                    document.dispatchEvent(new CustomEvent('ra:data-changed', { detail: S.kind }));
                     A.notice(k.label + 'を ' + r.saved + '行 登録しました。「' + k.label + '」のページで確かめられます。', 'ok');
                     $('imPaste').value = '';
                     reset();

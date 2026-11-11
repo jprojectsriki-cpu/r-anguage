@@ -561,5 +561,8 @@
         onLogout: function () { q.list = []; q.loaded = false; q.editing = null; q.saved = ''; }
     });
 
+    // まとめて登録のあとは、一覧を読み込み直す（古い一覧のまま「0件」と出ないように）
+    document.addEventListener('ra:data-changed', function (e) { if (e.detail === 'questions') q.loaded = false; });
+
     document.addEventListener('DOMContentLoaded', init);
 })();

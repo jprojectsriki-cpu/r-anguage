@@ -100,6 +100,33 @@ function readPublicQuestions_() {
   });
 }
 
+/**
+ * 採点・数え上げ用の軽い一覧 { 問題ID: { level, section, form, answer } }（公開中の問題だけ）
+ * 本文・選択肢・解説の列は読まないので、問題が増えても速い。2分間キャッシュする
+ * （キャッシュにない問題IDが来たら、シートから読み直す）
+ */
+function questionIndex_(needIds) {
+  const cache = CacheService.getScriptCache();
+  let idx = null;
+  try { const raw = cache.get('qindex_v1'); if (raw) idx = JSON.parse(raw); } catch (e) { idx = null; }
+  if (idx && needIds && needIds.some(function (id) { return !idx[id]; })) idx = null;
+  if (idx) return idx;
+  idx = {};
+  const sheet = getSheet_(SHEET_QUESTIONS);
+  const last = sheet.getLastRow();
+  if (last >= 2) {
+    const a = sheet.getRange(2, 1, last - 1, 4).getValues();   // A〜D：ID・レベル・科目・問題形式
+    const b = sheet.getRange(2, 12, last - 1, 3).getValues();  // L〜N：正解・解説・状態
+    a.forEach(function (r, i) {
+      const id = String(r[0] || '').trim();
+      if (!id || String(b[i][2] || '').trim() !== '公開') return;
+      idx[id] = { level: String(r[1] || '').trim(), section: String(r[2] || '').trim(), form: String(r[3] || '').trim(), answer: String(b[i][0] || '').trim() };
+    });
+  }
+  try { cache.put('qindex_v1', JSON.stringify(idx), 120); } catch (e) { /* 大きすぎるときはキャッシュしない */ }
+  return idx;
+}
+
 /** この受講生が解けるレベル（管理者はすべて） */
 function practiceLevels_(user) {
   if (user.role === 'admin') return LEVEL_LIST.slice();
@@ -295,13 +322,13 @@ function meSaveAnswers_(token, input) {
   const mode = PRACTICE_MODES.indexOf(String(input.mode)) >= 0 ? String(input.mode) : 'set';
   if (!list.length) return { ok: true, saved: 0 };
   const levels = practiceLevels_(me.user);
-  const byId = {};
-  readPublicQuestions_().forEach(function (q) { byId[q.questionId] = q; });
+  const byId = questionIndex_(list.map(function (a) { return String(a.questionId); })); // 本文などは読まない（速くするため）
   const now = new Date();
   const rows = [];
   const items = [];
   list.forEach(function (a) {
-    const q = byId[String(a.questionId)];
+    const id = String(a.questionId);
+    const q = byId[id] ? Object.assign({ questionId: id }, byId[id]) : null;
     const chosen = String(a.chosen);
     if (!q || levels.indexOf(q.level) === -1 || ['1', '2', '3', '4'].indexOf(chosen) === -1) return;
     const correct = chosen === String(q.answer);

@@ -51,7 +51,8 @@ function meStats_(token) {
 
   // まちがい復習の数（いま出せる問題だけ）
   const pub = {};
-  readPublicQuestions_().forEach(function (q) { if (levels.indexOf(q.level) >= 0) pub[q.questionId] = q; });
+  const qidx = questionIndex_();
+  Object.keys(qidx).forEach(function (id) { if (levels.indexOf(qidx[id].level) >= 0) pub[id] = qidx[id]; });
   const mistakes = mistakeIdsOf_(ans).filter(function (id) { return pub[id]; });
   const mistakeLevels = {};
   mistakes.forEach(function (id) { mistakeLevels[pub[id].level] = (mistakeLevels[pub[id].level] || 0) + 1; });

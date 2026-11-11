@@ -301,20 +301,22 @@
         var all = Promise.all(drains.map(function (fn) {
             try { return Promise.resolve(fn()).catch(function () {}); } catch (e) { return Promise.resolve(); }
         }));
-        return Promise.race([all, new Promise(function (r) { setTimeout(r, 10000); })]);
+        return Promise.race([all, new Promise(function (r) { setTimeout(r, 32000); })]);
     }
     /** outbox（{ list, busy }）が空になるまで待つ関数を作る */
     function makeDrain(outbox, flush) {
         return function () {
             return new Promise(function (resolve) {
                 var t0 = Date.now();
-                var tried = false;
+                var tries = 0, idleSince = 0;
                 (function tick() {
                     if (!outbox.list.length && !outbox.busy) return resolve();
-                    if (Date.now() - t0 > 9000) return resolve();
-                    if (!outbox.busy) {
-                        if (tried) return resolve(); // 送れなかった（通信の失敗など）。待たずに進む
-                        tried = true;
+                    if (Date.now() - t0 > 30000) return resolve(); // 30秒待っても終わらないときは進む
+                    if (outbox.busy) { idleSince = 0; }
+                    else if (!idleSince) { idleSince = Date.now(); }
+                    else if (Date.now() - idleSince > 1200) { // 送っていない答えが残っている（前の送信が失敗した）
+                        if (tries >= 2) return resolve(); // 2回送り直してもだめなら、待たずに進む
+                        tries++; idleSince = 0;
                         flush();
                     }
                     setTimeout(tick, 150);

@@ -481,7 +481,9 @@ html.furigana-off rt { display: none; }
 .plan-price { margin-top: 8px; font-family: var(--font-en); font-size: 2.4rem; font-weight: 700; line-height: 1.2; }
 .plan-price small { font-family: var(--font); font-size: 0.75rem; color: var(--dark-60); }
 .plan-once { font-size: 0.75rem; color: var(--purple); font-weight: 900; }
-.plan .check-list { margin-bottom: 22px; }
+.plan .check-list { margin-top: 14px; margin-bottom: 22px; } /* 本文の始まりを、どのプランでも同じ高さにする */
+.plan > .pop-btn { margin-top: auto; } /* ボタンはカードのいちばん下にそろえる */
+.plan-once { height: 4em; line-height: 1.8; }
 .plan[data-level="N4"] { --plan-accent: var(--teal); }
 .plan[data-level="N3"] { --plan-accent: var(--yellow); }
 .plan[data-level="N2"] { --plan-accent: var(--pink); }
@@ -891,6 +893,6 @@ main, .site-footer { position: relative; z-index: 1; }
 .plan-bundle::before { background: var(--plan-accent); }
 .plan-ribbon { position: absolute; top: 18px; right: -8px; padding: 2px 12px; border: 2.5px solid var(--dark); border-radius: 8px; background: var(--pink); color: #fff; font-size: 0.75rem; font-weight: 900; box-shadow: 3px 3px 0 var(--dark); transform: rotate(4deg); }
 .bg-dark { background: var(--dark); color: #fff; }
-.plan-save { display: inline-block; margin-left: 4px; color: var(--pink); }
+.plan-save { display: block; color: var(--pink); }
 .plan-note { margin: -10px 0 16px; font-size: 0.72rem; color: var(--dark-60); line-height: 2; }
 .level-select .level-bundle { grid-column: 1 / -1; }

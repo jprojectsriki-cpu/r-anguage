@@ -4,7 +4,9 @@
  * - 数字はすべて、受講生ごとのまとめ（UserData シート、UserData.gs）から出す
  * - 連続日数：問題・単語カード・模試のどれかをした日が、今日（今日まだなら昨日）から何日続いているか。日付は日本時間
  * - この7日間：学習した日
- * - 正答率：全体と科目ごと（模試の答えもふくむ）
+ * - 正答率：全体と科目ごと（模試の答えもふくむ）。1問につき「最後の答え」だけで数える（2026-11 から）
+ *   解き直して正解すれば 100% にできる。公開をやめた問題は数えない
+ *   マイページの「成績のリセット」をした科目は、リセットより前の答えを数えない（回答の記録・まちがい復習は消さない）
  * - 続きから：前回の問題（科目ごと・大問ごと）、まちがい復習の数、覚えていない単語の数、最後の模試
  */
 
@@ -21,9 +23,31 @@ function meStats_(token) {
   const sum = udSum_(uid);
   const ans = udAns_(uid);
   const days = sum.days;
+  const qidx = questionIndex_();
+
+  // 正答率：問題ごとの最後の答えから数える { レベル: { 科目: [答えた問題数, 正解数] } }
+  const rst = sum.rst || {};
+  const cnt = {};
+  Object.keys(ans).forEach(function (id) {
+    const q = qidx[id];
+    if (!q || levels.indexOf(q.level) < 0 || SECTIONS.indexOf(q.section) < 0) return;
+    const t = Number(ans[id][0]) || 0;
+    if (t < (Number(rst[q.level + '|' + q.section]) || 0) || t < (Number(rst[q.level + '|*']) || 0)) return;
+    const L = cnt[q.level] || (cnt[q.level] = {});
+    const v = L[q.section] || (L[q.section] = [0, 0]);
+    v[0]++;
+    if (Number(ans[id][1]) === 1) v[1]++;
+  });
+  function rateRow(sec, v) { return { section: sec, answered: v[0], correct: v[1], rate: v[0] ? Math.round(v[1] / v[0] * 100) : null }; }
+  function totalOf(rows) {
+    const a = rows.reduce(function (n, r) { return n + r.answered; }, 0);
+    const c = rows.reduce(function (n, r) { return n + r.correct; }, 0);
+    return { answered: a, correct: c, rate: a ? Math.round(c / a * 100) : null };
+  }
   const sections = SECTIONS.map(function (sec) {
-    const v = sum.sec[sec] || [0, 0];
-    return { section: sec, answered: v[0], correct: v[1], rate: v[0] ? Math.round(v[1] / v[0] * 100) : null };
+    const v = [0, 0];
+    levels.forEach(function (lv) { const x = (cnt[lv] || {})[sec]; if (x) { v[0] += x[0]; v[1] += x[1]; } });
+    return rateRow(sec, v);
   });
 
   // 単語カード
@@ -51,7 +75,6 @@ function meStats_(token) {
 
   // まちがい復習の数（いま出せる問題だけ）
   const pub = {};
-  const qidx = questionIndex_();
   Object.keys(qidx).forEach(function (id) { if (levels.indexOf(qidx[id].level) >= 0) pub[id] = qidx[id]; });
   const mistakes = mistakeIdsOf_(ans).filter(function (id) { return pub[id]; });
   const mistakeLevels = {};
@@ -61,15 +84,12 @@ function meStats_(token) {
 
   // レベルごと（複数のレベルを受けている受講生は、ホームで切りかえて見る）
   const byLevel = levels.map(function (lv) {
-    const L = sum.lv[lv] || { sec: {}, tot: [0, 0] };
     const lvCards = cards.filter(function (c) { return c.level === lv; });
+    const rows = SECTIONS.map(function (sec) { return rateRow(sec, (cnt[lv] || {})[sec] || [0, 0]); });
     return {
       level: lv,
-      total: { answered: L.tot[0], correct: L.tot[1], rate: L.tot[0] ? Math.round(L.tot[1] / L.tot[0] * 100) : null },
-      sections: SECTIONS.map(function (sec) {
-        const v = L.sec[sec] || [0, 0];
-        return { section: sec, answered: v[0], correct: v[1], rate: v[0] ? Math.round(v[1] / v[0] * 100) : null };
-      }),
+      total: totalOf(rows),
+      sections: rows,
       vocab: { known: lvCards.filter(function (c) { return mine[c.cardId] && mine[c.cardId].state === '覚えた'; }).length, total: lvCards.length },
       mistakes: mistakeLevels[lv] || 0,
       lastMock: sum.lmv[lv] || null
@@ -83,11 +103,42 @@ function meStats_(token) {
     streak: streak,
     doneToday: !!days[todayKey],
     week: week,
-    total: { answered: sum.tot[0], correct: sum.tot[1], rate: sum.tot[0] ? Math.round(sum.tot[1] / sum.tot[0] * 100) : null },
+    total: totalOf(sections),
     sections: sections,
     vocab: { known: known, total: cards.length },
     mistakes: { count: mistakes.length, level: mistakeLevel },
     lastPractice: lastPractice,
     lastMock: sum.lm
   };
+}
+
+/**
+ * 成績のリセット（マイページ）。level のうち section（'ALL' ならそのレベルの全科目）の正答率を 0 からにする
+ * - 今までの答えは消さない。リセットした時刻だけを覚えて、それより前の答えを正答率に数えない
+ * - 回答の記録（月ごとのファイル）・まちがい復習・単語カード・連続日数は変えない
+ */
+function meResetStats_(token, level, section) {
+  const me = requireMe_(token);
+  if (!me.ok) return me;
+  level = String(level || '');
+  section = String(section || '');
+  if (practiceLevels_(me.user).indexOf(level) < 0) return { ok: false, message: 'このレベルは使えません。' };
+  if (section !== 'ALL' && SECTIONS.indexOf(section) < 0) return { ok: false, message: '科目を選んでください。' };
+  const uid = me.user.userId;
+  const t = Math.floor(Date.now() / 1000) + 1; // いままでの答えをすべてふくめる
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const sum = udSum_(uid);
+    if (section === 'ALL') {
+      SECTIONS.forEach(function (sec) { delete sum.rst[level + '|' + sec]; });
+      sum.rst[level + '|*'] = t;
+    } else {
+      sum.rst[level + '|' + section] = t;
+    }
+    udWrite_(uid + '|sum', sum);
+  } finally {
+    lock.releaseLock();
+  }
+  return { ok: true, level: level, section: section };
 }

@@ -631,6 +631,25 @@
                 function (v) { saveSettings({ settings: { speed: v } }); })
         ]));
 
+        // 成績のリセット（ホームの正答率を、その科目だけ 0 からにする）
+        var rLevels = (p.studyLevels || u.levels).filter(function (lv) { return LEVELS.indexOf(lv) >= 0; });
+        if (rLevels.length) {
+            var rLv = h('select', { id: 'resetLevel', 'aria-label': 'レベル' });
+            rLevels.forEach(function (lv) { rLv.append(h('option', { value: lv, text: lv })); });
+            var rSec = h('select', { id: 'resetSection', 'aria-label': '科目' }, [h('option', { value: 'ALL', text: 'ぜんぶの科目' })]);
+            ['文字・語彙', '文法', '読解', '聴解'].forEach(function (sec) { rSec.append(h('option', { value: sec, text: sec })); });
+            var rBtn = h('button', { type: 'button', class: 'pop-btn btn-white btn-block', id: 'resetBtn', html: '{成績|せいせき}をリセットする' });
+            rBtn.addEventListener('click', function () { resetStats(rLv.value, rSec.value, rBtn); });
+            main.append(h('section', { class: 'card', id: 'resetCard' }, [
+                h('h2', { class: 'card-title', html: '{成績|せいせき}のリセット' }),
+                h('p', { class: 'note', html: 'ホームの{正答率|せいとうりつ}は、1{問|もん}ごとに{最後|さいご}の{答|こた}えで{計算|けいさん}します。まちがえた{問題|もんだい}も、{解|と}き{直|なお}して{正解|せいかい}すれば{上|あ}がります。{最初|さいしょ}からやり{直|なお}したいときは、リセットすると、その{科目|かもく}の{正答率|せいとうりつ}が 0 からになります。' }),
+                h('label', { class: 'field' }, [h('span', { text: 'レベル' }), rLv]),
+                h('label', { class: 'field' }, [h('span', { html: '{科目|かもく}' }), rSec]),
+                rBtn,
+                h('p', { class: 'note', html: 'まちがい{復習|ふくしゅう}・お{気|き}に{入|い}り・{単語|たんご}カード・{連続|れんぞく}{日数|にっすう}は、そのままです。' })
+            ]));
+        }
+
         // パスワード変更
         var form = h('form', { class: 'pw-form', novalidate: true }, [
             h('label', { class: 'field' }, [h('span', { html: 'いまのパスワード' }), h('input', { type: 'password', name: 'current', autocomplete: 'current-password', required: true })]),
@@ -656,6 +675,29 @@
     }
 
     /* ---------- マイページの操作 ---------- */
+    /** 成績のリセット（確認してから送る） */
+    function resetStats(level, section, btn) {
+        var SEC_RUBY = { '文字・語彙': '{文字|もじ}・{語彙|ごい}', '文法': '{文法|ぶんぽう}', '読解': '{読解|どっかい}', '聴解': '{聴解|ちょうかい}' };
+        var secText = section === 'ALL' ? 'ぜんぶの{科目|かもく}' : (SEC_RUBY[section] || section);
+        confirmBox({
+            title: '{成績|せいせき}をリセットしますか？',
+            body: h('p', { html: level + ' の' + secText + 'の{正答率|せいとうりつ}を、0 からにします。{元|もと}にはもどせません。' }),
+            ok: 'リセットする'
+        }).then(function (yes) {
+            if (!yes) return;
+            btn.disabled = true;
+            return withLoading('リセットしています', afterSaves().then(function () {
+                return apiPost({ action: 'me.resetStats', level: level, section: section });
+            })).then(function (res) {
+                if (authFailed(res)) return;
+                if (!res || !res.ok) { toast((res && res.message) || 'リセットできませんでした。', true); return; }
+                toast(level + ' の' + secText + 'の{成績|せいせき}をリセットしました。');
+            }, function () {
+                toast('{通信|つうしん}できませんでした。もう{一度|いちど}{試|ため}してください。', true);
+            }).then(function () { btn.disabled = false; });
+        });
+    }
+
     /* 設定の保存
      * - 押した内容は、すぐ画面に当てる（want に入れる）
      * - 続けて押したときは、最後の内容だけを送る（0.4秒待ってから送る・同時に2つは送らない）

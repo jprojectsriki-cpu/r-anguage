@@ -12,7 +12,8 @@
  *   voc … 単語カードごとの記録         { カードID: [覚えたなら1, 覚えた回数, まだの回数, 時刻（秒）] }
  *   sum … 学習記録                    { days: {日付: 回数}, sec: {科目: [答えた数, 正解数]}, tot: [答えた数, 正解数],
  *                                       lp: 前回の問題, lm: 最後の模試,
- *                                       lv: {レベル: { sec: {...}, tot: [...] }}, lmv: {レベル: そのレベルの最後の模試} }
+ *                                       lv: {レベル: { sec: {...}, tot: [...] }}, lmv: {レベル: そのレベルの最後の模試},
+ *                                       rst: {'レベル|科目' または 'レベル|*': 成績をリセットした時刻（秒）} }
  * - 回答の記録（1問1行）は、月ごとの別のスプレッドシート「R-ANGUAGE 回答の記録 YYYY-MM」に書く
  *   （本体のスプレッドシートが大きくならないように。ファイルはマイドライブに自動で作られる）
  *
@@ -92,7 +93,7 @@ function udAns_(uid) { return udRead_(uid + '|ans', {}); }
 function udVoc_(uid) { return udRead_(uid + '|voc', {}); }
 function udSum_(uid) {
   const s = udRead_(uid + '|sum', null) || {};
-  return { days: s.days || {}, sec: s.sec || {}, tot: s.tot || [0, 0], lp: s.lp || null, lm: s.lm || null, lv: s.lv || {}, lmv: s.lmv || {} };
+  return { days: s.days || {}, sec: s.sec || {}, tot: s.tot || [0, 0], lp: s.lp || null, lm: s.lm || null, lv: s.lv || {}, lmv: s.lmv || {}, rst: s.rst || {} };
 }
 
 /** 学習した日に数を足す（古い日は消す） */
@@ -147,6 +148,8 @@ function mistakeIdsOf_(ans) {
     .sort(function (a, b) { return (Number(ans[a][0]) || 0) - (Number(ans[b][0]) || 0); });
 }
 
+const ANSWER_LOG_MAX_ROWS = 900000;
+
 /** 回答の記録を、月ごとのスプレッドシートに書く（失敗しても、まとめの保存は止めない） */
 function writeAnswerLog_(rows, now) {
   if (!rows.length) return;
@@ -157,8 +160,18 @@ function writeAnswerLog_(rows, now) {
     let ss = null;
     const id = props.getProperty(key);
     if (id) { try { ss = SpreadsheetApp.openById(id); } catch (e) { ss = null; } }
+    // 1つのファイルは 1,000万セルまで。90万行をこえたら、同じ月の次のファイル「… YYYY-MM (2)」に書く
+    let part = Number(props.getProperty(key + '_PART') || 1);
+    if (ss) {
+      const cur = ss.getSheetByName(SHEET_ANSWERS) || ss.getSheets()[0];
+      if (cur.getLastRow() + rows.length > ANSWER_LOG_MAX_ROWS) {
+        props.setProperty(key + '_OLD' + part, id); // 前のファイルも残す（ANSWER_LOG_YYYY-MM_OLD1 など）
+        ss = null; part++;
+      }
+    }
     if (!ss) {
-      ss = SpreadsheetApp.create('R-ANGUAGE 回答の記録 ' + ym);
+      ss = SpreadsheetApp.create('R-ANGUAGE 回答の記録 ' + ym + (part > 1 ? ' (' + part + ')' : ''));
+      props.setProperty(key + '_PART', String(part));
       const first = ss.getSheets()[0];
       first.setName(SHEET_ANSWERS);
       first.getRange(1, 1, 1, ANS_HEADERS.length).setValues([ANS_HEADERS]).setFontWeight('bold');
@@ -277,7 +290,7 @@ function setupLevelStats() {
   if (old && old.getLastRow() >= 2) addRows(old.getRange(2, 1, old.getLastRow() - 1, ANS_HEADERS.length).getValues());
   const props = PropertiesService.getScriptProperties().getProperties();
   let files = 0;
-  Object.keys(props).filter(function (k) { return k.indexOf('ANSWER_LOG_') === 0; }).forEach(function (k) {
+  Object.keys(props).filter(function (k) { return k.indexOf('ANSWER_LOG_') === 0 && !/_PART$/.test(k); }).forEach(function (k) {
     try {
       const sh = SpreadsheetApp.openById(props[k]).getSheetByName(SHEET_ANSWERS);
       if (sh && sh.getLastRow() >= 2) addRows(sh.getRange(2, 1, sh.getLastRow() - 1, ANS_HEADERS.length).getValues());

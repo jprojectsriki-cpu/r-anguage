@@ -103,16 +103,18 @@ function doPost(e) {
         return json_(meMockResult_(req.token, req.resultId));
       case 'me.stats':
         return json_(meStats_(req.token));
+      case 'me.resetStats':
+        return json_(meResetStats_(req.token, req.level, req.section));
       case 'admin.importTemplates':
         return json_(adminImportTemplates_(req.token));
       case 'admin.setQuestionsStatus':
-        return json_(adminSetQuestionsStatus_(req.token, req.ids, req.status));
+        return json_(bumpIfOk_(adminSetQuestionsStatus_(req.token, req.ids, req.status)));
       case 'admin.setCardsStatus':
-        return json_(adminSetCardsStatus_(req.token, req.ids, req.status));
+        return json_(bumpIfOk_(adminSetCardsStatus_(req.token, req.ids, req.status)));
       case 'admin.importQuestions':
-        return json_(adminImportQuestions_(req.token, req.rows, req.dryRun === true));
+        return json_(bumpIfOk_(adminImportQuestions_(req.token, req.rows, req.dryRun === true)));
       case 'admin.importCards':
-        return json_(adminImportCards_(req.token, req.rows, req.dryRun === true));
+        return json_(bumpIfOk_(adminImportCards_(req.token, req.rows, req.dryRun === true)));
       case 'admin.examDates':
         return json_(adminListExamDates_(req.token));
       case 'admin.saveExamDate':
@@ -134,15 +136,15 @@ function doPost(e) {
       case 'admin.questions':
         return json_(adminListQuestions_(req.token));
       case 'admin.saveQuestion':
-        return json_(adminSaveQuestion_(req.token, req.question || {}));
+        return json_(bumpIfOk_(adminSaveQuestion_(req.token, req.question || {})));
       case 'admin.deleteQuestion':
-        return json_(adminDeleteQuestion_(req.token, req.questionId));
+        return json_(bumpIfOk_(adminDeleteQuestion_(req.token, req.questionId)));
       case 'admin.cards':
         return json_(adminListCards_(req.token));
       case 'admin.saveCard':
-        return json_(adminSaveCard_(req.token, req.card || {}));
+        return json_(bumpIfOk_(adminSaveCard_(req.token, req.card || {})));
       case 'admin.deleteCard':
-        return json_(adminDeleteCard_(req.token, req.cardId));
+        return json_(bumpIfOk_(adminDeleteCard_(req.token, req.cardId)));
       case 'admin.notices':
         return json_(adminListNotices_(req.token));
       case 'admin.saveNotice':

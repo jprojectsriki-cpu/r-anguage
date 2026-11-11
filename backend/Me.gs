@@ -133,6 +133,7 @@ function meProfile_(token) {
     ok: true,
     today: today,
     user: { name: u.name, email: u.email, levels: u.levels, examId: u.examId, settings: u.settings },
+    studyLevels: practiceLevels_(u), // 問題などで使えるレベル（管理者はすべて）
     prices: PRICES,
     notices: notices,
     exams: exams,

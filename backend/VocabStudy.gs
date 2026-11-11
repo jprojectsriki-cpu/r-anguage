@@ -29,7 +29,9 @@ function setupVocabStudy() {
 
 /** 受講生に出せるカード（公開・入力ミスなし）だけ */
 function readPublicCards_() {
-  return readCards_().filter(function (c) { return c.status === '公開' && validateCard_(c).length === 0; });
+  return cachedJson_('pubc', function () {   // Cache.gs（管理画面で変えると作り直す）
+    return readCards_().filter(function (c) { return c.status === '公開' && validateCard_(c).length === 0; });
+  });
 }
 
 /** この受講生の記録 { cardId: { state, known, still, at } }（UserData.gs のまとめから） */

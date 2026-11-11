@@ -94,24 +94,27 @@ function readQuestionCounts_() {
 
 /** 受講生に出せる問題（公開・入力ミスなし）だけ */
 function readPublicQuestions_() {
-  return readQuestions_().filter(function (q) {
-    q.form = String(q.form || '').trim();
-    return q.status === '公開' && validateQuestion_(q).length === 0;
+  return cachedJson_('pubq', function () {   // Cache.gs（管理画面で変えると作り直す）
+    return readQuestions_().filter(function (q) {
+      q.form = String(q.form || '').trim();
+      return q.status === '公開' && validateQuestion_(q).length === 0;
+    });
   });
 }
 
 /**
  * 採点・数え上げ用の軽い一覧 { 問題ID: { level, section, form, answer } }（公開中の問題だけ）
- * 本文・選択肢・解説の列は読まないので、問題が増えても速い。2分間キャッシュする
+ * 本文・選択肢・解説の列は読まないので、問題が増えても速い。10分間キャッシュする
  * （キャッシュにない問題IDが来たら、シートから読み直す）
  */
 function questionIndex_(needIds) {
-  const cache = CacheService.getScriptCache();
-  let idx = null;
-  try { const raw = cache.get('qindex_v1'); if (raw) idx = JSON.parse(raw); } catch (e) { idx = null; }
-  if (idx && needIds && needIds.some(function (id) { return !idx[id]; })) idx = null;
-  if (idx) return idx;
-  idx = {};
+  let idx = cachedJson_('qindex', buildQuestionIndex_);   // Cache.gs（小さく分けて10分間ためる）
+  if (needIds && needIds.some(function (id) { return !idx[id]; })) idx = cachedJson_('qindex', buildQuestionIndex_, true);
+  return idx;
+}
+
+function buildQuestionIndex_() {
+  const idx = {};
   const sheet = getSheet_(SHEET_QUESTIONS);
   const last = sheet.getLastRow();
   if (last >= 2) {
@@ -123,7 +126,6 @@ function questionIndex_(needIds) {
       idx[id] = { level: String(r[1] || '').trim(), section: String(r[2] || '').trim(), form: String(r[3] || '').trim(), answer: String(b[i][0] || '').trim() };
     });
   }
-  try { cache.put('qindex_v1', JSON.stringify(idx), 120); } catch (e) { /* 大きすぎるときはキャッシュしない */ }
   return idx;
 }
 

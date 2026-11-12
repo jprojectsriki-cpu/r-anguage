@@ -115,9 +115,13 @@ function adminListCards_(token) {
   lock.waitLock(20000);
   try {
     const cards = readCards_();
+    // 同じレベル・単語・読みのカード（カードが多くても速いように、先に表を作る）
+    const byKey = {};
+    cards.forEach(function (c) { const k = c.level + '|' + c.word + '|' + c.reading; (byKey[k] = byKey[k] || []).push(c.cardId); });
     const list = cards.map(function (c) {
       c.errors = validateCard_(c);
-      c.duplicateOf = findDuplicate_(cards, c);
+      const same = byKey[c.level + '|' + c.word + '|' + c.reading].filter(function (id) { return id !== c.cardId; });
+      c.duplicateOf = same.length ? same[0] : '';
       delete c.row;
       return c;
     });

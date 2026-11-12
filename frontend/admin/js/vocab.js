@@ -70,13 +70,18 @@
 
     /* ===================== 読み込み ===================== */
     function load() {
-        return A.withLoading('単語カードを読み込んでいます', A.apiPost({ action: 'admin.cards', token: A.getToken() }))
-            .then(function (res) {
-                if (A.handleAuthError(res)) return;
-                if (!res || !res.ok) { A.notice((res && res.message) || '単語カードを読み込めませんでした。', 'error'); return; }
+        // 一覧を描き終わってから、ローディングの画面を消す（データがないまま画面が出ないように）
+        return A.withLoading('単語カードを読み込んでいます', A.apiPost({ action: 'admin.cards', token: A.getToken() }).then(function (res) {
+            if (res && res.ok) {
                 v.list = res.cards || [];
                 v.loaded = true;
                 renderList();
+            }
+            return res;
+        }))
+            .then(function (res) {
+                if (A.handleAuthError(res)) return;
+                if (!res || !res.ok) A.notice((res && res.message) || '単語カードを読み込めませんでした。', 'error');
             })
             .catch(function (err) {
                 console.error(err);
@@ -121,6 +126,20 @@
         });
     }
 
+    var LIST_PAGE = 200;
+    /** 「さらに表示」ボタン（一覧の下） */
+    function drawMore(left) {
+        var btn = $('vMore');
+        if (!btn) {
+            btn = A.button('', 'btn btn-white btn-block', function () { v.shown = (v.shown || LIST_PAGE) + LIST_PAGE; renderList(); });
+            btn.id = 'vMore';
+            btn.style.marginTop = '12px';
+            $('vEmpty').parentNode.insertBefore(btn, $('vEmpty'));
+        }
+        btn.hidden = left <= 0;
+        btn.textContent = 'さらに ' + Math.min(left, LIST_PAGE) + '枚を表示（のこり ' + left + '枚）';
+    }
+
     function renderList() {
         var list = v.list;
         var errors = list.filter(function (c) { return c.errors && c.errors.length; }).length;
@@ -156,9 +175,13 @@
         rows.sort(function (a, b) { return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0); });
         drawBulk(rows);
 
+        // たくさんあるときは、200枚ずつ表示する（全部を一度に描くと、画面が止まるため）
+        var key = [v.checkOnly, v.level, v.status, v.query].join('|');
+        if (key !== v.listKey) { v.listKey = key; v.shown = LIST_PAGE; }
+        var showRows = rows.slice(0, v.shown || LIST_PAGE);
         var tbody = $('vRows');
         tbody.replaceChildren();
-        rows.forEach(function (c) {
+        showRows.forEach(function (c) {
             var tr = el('tr');
             if (needsCheck(c)) tr.className = 'has-error';
 
@@ -197,6 +220,7 @@
             tr.append(c1, c2, c3, c4, c5, c6, c7, c8);
             tbody.append(tr);
         });
+        drawMore(rows.length - showRows.length);
         $('vEmpty').hidden = rows.length > 0;
         $('vEmpty').textContent = list.length ? '該当するカードはありません。' : 'まだカードがありません。「新しいカード」から作成できます。';
     }

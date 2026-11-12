@@ -92,13 +92,18 @@
 
     /* ===================== 読み込み ===================== */
     function load() {
-        return A.withLoading('問題を読み込んでいます', A.apiPost({ action: 'admin.questions', token: A.getToken() }))
-            .then(function (res) {
-                if (A.handleAuthError(res)) return;
-                if (!res || !res.ok) { A.notice((res && res.message) || '問題を読み込めませんでした。', 'error'); return; }
+        // 一覧を描き終わってから、ローディングの画面を消す（データがないまま画面が出ないように）
+        return A.withLoading('問題を読み込んでいます', A.apiPost({ action: 'admin.questions', token: A.getToken() }).then(function (res) {
+            if (res && res.ok) {
                 q.list = res.questions || [];
                 q.loaded = true;
                 renderList();
+            }
+            return res;
+        }))
+            .then(function (res) {
+                if (A.handleAuthError(res)) return;
+                if (!res || !res.ok) A.notice((res && res.message) || '問題を読み込めませんでした。', 'error');
             })
             .catch(function (err) {
                 console.error(err);
@@ -143,6 +148,20 @@
         });
     }
 
+    var LIST_PAGE = 200;
+    /** 「さらに表示」ボタン（一覧の下） */
+    function drawMore(left) {
+        var btn = $('qMore');
+        if (!btn) {
+            btn = A.button('', 'btn btn-white btn-block', function () { q.shown = (q.shown || LIST_PAGE) + LIST_PAGE; renderList(); });
+            btn.id = 'qMore';
+            btn.style.marginTop = '12px';
+            $('qEmpty').parentNode.insertBefore(btn, $('qEmpty'));
+        }
+        btn.hidden = left <= 0;
+        btn.textContent = 'さらに ' + Math.min(left, LIST_PAGE) + '件を表示（のこり ' + left + '件）';
+    }
+
     function renderList() {
         var list = q.list;
         var withErrors = list.filter(function (x) { return x.errors && x.errors.length; });
@@ -180,9 +199,13 @@
         rows.sort(function (a, b) { return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0); });
         drawBulk(rows);
 
+        // たくさんあるときは、200件ずつ表示する（全部を一度に描くと、画面が止まるため）
+        var key = [q.errorsOnly, q.level, q.section, q.status, q.query].join('|');
+        if (key !== q.listKey) { q.listKey = key; q.shown = LIST_PAGE; }
+        var showRows = rows.slice(0, q.shown || LIST_PAGE);
         var tbody = $('qRows');
         tbody.replaceChildren();
-        rows.forEach(function (x) {
+        showRows.forEach(function (x) {
             var tr = el('tr');
             if (x.errors && x.errors.length) tr.className = 'has-error';
 
@@ -225,6 +248,7 @@
             tr.append(c1, c2, c3, c4, c5, c6, c7, c8);
             tbody.append(tr);
         });
+        drawMore(rows.length - showRows.length);
         $('qEmpty').hidden = rows.length > 0;
         $('qEmpty').textContent = list.length ? '該当する問題はありません。' : 'まだ問題がありません。「新しい問題」から作成できます。';
     }

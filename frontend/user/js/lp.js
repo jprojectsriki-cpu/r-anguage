@@ -548,6 +548,10 @@
         /* ----- ログイン ----- */
         var login = document.getElementById('loginForm');
         if (login) {
+            // 学習の画面から「戻る」で戻ったとき、ローディングの画面が残らないようにする
+            window.addEventListener('pageshow', function (ev) {
+                if (ev.persisted) { Loader.hide(); setBusy(login, false); }
+            });
             var loginMsg = document.getElementById('loginMsg');
             login.addEventListener('submit', function (e) {
                 e.preventDefault();
@@ -558,23 +562,27 @@
 
                 setBusy(login, true);
                 setMsg(loginMsg, '');
-                withLoading('ログインしています', apiPost({ action: 'login', email: email, password: password }))
+                // ログインできたときは、ローディングの画面を消さずに学習の画面へ移る
+                Loader.show('ログインしています');
+                apiPost({ action: 'login', email: email, password: password })
                     .then(function (res) {
                         if (res && res.ok) {
                             try { localStorage.setItem(TOKEN_KEY, res.token); } catch (err) { /* 保存できない環境 */ }
-                            login.reset();
-                            setMsg(loginMsg, res.user.name + 'さん、ログインしました。学習画面へ移動します。');
+                            Loader.show('<ruby>読<rt>よ</rt></ruby>み<ruby>込<rt>こ</rt></ruby>んでいます');
                             location.href = 'app.html';
-                        } else {
-                            setMsg(loginMsg, (res && res.message) || 'ログインに失敗しました。', true);
+                            return;
                         }
+                        return Loader.hide().then(function () {
+                            setMsg(loginMsg, (res && res.message) || 'ログインに失敗しました。', true);
+                            setBusy(login, false);
+                        });
                     })
                     .catch(function (err) {
                         console.error(err);
-                        setMsg(loginMsg, '通信に失敗しました。時間をおいてもう一度お試しください。', true);
-                    })
-                    .then(function () {
-                        setBusy(login, false);
+                        return Loader.hide().then(function () {
+                            setMsg(loginMsg, '通信に失敗しました。時間をおいてもう一度お試しください。', true);
+                            setBusy(login, false);
+                        });
                     });
             });
         }

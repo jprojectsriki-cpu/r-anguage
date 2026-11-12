@@ -637,6 +637,13 @@ rt { line-height: 1; white-space: nowrap; letter-spacing: -0.03em; }
 .m-timer.is-low { background: var(--pink); color: #fff; animation: pulse 1s ease-in-out infinite; }
 .m-timer-st { width: 26px; height: 26px; }
 @keyframes pulse { 50% { transform: scale(1.06); } }
+html.booting body > *:not(dialog) { visibility: hidden; }
+.m-head { flex-wrap: wrap; row-gap: 6px; }
+.m-strip { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 3px; }
+.m-sq { width: 12px; height: 12px; border: 1.5px solid var(--dark); border-radius: 3px; background: #fff; }
+.m-sq.is-done { background: var(--mint); }
+.m-sq.is-flag { background: var(--yellow); }
+.m-sq.is-now { box-shadow: 0 0 0 2px var(--purple); }
 .m-pos { flex: 1; font-family: var(--font-en); font-size: 0.95rem; text-align: center; }
 .m-pos b { font-size: 1.3rem; }
 .m-list-btn { padding: 4px 12px; border: 2.5px solid var(--dark); border-radius: 999px; background: #EDE3FF; font-size: 0.78rem; font-weight: 900; line-height: 1.9; }

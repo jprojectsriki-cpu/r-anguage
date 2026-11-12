@@ -278,8 +278,10 @@
         main.append(h('div', { class: 'm-head' }, [
             h('span', { class: 'm-timer' + (pp.left <= 300 ? ' is-low' : '') }, [A.sticker('st-mock', 'm-timer-st'), h('b', { id: 'mTimer', text: mmss(pp.left) })]),
             h('span', { class: 'm-pos' }, [h('b', { text: String(e.i + 1) }), document.createTextNode(' / ' + pp.questions.length)]),
-            h('button', { type: 'button', class: 'm-list-btn', html: '{問題|もんだい}の{一覧|いちらん}', onclick: openList })
+            h('button', { type: 'button', class: 'm-list-btn', html: '{問題|もんだい}の{一覧|いちらん}', onclick: openList }),
+            h('div', { class: 'm-strip', id: 'mStrip', role: 'img' })
         ]));
+        drawStrip();
 
         var card = h('section', { class: 'card quiz-card' });
         card.append(h('p', { class: 'quiz-form' }, [A.sticker('st-' + (SECTION_ST[q.section] || 'mock'), 'form-st'), h('span', { text: q.form || q.section })]));
@@ -300,7 +302,10 @@
                 type: 'button', class: 'choice', 'aria-pressed': String(e.answers[q.questionId] === n),
                 onclick: function () {
                     e.answers[q.questionId] = n;
+                    // 答えを選んだら「あとで見直す」は外す（答えたあとに付けた印は、答えを変えるまで残る）
+                    if (e.flags[q.questionId]) { e.flags[q.questionId] = false; flag.setAttribute('aria-pressed', 'false'); }
                     save();
+                    drawStrip();
                     choices.querySelectorAll('.choice').forEach(function (b, k) { b.setAttribute('aria-pressed', String(k + 1 === n)); });
                 }
             }, [h('span', { class: 'choice-num', text: String(n) }), numOnly ? null : h('span', { class: 'choice-text', html: c })])]));
@@ -317,6 +322,7 @@
                 e.flags[q.questionId] = !e.flags[q.questionId];
                 this.setAttribute('aria-pressed', String(e.flags[q.questionId]));
                 save();
+                drawStrip();
             }
         }, [A.icon('i-flag'), h('span', { html: 'あとで{見直|みなお}す' })]);
         var last = e.i === pp.questions.length - 1;
@@ -326,6 +332,22 @@
             h('button', { type: 'button', class: 'pop-btn btn-purple m-next', html: last ? '{一覧|いちらん}へ' : '{次|つぎ}へ', onclick: function () { if (last) openList(); else go(e.i + 1); } })
         ]));
         window.scrollTo(0, 0);
+    }
+
+    /** 上の四角の列：答えた（緑）・あとで見直す（黄）・まだ（白）・いまの問題（紫のわく） */
+    function drawStrip() {
+        var box = $('mStrip');
+        if (!box) return;
+        var e = M.exam;
+        var pp = e.papers[e.p];
+        var done = 0, flagged = 0;
+        box.replaceChildren.apply(box, pp.questions.map(function (q, i) {
+            var a = !!e.answers[q.questionId], f = !!e.flags[q.questionId];
+            if (a) done++;
+            if (f) flagged++;
+            return h('span', { class: 'm-sq' + (a ? ' is-done' : '') + (f ? ' is-flag' : '') + (i === e.i ? ' is-now' : '') });
+        }));
+        box.setAttribute('aria-label', '答えた ' + done + '問・あとで見直す ' + flagged + '問・まだ ' + (pp.questions.length - done) + '問');
     }
 
     function go(i) {

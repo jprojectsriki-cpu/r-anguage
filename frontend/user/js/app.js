@@ -808,7 +808,9 @@
         var first = loadProfile().then(function () {
             if (firstKey === 'home' || !PAGES[firstKey]) return fetchStats().then(function () { state.statsReady = true; });
         });
-        withLoading('<ruby>読<rt>よ</rt></ruby>み<ruby>込<rt>こ</rt></ruby>んでいます', first)
+        var booting = withLoading('<ruby>読<rt>よ</rt></ruby>み<ruby>込<rt>こ</rt></ruby>んでいます', first);
+        document.documentElement.classList.remove('booting'); // ローディングの画面が出たので、中身を見せてよい
+        booting
             .then(function () {
                 window.addEventListener('hashchange', route);
                 route();

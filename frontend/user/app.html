@@ -9,10 +9,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/loading.css?v=20261112a">
-    <link rel="stylesheet" href="css/app.css?v=20261112a">
+    <link rel="stylesheet" href="css/loading.css?v=20261112b">
+    <link rel="stylesheet" href="css/app.css?v=20261112b">
     <script>
         // ふりがな・文字の大きさは、画面を描く前に当てる（ちらつかないように）
+        // ローディングの画面が出るまでは、画面の中身を見せない（ログイン画面から移ったときに一瞬見えないように）
+        document.documentElement.classList.add('booting');
         try {
             if (localStorage.getItem('ranguage_furigana') === 'off') document.documentElement.classList.add('furigana-off');
             var fs = localStorage.getItem('ranguage_fontsize');
@@ -157,12 +159,12 @@
 
     <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
 
-    <script src="js/config.js?v=20261112a"></script>
-    <script src="js/loading.js?v=20261112a"></script>
-    <script src="js/listen.js?v=20261112a"></script>
-    <script src="js/app.js?v=20261112a"></script>
-    <script src="js/practice.js?v=20261112a"></script>
-    <script src="js/vocab.js?v=20261112a"></script>
-    <script src="js/mock.js?v=20261112a"></script>
+    <script src="js/config.js?v=20261112b"></script>
+    <script src="js/loading.js?v=20261112b"></script>
+    <script src="js/listen.js?v=20261112b"></script>
+    <script src="js/app.js?v=20261112b"></script>
+    <script src="js/practice.js?v=20261112b"></script>
+    <script src="js/vocab.js?v=20261112b"></script>
+    <script src="js/mock.js?v=20261112b"></script>
 </body>
 </html>

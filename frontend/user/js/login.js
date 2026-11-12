@@ -26,13 +26,6 @@
             return res.json();
         });
     }
-    function withLoading(html, promise) {
-        Loader.show(html);
-        return promise.then(
-            function (res) { return Loader.hide().then(function () { return res; }); },
-            function (err) { return Loader.hide().then(function () { throw err; }); }
-        );
-    }
     function setMsg(text, isError) {
         var el = $('loginMsg');
         el.textContent = text;
@@ -92,22 +85,28 @@
             var btn = form.querySelector('button[type="submit"]');
             btn.disabled = true;
             setMsg('');
-            withLoading('ログインしています', apiPost({ action: 'login', email: email, password: password }))
+            // ログインできたときは、ローディングの画面を消さずに学習の画面へ移る（ログイン画面が一瞬もどって見えないように）
+            Loader.show('ログインしています');
+            apiPost({ action: 'login', email: email, password: password })
                 .then(function (res) {
                     if (res && res.ok) {
                         setToken(res.token);
-                        form.reset();
-                        pw.type = 'password';
+                        Loader.show('<ruby>読<rt>よ</rt></ruby>み<ruby>込<rt>こ</rt></ruby>んでいます');
                         showDone(res.user);
-                    } else {
-                        setMsg((res && res.message) || 'ログインに失敗しました。', true);
+                        return;
                     }
+                    return Loader.hide().then(function () {
+                        setMsg((res && res.message) || 'ログインに失敗しました。', true);
+                        btn.disabled = false;
+                    });
                 })
                 .catch(function (err) {
                     console.error(err);
-                    setMsg('通信に失敗しました。時間をおいてもう一度お試しください。', true);
-                })
-                .then(function () { btn.disabled = false; });
+                    return Loader.hide().then(function () {
+                        setMsg('通信に失敗しました。時間をおいてもう一度お試しください。', true);
+                        btn.disabled = false;
+                    });
+                });
         });
 
         $('logoutBtn').addEventListener('click', function () {
@@ -129,14 +128,18 @@
         var token = getToken();
         if (!token || !/^https:\/\//.test(CONFIG.API_URL || '')) { showLogin(); return; }
 
-        withLoading('ログイン状態を確認しています', apiPost({ action: 'me', token: token }))
+        // ログインしたままなら、ローディングの画面を消さずに学習の画面へ移る
+        Loader.show('ログイン状態を確認しています');
+        apiPost({ action: 'me', token: token })
             .then(function (res) {
-                if (res && res.ok) { showDone(res.user); return; }
-                setToken('');
-                showLogin();
-                if (res && res.reason === 'replaced') alertBox(res.message);
+                if (res && res.ok) { Loader.show('<ruby>読<rt>よ</rt></ruby>み<ruby>込<rt>こ</rt></ruby>んでいます'); showDone(res.user); return; }
+                return Loader.hide().then(function () {
+                    setToken('');
+                    showLogin();
+                    if (res && res.reason === 'replaced') alertBox(res.message);
+                });
             })
-            .catch(function () { showLogin(); });
+            .catch(function () { return Loader.hide().then(showLogin); });
     }
 
     document.addEventListener('DOMContentLoaded', function () {

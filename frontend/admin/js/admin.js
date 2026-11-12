@@ -496,7 +496,11 @@
             var c2 = td('状態'); c2.append(el('span', 'status st-' + u.status, USER_STATUS[u.status] || u.status));
             var c3 = td('レベル');
             var lv = el('div');
-            (u.levels || []).forEach(function (l) { lv.append(el('span', 'level-pill lv-' + l, l)); });
+            (u.levels || []).forEach(function (l) {
+                lv.append(el('span', 'level-pill lv-' + l, l));
+                var st = userStageOf(u, l);
+                lv.append(el('span', 'cell-sub', l + '：' + st + (st === 'HARD' && ((u.stages || {}).goal || {})[l] ? '（合格ライン到達）' : '')));
+            });
             if (!(u.levels || []).length) lv.textContent = '—';
             c3.append(lv);
             var c4 = td('登録日', 'cell-nowrap'); c4.textContent = fmt(u.createdAt, false);
@@ -509,6 +513,7 @@
                 var acts = el('div', 'actions');
                 var missing = LEVELS.filter(function (l) { return (u.levels || []).indexOf(l) === -1; });
                 if (missing.length) acts.append(button('レベル追加', 'btn btn-white btn-xs', function () { addLevel(u, missing); }));
+                if ((u.levels || []).length) acts.append(button('STAGE', 'btn btn-white btn-xs', function () { setStage(u); }));
                 if (u.status === 'active') acts.append(button('停止', 'btn btn-white btn-xs', function () { setUserStatus(u, 'suspended'); }));
                 if (u.status === 'suspended') acts.append(button('再開', 'btn btn-pink btn-xs', function () { setUserStatus(u, 'active'); }));
                 c6.append(acts);
@@ -534,6 +539,31 @@
             if (!r) return;
             runAction(stop ? '停止しています' : '再開しています', { action: 'admin.userStatus', userId: u.userId, status: status }, function () {
                 return u.name + ' さんのアカウントを' + (stop ? '停止' : '再開') + 'しました。';
+            });
+        });
+    }
+
+    function userStageOf(u, level) {
+        var s = ((u.stages || {}).stg || {})[level];
+        return ['EASY', 'NORMAL', 'HARD'].indexOf(s) >= 0 ? s : 'EASY';
+    }
+
+    // 受講生の STAGE を変える（問い合わせの対応用。ふつうは模試の結果で自動で進む）
+    function setStage(u) {
+        confirmAction({
+            title: 'STAGE を変えますか？',
+            rows: userRows(u).concat((u.levels || []).map(function (l) { return ['いまの STAGE（' + l + '）', userStageOf(u, l)]; })),
+            levels: u.levels,
+            levelLabel: 'レベル',
+            stages: ['EASY', 'NORMAL', 'HARD'],
+            stage: userStageOf(u, u.levels[0]),
+            stageOf: function (l) { return userStageOf(u, l); },
+            text: '選んだ STAGE まで、練習と模試が使えるようになります。HARD より前にすると、「合格ライン到達」の記録は消えます。受講生にメールは送られません。',
+            ok: '変える'
+        }).then(function (r) {
+            if (!r) return;
+            runAction('STAGE を変えています', { action: 'admin.setStage', userId: u.userId, level: r.level, stage: r.stage }, function (res) {
+                return u.name + ' さんの ' + res.level + ' を ' + res.stage + ' にしました。';
             });
         });
     }
@@ -570,13 +600,20 @@
             var sel = $('confirmLevel');
             sel.replaceChildren();
             (opt.levels || []).forEach(function (l) { var o = el('option', '', l); o.value = l; sel.append(o); });
+            $('confirmLevelLabel').textContent = opt.levelLabel || '追加するレベル';
+            $('confirmStageField').hidden = !opt.stages;
+            var ssel = $('confirmStage');
+            ssel.replaceChildren();
+            (opt.stages || []).forEach(function (x) { var o = el('option', '', x); o.value = x; ssel.append(o); });
+            if (opt.stage) ssel.value = opt.stage;
+            sel.onchange = opt.stageOf ? function () { ssel.value = opt.stageOf(sel.value); } : null;
 
             $('confirmNoteText').textContent = opt.text || '';
             $('confirmOk').textContent = opt.ok;
             dlg.returnValue = '';
             dlg.onclose = function () {
                 if (dlg.returnValue !== 'ok') return resolve(null);
-                resolve({ note: $('confirmNote').value.trim(), level: sel.value });
+                resolve({ note: $('confirmNote').value.trim(), level: sel.value, stage: ssel.value });
             };
             dlg.showModal();
         });

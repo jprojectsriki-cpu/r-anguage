@@ -121,10 +121,12 @@ function buildQuestionIndex_() {
   if (last >= 2) {
     const a = sheet.getRange(2, 1, last - 1, 4).getValues();   // A〜D：ID・レベル・科目・問題形式
     const b = sheet.getRange(2, 12, last - 1, 3).getValues();  // L〜N：正解・解説・状態
+    const c = sheet.getMaxColumns() >= Q_COL_STAGE ? sheet.getRange(2, Q_COL_STAGE, last - 1, 1).getValues() : []; // Q：STAGE
     a.forEach(function (r, i) {
       const id = String(r[0] || '').trim();
       if (!id || String(b[i][2] || '').trim() !== '公開') return;
-      idx[id] = { level: String(r[1] || '').trim(), section: String(r[2] || '').trim(), form: String(r[3] || '').trim(), answer: String(b[i][0] || '').trim() };
+      idx[id] = { level: String(r[1] || '').trim(), section: String(r[2] || '').trim(), form: String(r[3] || '').trim(), answer: String(b[i][0] || '').trim(),
+        stage: cleanStage_(c[i] ? c[i][0] : '') };
     });
   }
   return idx;
@@ -167,7 +169,7 @@ function mePracticeMenu_(token) {
 
   const have = {};
   questions.forEach(function (q) {
-    const k = q.level + '|' + q.section + '|' + q.form;
+    const k = qStage_(q) + '|' + q.level + '|' + q.section + '|' + q.form;
     have[k] = (have[k] || 0) + 1;
   });
   let extra = 0;
@@ -182,22 +184,30 @@ function mePracticeMenu_(token) {
     isAdmin: me.user.role === 'admin',
     extra: me.user.role === 'admin' ? extra : 0,
     levels: levels.map(function (lv) {
-      return {
-        level: lv,
-        sections: SECTIONS.map(function (sec) {
+      // STAGE ごとの科目・大問（解放していない STAGE も、数は送る。画面ではカギを付ける）
+      function sectionsOf(stage) {
+        return SECTIONS.map(function (sec) {
           const forms = counts
             .filter(function (c) { return c.level === lv && c.section === sec; })
-            .map(function (c) { return { form: c.form, want: c.count, have: Math.min(have[lv + '|' + sec + '|' + c.form] || 0, 999) }; });
+            .map(function (c) { return { form: c.form, want: c.count, have: Math.min(have[stage + '|' + lv + '|' + sec + '|' + c.form] || 0, 999) }; });
           return {
             section: sec,
             want: forms.reduce(function (s, f) { return s + f.want; }, 0),
             have: forms.reduce(function (s, f) { return s + Math.min(f.have, f.want); }, 0),
             forms: forms
           };
-        }).filter(function (s) { return s.forms.length; }),
+        }).filter(function (s) { return s.forms.length; });
+      }
+      const info = stageInfo_(me.user, lv);
+      return Object.assign({
+        level: lv,
+        sections: sectionsOf('EASY'), // 前の画面（STAGE なし）のため
+        stages: STAGES.map(function (st) {
+          return { stage: st, unlocked: stageUnlocked_(me.user, lv, st), sections: sectionsOf(st) };
+        }),
         mistakes: mistakes.filter(function (q) { return q.level === lv; }).length,
         favorites: favorites.filter(function (q) { return q.level === lv; }).length
-      };
+      }, info);
     })
   };
 }
@@ -266,6 +276,7 @@ function mePracticeStart_(token, input) {
   const level = String(input.level || '');
   const section = String(input.section || '');
   const form = String(input.form || '').trim();
+  const stage = cleanStage_(input.stage);
   if (PRACTICE_MODES.indexOf(mode) === -1) return { ok: false, message: '解き方が正しくありません。' };
   if (practiceLevels_(me.user).indexOf(level) === -1) return { ok: false, message: 'このレベルは、まだ使えません。マイページから追加できます。' };
 
@@ -278,13 +289,14 @@ function mePracticeStart_(token, input) {
 
   if (mode === 'set' || mode === 'form') {
     if (SECTIONS.indexOf(section) === -1) return { ok: false, message: '科目が正しくありません。' };
+    if (!stageUnlocked_(me.user, level, stage)) return { ok: false, message: 'この STAGE は、まだ解放されていません。模試で合格すると解放されます。' };
     const counts = readQuestionCounts_().filter(function (c) {
       return c.level === level && c.section === section && (mode === 'set' || c.form === form);
     });
     if (!counts.length) return { ok: false, message: 'この問題形式は、問題数の表にありません。' };
     const lastAt = lastAnsweredMap_(me.user.userId);
     counts.forEach(function (c) {
-      const got = pickUnits_(all.filter(function (q) { return q.section === section && q.form === c.form; }), c.count, lastAt);
+      const got = pickUnits_(all.filter(function (q) { return q.section === section && q.form === c.form && qStage_(q) === stage; }), c.count, lastAt);
       if (got.length < c.count) short.push({ form: c.form, want: c.count, got: got.length });
       Array.prototype.push.apply(picked, got);
     });
@@ -309,7 +321,7 @@ function mePracticeStart_(token, input) {
   if (!picked.length) {
     return { ok: false, message: mode === 'mistakes' ? 'まちがえた問題はありません。' : mode === 'favorites' ? 'お気に入りの問題はありません。' : 'この問題は、まだ登録されていません。' };
   }
-  return { ok: true, mode: mode, level: level, section: section, form: form, short: short,
+  return { ok: true, mode: mode, level: level, section: section, form: form, stage: (mode === 'set' || mode === 'form') ? stage : '', short: short,
     questions: picked.map(function (q) { return toClientQuestion_(q, favs); }) };
 }
 
@@ -336,7 +348,7 @@ function meSaveAnswers_(token, input) {
     if (!q || levels.indexOf(q.level) === -1 || ['1', '2', '3', '4'].indexOf(chosen) === -1) return;
     const correct = chosen === String(q.answer);
     rows.push([me.user.userId, q.questionId, q.level, q.section, q.form, Number(chosen), correct, now, mode]);
-    items.push({ questionId: q.questionId, level: q.level, section: q.section, form: q.form, correct: correct });
+    items.push({ questionId: q.questionId, level: q.level, section: q.section, form: q.form, stage: qStage_(q), correct: correct });
   });
   if (!rows.length) return { ok: true, saved: 0 };
   const uid = me.user.userId;

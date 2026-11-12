@@ -13,12 +13,13 @@
     var KINDS = {
         questions: {
             label: '問題',
-            cols: 13,
+            cols: 14,
+            minCols: 13, // N列（STAGE）はなくてもよい（空なら EASY）
             first: 'レベル',
             action: 'admin.importQuestions',
             urlKey: 'questions',
             templateText: 'テンプレート（Googleスプレッドシート「R-ANGUAGE 問題テンプレート」）の「問題」シートに、1行に1問ずつ書きます。「書き方」と「記入例」のシートも見てください。「問題形式」は「問題形式の一覧」シートの名前と同じにします（ちがうと出題されません）。',
-            pasteText: '「問題」シートの A列（レベル）〜 M列（状態）の、書いた行を選んでコピー（Ctrl+C）して、下に貼り付けます（Ctrl+V）。見出しの行がまざっていてもかまいません。1回 500行まで。',
+            pasteText: '「問題」シートの A列（レベル）〜 N列（STAGE）の、書いた行を選んでコピー（Ctrl+C）して、下に貼り付けます（Ctrl+V）。STAGE の列がない（M列の状態まで）ときは、EASY で登録します。見出しの行がまざっていてもかまいません。1回 500行まで。',
             head: ['行', 'レベル', '科目・問題形式', '問題文', '状態', 'チェック']
         },
         cards: {
@@ -100,9 +101,10 @@
         var rows = parseTsv($('imPaste').value);
         if (rows.length && String(rows[0][0]).trim() === k.first) rows.shift(); // 見出しの行
         if (!rows.length) { A.notice('貼り付けた行がありません。テンプレートの行をコピーして貼り付けてください。', 'error'); return; }
-        var wrongCols = rows.filter(function (r) { return r.length !== k.cols; }).length;
+        var minCols = k.minCols || k.cols;
+        var wrongCols = rows.filter(function (r) { return r.length < minCols || r.length > k.cols; }).length;
         if (wrongCols === rows.length) {
-            A.notice('列の数が合いません（' + k.label + 'は ' + k.cols + '列）。テンプレートの A列〜' + String.fromCharCode(64 + k.cols) + '列を選んでコピーしてください。', 'error');
+            A.notice('列の数が合いません（' + k.label + 'は ' + (minCols < k.cols ? minCols + '〜' : '') + k.cols + '列）。テンプレートの A列〜' + String.fromCharCode(64 + k.cols) + '列を選んでコピーしてください。', 'error');
             return;
         }
         rows = rows.map(function (r) { r = r.slice(0, k.cols); while (r.length < k.cols) r.push(''); return r; });
@@ -144,7 +146,7 @@
                 c3.append(el('span', '', r.word || '—'), el('span', 'cell-sub', r.reading || ''));
                 c4.textContent = r.text;
             }
-            var c5 = A.td('状態'); c5.textContent = r.status;
+            var c5 = A.td('状態'); c5.textContent = r.status + (r.stage ? '・' + r.stage : '');
             var c6 = A.td('チェック', 'im-check');
             c6.append(checkCell(r.errors, r.warnings));
             tr.append(c1, c2, c3, c4, c5, c6);

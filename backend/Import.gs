@@ -23,7 +23,8 @@ function questionKey_(q) {
 
 /**
  * 問題のまとめて登録
- * rows: [[レベル, 科目, 問題形式, 本文, 音声ファイル, 問題文, 選択肢1, 選択肢2, 選択肢3, 選択肢4, 正解, 解説, 状態], ...]
+ * rows: [[レベル, 科目, 問題形式, 本文, 音声ファイル, 問題文, 選択肢1, 選択肢2, 選択肢3, 選択肢4, 正解, 解説, 状態, STAGE], ...]
+ *   （STAGE の列はなくてもよい。空なら EASY）
  */
 function adminImportQuestions_(token, rows, dryRun) {
   const auth = requireAdmin_(token);
@@ -49,7 +50,8 @@ function adminImportQuestions_(token, rows, dryRun) {
       choices: [6, 7, 8, 9].map(function (k) { return String(r[k] == null ? '' : r[k]).trim().slice(0, 300); }),
       answer: importText_(r[10]),
       explanation: String(r[11] == null ? '' : r[11]).replace(/\r\n?/g, '\n').trim().slice(0, 3000),
-      status: importText_(r[12]) || '下書き'
+      status: importText_(r[12]) || '下書き',
+      stage: cleanStage_(importText_(r[13]))
     };
     const errors = validateQuestion_(q);
     const warnings = [];
@@ -68,6 +70,7 @@ function adminImportQuestions_(token, rows, dryRun) {
 
   return finishImport_(items, dryRun, function (list) {
     const sheet = getSheet_(SHEET_QUESTIONS);
+    ensureStageHeader_(sheet);
     const now = new Date();
     const used = {};
     readQuestions_().forEach(function (q) { used[q.questionId] = true; });
@@ -77,13 +80,14 @@ function adminImportQuestions_(token, rows, dryRun) {
       used[id] = true;
       const q = it.q;
       return [id, q.level, q.section, q.form, q.passage, q.audio, q.question,
-        q.choices[0], q.choices[1], q.choices[2], q.choices[3], q.answer, q.explanation, q.status, now, now];
+        q.choices[0], q.choices[1], q.choices[2], q.choices[3], q.answer, q.explanation, q.status, now, now, q.stage];
     });
     const start = sheet.getLastRow() + 1;
     sheet.getRange(start, 1, values.length, 14).setNumberFormat('@');
+    sheet.getRange(start, Q_COL_STAGE, values.length, 1).setNumberFormat('@');
     sheet.getRange(start, 1, values.length, Q_COLS).setValues(values);
   }, function (it) {
-    return { level: it.q.level, section: it.q.section, form: it.q.form, text: it.q.question, audio: it.q.audio, status: it.q.status };
+    return { level: it.q.level, section: it.q.section, form: it.q.form, text: it.q.question, audio: it.q.audio, status: it.q.status, stage: it.q.stage };
   });
 }
 

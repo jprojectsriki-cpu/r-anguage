@@ -437,3 +437,6 @@ u.ul { text-decoration: underline; text-decoration-thickness: 2px; text-underlin
 
 /* N4〜N1 まとめてプラン */
 .level-pill.lv-ALL { background: linear-gradient(90deg, #4CC9F0, #FFBE0B, #FF006E, #8338EC); color: #fff; white-space: nowrap; }
+
+/* STAGE */
+.stage-tag { font-family: inherit; font-weight: 900; }

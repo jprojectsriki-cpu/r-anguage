@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../user/css/loading.css?v=20261112a">
-    <link rel="stylesheet" href="css/admin.css?v=20261112a">
+    <link rel="stylesheet" href="../user/css/loading.css?v=20261113a">
+    <link rel="stylesheet" href="css/admin.css?v=20261113a">
 </head>
 <body>
 
@@ -245,6 +245,12 @@
                                 <option>文字・語彙</option><option>文法</option><option>読解</option><option>聴解</option>
                             </select>
                         </label>
+                        <label class="select-sm"><span class="visually-hidden">STAGE</span>
+                            <select id="qStage">
+                                <option value="">すべての STAGE</option>
+                                <option>EASY</option><option>NORMAL</option><option>HARD</option>
+                            </select>
+                        </label>
                         <label class="select-sm"><span class="visually-hidden">状態</span>
                             <select id="qStatus">
                                 <option value="">公開・下書き</option>
@@ -277,7 +283,7 @@
                     <summary>スプレッドシートからまとめて登録する方法</summary>
                     <ol>
                         <li>「R-anguage_JLPT試験対策システム」スプレッドシートの <b>Questions</b> シートを開きます。</li>
-                        <li>空いている行に、<b>B列（レベル）〜N列（状態）</b>を入力または貼り付けます。<b>A列（問題ID）と O・P列（日時）は空欄</b>のままにしてください。</li>
+                        <li>空いている行に、<b>B列（レベル）〜N列（状態）</b>を入力または貼り付けます。<b>A列（問題ID）と O・P列（日時）は空欄</b>のままにしてください。<b>Q列（STAGE）</b>は EASY／NORMAL／HARD（空なら EASY）です。</li>
                         <li>この画面で「最新の情報に更新」を押すと、問題IDが自動で付き、一覧に表示されます。</li>
                         <li>入力ミスがある問題は、一覧の上に件数が表示されます。「編集」から直せます。</li>
                     </ol>
@@ -338,6 +344,13 @@
                             <div class="field-head"><span>解説 <em>任意</em></span><button type="button" class="ruby-btn" data-ruby="explanation">ふりがな</button></div>
                             <textarea name="explanation" rows="3" maxlength="3000"></textarea>
                         </div>
+
+                        <fieldset class="field status-pick">
+                            <legend>STAGE</legend>
+                            <label><input type="radio" name="stage" value="EASY"><span>EASY</span></label>
+                            <label><input type="radio" name="stage" value="NORMAL"><span>NORMAL</span></label>
+                            <label><input type="radio" name="stage" value="HARD"><span>HARD</span></label>
+                        </fieldset>
 
                         <fieldset class="field status-pick">
                             <legend>状態</legend>
@@ -734,7 +747,8 @@
             <h2 id="confirmTitle"></h2>
             <dl class="confirm-list" id="confirmDetail"></dl>
             <label class="field" id="confirmNoteField" hidden><span id="confirmNoteLabel">メモ</span><textarea id="confirmNote" rows="3" maxlength="200"></textarea></label>
-            <label class="field" id="confirmLevelField" hidden><span>追加するレベル</span><select id="confirmLevel"></select></label>
+            <label class="field" id="confirmLevelField" hidden><span id="confirmLevelLabel">追加するレベル</span><select id="confirmLevel"></select></label>
+            <label class="field" id="confirmStageField" hidden><span>STAGE</span><select id="confirmStage"></select></label>
             <p class="confirm-note" id="confirmNoteText"></p>
             <div class="modal-actions">
                 <button type="submit" value="cancel" class="btn btn-white">やめる</button>
@@ -760,14 +774,14 @@
     <!-- グラフのツールチップ -->
     <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
 
-    <script src="../user/js/config.js?v=20261112a"></script>
-    <script src="../user/js/loading.js?v=20261112a"></script>
-    <script src="../user/js/listen.js?v=20261112a"></script>
-    <script src="js/admin.js?v=20261112a"></script>
-    <script src="js/questions.js?v=20261112a"></script>
-    <script src="js/vocab.js?v=20261112a"></script>
-    <script src="js/notices.js?v=20261112a"></script>
-    <script src="js/examdates.js?v=20261112a"></script>
-    <script src="js/import.js?v=20261112a"></script>
+    <script src="../user/js/config.js?v=20261113a"></script>
+    <script src="../user/js/loading.js?v=20261113a"></script>
+    <script src="../user/js/listen.js?v=20261113a"></script>
+    <script src="js/admin.js?v=20261113a"></script>
+    <script src="js/questions.js?v=20261113a"></script>
+    <script src="js/vocab.js?v=20261113a"></script>
+    <script src="js/notices.js?v=20261113a"></script>
+    <script src="js/examdates.js?v=20261113a"></script>
+    <script src="js/import.js?v=20261113a"></script>
 </body>
 </html>

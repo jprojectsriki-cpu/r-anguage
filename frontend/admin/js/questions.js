@@ -26,6 +26,7 @@
         level: '',
         section: '',
         status: '',
+        stage: '',
         query: '',
         errorsOnly: false,
         editing: null,   // 編集中の問題（新規は null）
@@ -85,6 +86,7 @@
         d.choices.forEach(function (c, i) { if (!(three && i === 3) && !c.trim()) e.push('選択肢' + (i + 1) + 'を入力してください。'); });
         if (three ? ['1', '2', '3'].indexOf(d.answer) === -1 : ['1', '2', '3', '4'].indexOf(d.answer) === -1) e.push(three ? '選択肢が3つの問題なので、正解は 1〜3 から選んでください。' : '正解の番号を選んでください。');
         if (['公開', '下書き'].indexOf(d.status) === -1) e.push('状態を選んでください。');
+        if (['EASY', 'NORMAL', 'HARD'].indexOf(d.stage) === -1) e.push('STAGE を選んでください。');
         var bad = (d.passage + d.question + d.explanation + d.choices.join('')).match(/\{[^}]*$|\{[^|}]*\}/m);
         if (bad) e.push('ふりがなの書き方を確認してください：「' + bad[0].slice(0, 20) + '」（正しくは {漢字|よみ}）');
         return e;
@@ -118,7 +120,7 @@
         var pubs = rows.filter(function (x) { return x.status === '公開'; });
         var ng = rows.filter(function (x) { return x.status === '下書き' && x.errors && x.errors.length; }).length;
         q.bulk = { drafts: drafts, pubs: pubs };
-        $('qBulkText').textContent = '表示中：下書き ' + (drafts.length + ng) + '件・公開 ' + pubs.length + '件' + (ng ? '（入力ミスのある ' + ng + '件は公開できません）' : '') + '。絞り込み（レベル・科目・状態・検索）で対象を変えられます。';
+        $('qBulkText').textContent = '表示中：下書き ' + (drafts.length + ng) + '件・公開 ' + pubs.length + '件' + (ng ? '（入力ミスのある ' + ng + '件は公開できません）' : '') + '。絞り込み（レベル・科目・STAGE・状態・検索）で対象を変えられます。';
         $('qBulkPub').disabled = !drafts.length;
         $('qBulkPub').textContent = '下書き ' + drafts.length + '件をまとめて公開';
         $('qBulkDraft').disabled = !pubs.length;
@@ -186,6 +188,7 @@
         document.querySelectorAll('#qLevelTabs .tab').forEach(function (t) { t.setAttribute('aria-selected', String(t.getAttribute('data-level') === q.level)); });
         $('qSection').value = q.section;
         $('qStatus').value = q.status;
+        $('qStage').value = q.stage;
 
         var word = q.query.trim().toLowerCase();
         var rows = list.filter(function (x) {
@@ -193,6 +196,7 @@
             if (q.level && x.level !== q.level) return false;
             if (q.section && x.section !== q.section) return false;
             if (q.status && x.status !== q.status) return false;
+            if (q.stage && (x.stage || 'EASY') !== q.stage) return false;
             if (!word) return true;
             return (x.questionId + ' ' + x.form + ' ' + plain(x.question) + ' ' + plain(x.passage)).toLowerCase().indexOf(word) !== -1;
         });
@@ -200,7 +204,7 @@
         drawBulk(rows);
 
         // たくさんあるときは、200件ずつ表示する（全部を一度に描くと、画面が止まるため）
-        var key = [q.errorsOnly, q.level, q.section, q.status, q.query].join('|');
+        var key = [q.errorsOnly, q.level, q.section, q.status, q.stage, q.query].join('|');
         if (key !== q.listKey) { q.listKey = key; q.shown = LIST_PAGE; }
         var showRows = rows.slice(0, q.shown || LIST_PAGE);
         var tbody = $('qRows');
@@ -210,7 +214,9 @@
             if (x.errors && x.errors.length) tr.className = 'has-error';
 
             var c1 = A.td('問題ID', 'cell-id'); c1.textContent = x.questionId;
-            var c2 = A.td('レベル'); c2.append(el('span', 'level-pill lv-' + x.level, x.level || '?'));
+            var c2 = A.td('レベル');
+            var lw = el('div'); lw.append(el('span', 'level-pill lv-' + x.level, x.level || '?'), el('span', 'cell-sub stage-tag', x.stage || 'EASY'));
+            c2.append(lw);
             var c3 = A.td('科目／問題形式', 'cell-section');
             var w = el('div'); w.append(el('span', 'section-tag sec-' + SECTIONS.indexOf(x.section), x.section || '—'));
             if (x.form) w.append(el('span', 'cell-sub', x.form));
@@ -281,7 +287,7 @@
                 totalPub += c.pub; totalDraft += c.draft;
                 var cell = el('td');
                 var b = A.button('', 'matrix-btn' + (c.pub === 0 ? ' is-zero' : ''), function () {
-                    q.level = lv; q.section = s; q.status = ''; q.errorsOnly = false;
+                    q.level = lv; q.section = s; q.status = ''; q.stage = ''; q.errorsOnly = false;
                     renderList();
                     $('qRows').closest('.table-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });
@@ -339,7 +345,8 @@
             choices: [f.choice1.value, f.choice2.value, f.choice3.value, f.choice4.value],
             answer: checked('answer'),
             explanation: f.explanation.value,
-            status: checked('status')
+            status: checked('status'),
+            stage: checked('stage')
         };
     }
 
@@ -354,6 +361,7 @@
         ['choice1', 'choice2', 'choice3', 'choice4'].forEach(function (n, i) { f[n].value = (d.choices || [])[i] || ''; });
         form().querySelectorAll('input[name="answer"]').forEach(function (r) { r.checked = r.value === String(d.answer || ''); });
         form().querySelectorAll('input[name="status"]').forEach(function (r) { r.checked = r.value === (d.status || '下書き'); });
+        form().querySelectorAll('input[name="stage"]').forEach(function (r) { r.checked = r.value === (d.stage || 'EASY'); });
         $('qFormErrors').hidden = true;
         onSectionChange();
         renderPreview();
@@ -401,6 +409,7 @@
         var meta = el('p', 'pv-meta');
         meta.append(el('span', 'level-pill lv-' + d.level, d.level), el('span', 'section-tag sec-' + SECTIONS.indexOf(d.section), d.section));
         if (d.form) meta.append(el('span', 'pv-form', d.form));
+        meta.append(el('span', 'pv-form', d.stage || 'EASY'));
         box.append(meta);
 
         if (d.section === '聴解') {
@@ -479,7 +488,7 @@
                 q.saved = JSON.stringify(readForm()); // 保存済み
                 if (next) {
                     // レベル・科目・問題形式・状態はそのままで、次の問題へ
-                    openEditor(null, { level: d.level, section: d.section, form: d.form, status: d.status, audio: '' });
+                    openEditor(null, { level: d.level, section: d.section, form: d.form, status: d.status, stage: d.stage, audio: '' });
                     A.notice(msg + ' 続けて次の問題を作成できます。', 'ok');
                     load();
                 } else {
@@ -527,7 +536,7 @@
         $('qBulkDraft').addEventListener('click', function () { bulkStatus('下書き'); });
         $('qReload').addEventListener('click', function () { A.notice(''); load(); });
         $('qNew').addEventListener('click', function () {
-            openEditor(null, { level: q.level || 'N4', section: q.section || '文字・語彙', status: '下書き' });
+            openEditor(null, { level: q.level || 'N4', section: q.section || '文字・語彙', status: '下書き', stage: q.stage || 'EASY' });
         });
         $('qLevelTabs').addEventListener('click', function (e) {
             var t = e.target.closest('.tab');
@@ -537,6 +546,7 @@
         });
         $('qSection').addEventListener('change', function (e) { q.section = e.target.value; renderList(); });
         $('qStatus').addEventListener('change', function (e) { q.status = e.target.value; renderList(); });
+        $('qStage').addEventListener('change', function (e) { q.stage = e.target.value; renderList(); });
         $('qSearch').addEventListener('input', function (e) { q.query = e.target.value; renderList(); });
         $('qErrorToggle').addEventListener('click', function () { q.errorsOnly = !q.errorsOnly; renderList(); });
 

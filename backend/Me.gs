@@ -44,7 +44,7 @@ function requireMe_(token) {
   const row = findUserRowById_(auth.user.userId);
   if (!row) return { ok: false, reason: 'expired', message: 'アカウントが見つかりません。もう一度ログインしてください。' };
   const sheet = getSheet_(SHEET_USERS);
-  const r = sheet.getRange(row, 1, 1, USER_COL_SETTINGS).getValues()[0];
+  const r = sheet.getRange(row, 1, 1, Math.min(USER_COL_STAGES, sheet.getMaxColumns())).getValues()[0]; // N列（STAGE）まで
   if (String(r[6]) !== 'active') {
     return { ok: false, reason: 'suspended', message: 'このアカウントは現在ご利用いただけません。' };
   }
@@ -63,7 +63,8 @@ function requireMe_(token) {
       role: String(r[5]),
       levels: String(r[7] || '').split(',').filter(String),
       examId: String(r[USER_COL_EXAM - 1] || ''),
-      settings: cleanSettings_(settings)
+      settings: cleanSettings_(settings),
+      stages: parseStages_(r[USER_COL_STAGES - 1])
     }
   };
 }

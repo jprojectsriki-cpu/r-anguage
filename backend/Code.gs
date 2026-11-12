@@ -96,7 +96,7 @@ function doPost(e) {
       case 'me.mockMenu':
         return json_(meMockMenu_(req.token));
       case 'me.mockStart':
-        return json_(meMockStart_(req.token, req.level));
+        return json_(meMockStart_(req.token, req.level, req.stage));
       case 'me.mockSubmit':
         return json_(meMockSubmit_(req.token, req));
       case 'me.mockResult':
@@ -129,6 +129,8 @@ function doPost(e) {
         return json_(adminListUsers_(req.token));
       case 'admin.userStatus':
         return json_(adminSetUserStatus_(req.token, req.userId, req.status));
+      case 'admin.setStage':
+        return json_(adminSetStage_(req.token, req.userId, req.level, req.stage));
       case 'admin.addLevel':
         return json_(adminAddLevel_(req.token, req.userId, req.level));
       case 'admin.cancel':

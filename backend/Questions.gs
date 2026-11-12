@@ -4,8 +4,8 @@
 
 const SHEET_QUESTIONS = 'Questions';
 const Q_HEADERS = ['問題ID', 'レベル', '科目', '問題形式', '本文', '音声ファイル', '問題文',
-  '選択肢1', '選択肢2', '選択肢3', '選択肢4', '正解', '解説', '状態', '作成日時', '更新日時'];
-const Q_COLS = Q_HEADERS.length; // 16列（A〜P）
+  '選択肢1', '選択肢2', '選択肢3', '選択肢4', '正解', '解説', '状態', '作成日時', '更新日時', 'STAGE'];
+const Q_COLS = Q_HEADERS.length; // 17列（A〜Q）。Q列 STAGE は 2026-11 に追加（空なら EASY。Stage.gs）
 const LEVEL_LIST = ['N4', 'N3', 'N2', 'N1'];
 const SECTIONS = ['文字・語彙', '文法', '読解', '聴解'];
 const Q_STATUS = ['公開', '下書き'];
@@ -30,12 +30,15 @@ function setupQuestionsSheet() {
   sheet.getRange(2, 3, rows, 1).setDataValidation(list(SECTIONS));           // C 科目
   sheet.getRange(2, 12, rows, 1).setDataValidation(list(['1', '2', '3', '4'])); // L 正解
   sheet.getRange(2, 14, rows, 1).setDataValidation(list(Q_STATUS));          // N 状態
+  ensureCols_(sheet, Q_COL_STAGE);
+  sheet.getRange(2, Q_COL_STAGE, rows, 1).setDataValidation(list(STAGES));   // Q STAGE
+  sheet.getRange(2, Q_COL_STAGE, rows, 1).setNumberFormat('@');
 
   // 数字や日付に自動変換されないよう、A〜N列は「書式なしテキスト」にする
   sheet.getRange(2, 1, rows, 14).setNumberFormat('@');
   sheet.getRange(2, 1, rows, Q_COLS).setWrap(true).setVerticalAlignment('top');
 
-  [110, 60, 90, 100, 260, 120, 260, 120, 120, 120, 120, 50, 260, 70, 130, 130]
+  [110, 60, 90, 100, 260, 120, 260, 120, 120, 120, 120, 50, 260, 70, 130, 130, 80]
     .forEach(function (w, i) { sheet.setColumnWidth(i + 1, w); });
 
   Logger.log('Questions シートを準備しました（' + Q_COLS + '列）');
@@ -57,7 +60,8 @@ function rowToQuestion_(r, rowNumber) {
     explanation: String(r[12] || ''),
     status: String(r[13] || '').trim(),
     createdAt: r[14] || null,
-    updatedAt: r[15] || null
+    updatedAt: r[15] || null,
+    stage: cleanStage_(r[16])
   };
 }
 
@@ -83,6 +87,7 @@ function validateQuestion_(q) {
     if (['1', '2', '3'].indexOf(String(q.answer)) === -1) errors.push('選択肢が3つの問題なので、正解は 1〜3 のどれかにしてください。');
   } else if (['1', '2', '3', '4'].indexOf(String(q.answer)) === -1) errors.push('正解は 1〜4 のどれかにしてください。');
   if (Q_STATUS.indexOf(q.status) === -1) errors.push('状態は「公開」か「下書き」にしてください。');
+  if (STAGES.indexOf(cleanStage_(q.stage)) === -1) errors.push('STAGE は EASY／NORMAL／HARD のどれかにしてください（空なら EASY）。');
   if (q.section === '読解' && !String(q.passage || '').trim()) errors.push('読解の問題には本文を入力してください。');
   // 発話表現は、問題文（場面）と選択肢を読むので、スクリプトがなくてもよい
   if (isListening && q.form !== '発話表現' && !String(q.audio || '').trim() && !String(q.passage || '').trim()) {
@@ -105,7 +110,7 @@ function readQuestions_() {
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
 
-  const values = sheet.getRange(2, 1, lastRow - 1, Q_COLS).getValues();
+  const values = sheet.getRange(2, 1, lastRow - 1, Math.min(Q_COLS, sheet.getMaxColumns())).getValues();
   const now = new Date();
   values.forEach(function (r, i) {
     const hasContent = r.slice(1, 14).some(function (v) { return String(v).trim() !== ''; });
@@ -158,7 +163,8 @@ function adminSaveQuestion_(token, input) {
     choices: [0, 1, 2, 3].map(function (i) { return String((input.choices || [])[i] || '').slice(0, 300); }),
     answer: String(input.answer || ''),
     explanation: String(input.explanation || '').slice(0, 3000),
-    status: String(input.status || '')
+    status: String(input.status || ''),
+    stage: cleanStage_(input.stage)
   };
   const errors = validateQuestion_(q);
   if (errors.length) return { ok: false, message: errors.join('\n'), errors: errors };
@@ -167,6 +173,7 @@ function adminSaveQuestion_(token, input) {
   lock.waitLock(20000);
   try {
     const sheet = getSheet_(SHEET_QUESTIONS);
+    ensureStageHeader_(sheet);
     const now = new Date();
     const values = [q.level, q.section, q.form, q.passage, q.audio, q.question,
       q.choices[0], q.choices[1], q.choices[2], q.choices[3], q.answer, q.explanation, q.status];
@@ -175,12 +182,12 @@ function adminSaveQuestion_(token, input) {
       const found = readQuestions_().filter(function (x) { return x.questionId === q.questionId; })[0];
       if (!found) return { ok: false, message: '問題が見つかりません。' };
       sheet.getRange(found.row, 2, 1, 13).setValues([values]);
-      sheet.getRange(found.row, 16).setValue(now);
+      sheet.getRange(found.row, 16, 1, 2).setValues([[now, q.stage]]);
       return { ok: true, questionId: q.questionId, created: false };
     }
 
     const id = makeQuestionId_();
-    sheet.appendRow([id].concat(values, [now, now]));
+    sheet.appendRow([id].concat(values, [now, now, q.stage]));
     return { ok: true, questionId: id, created: true };
   } finally {
     lock.releaseLock();

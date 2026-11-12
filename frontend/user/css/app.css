@@ -797,3 +797,24 @@ u.ul { text-decoration: underline; text-decoration-thickness: 2px; text-underlin
 .lv-pick-btn small { position: absolute; top: -10px; right: -6px; padding: 0 8px; border: 2px solid var(--dark); border-radius: 999px; background: var(--pink); color: #fff; font-size: 0.68rem; font-weight: 900; line-height: 1.8; transform: rotate(6deg); }
 .lv-pick-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--dark); }
 .lv-pick-btn:focus-visible { outline: 4px solid var(--purple); outline-offset: 3px; }
+
+/* ===== STAGE（EASY → NORMAL → HARD） ===== */
+.stage-card { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.stage-tabs { display: flex; width: 100%; border: 2.5px solid var(--dark); border-radius: 999px; overflow: hidden; background: #fff; }
+.stage-tab { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 42px; padding: 2px 8px; font-family: var(--font-en); font-size: 0.85rem; font-weight: 900; }
+.stage-tab + .stage-tab { border-left: 2.5px solid var(--dark); }
+.stage-tab.is-on { background: var(--yellow); }
+.stage-tab.is-locked { background: #F1EEF8; color: rgba(30, 27, 75, 0.45); }
+.stage-tab svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.stage-note { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 0.8rem; line-height: 2; }
+.m-plan .stage-note { margin-bottom: 8px; }
+.stage-pill { display: inline-block; margin-left: 6px; padding: 0 8px; border: 2px solid var(--dark); border-radius: 999px; font-family: var(--font-en); font-size: 0.7rem; font-weight: 900; line-height: 1.8; vertical-align: middle; white-space: nowrap; }
+.stage-easy { background: var(--mint); }
+.stage-normal { background: var(--yellow); }
+.stage-hard { background: var(--pink); color: #fff; }
+.goal-badge { display: inline-block; padding: 0 10px; border: 2px solid var(--dark); border-radius: 999px; background: linear-gradient(90deg, #FFD54F, #FFBE0B); font-size: 0.75rem; font-weight: 900; line-height: 1.9; white-space: nowrap; box-shadow: 2px 2px 0 var(--dark); }
+.rf-val .goal-badge { margin-left: 6px; }
+.stage-result-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.stage-result-head .stage-pill { margin-left: 0; }
+.stage-result.is-up { background: #FFF6D6; }
+.m-hist-btn .stage-pill { margin-left: 0; }

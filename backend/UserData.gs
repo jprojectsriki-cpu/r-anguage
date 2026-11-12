@@ -128,7 +128,7 @@ function udAddAnswers_(uid, items, mode, now, ans, sum) {
     L.sec[it.section] = ls;
     L.tot[0]++;
     if (it.correct) L.tot[1]++;
-    if (mode === 'set' || mode === 'form') sum.lp = { mode: mode, level: it.level, section: it.section, form: it.form };
+    if (mode === 'set' || mode === 'form') sum.lp = { mode: mode, level: it.level, section: it.section, form: it.form, stage: it.stage || 'EASY' };
   });
   if (items.length) udMarkDay_(sum, now, items.length);
 }

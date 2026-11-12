@@ -109,18 +109,35 @@
         if (!saved) A.askLevelIfNeeded(lvNames, lv.level, function () { drawMenu(main); });
         if (m.isAdmin) main.append(h('p', { class: 'admin-note', text: '管理者アカウントなので、すべてのレベルを受けられます（確認用）。結果も記録されます。' }));
 
+        // STAGE：いまの STAGE の問題で受ける（管理者は STAGE を選べる）
+        var stage = lv.stage || 'EASY';
+        var info = lv;
+        var papers = lv.papers;
+        if (m.isAdmin && lv.stagePapers) {
+            var pick = lv.stagePapers.filter(function (x) { return x.stage === M.adminStage; })[0] || lv.stagePapers[0];
+            stage = pick.stage;
+            papers = pick.papers;
+            info = { stage: pick.stage, rate: pick.rate, need: pick.need, next: ['EASY', 'NORMAL', 'HARD'][['EASY', 'NORMAL', 'HARD'].indexOf(pick.stage) + 1] || '', goal: '' };
+            main.append(h('div', { class: 'stage-tabs', role: 'tablist', 'aria-label': 'STAGE' }, lv.stagePapers.map(function (x) {
+                var on = x.stage === stage;
+                return h('button', { type: 'button', role: 'tab', class: 'stage-tab' + (on ? ' is-on' : ''), 'aria-selected': on ? 'true' : 'false',
+                    onclick: function () { M.adminStage = x.stage; drawMenu(main); } }, [h('span', { text: x.stage })]);
+            })));
+        }
+
         // 試験の形
         var want = 0, have = 0, minutes = 0;
-        lv.papers.forEach(function (p) { want += p.want; have += p.have; minutes += p.minutes; });
+        papers.forEach(function (p) { want += p.want; have += p.have; minutes += p.minutes; });
         main.append(h('section', { class: 'card m-plan' }, [
             h('div', { class: 'm-plan-head' }, [
                 A.sticker('st-mock', 'sec-st'),
                 h('div', {}, [
-                    h('h2', { class: 'sec-title', html: lv.level + ' {模擬|もぎ}{試験|しけん}' }),
+                    h('h2', { class: 'sec-title' }, [h('span', { html: lv.level + ' {模擬|もぎ}{試験|しけん}' }), A.stagePill(stage)]),
                     h('p', { class: 'm-plan-sub', html: '{全部|ぜんぶ}で ' + minutes + '{分|ふん}・' + want + '{問|もん}　{合格点|ごうかくてん} ' + lv.pass + ' / 180' })
                 ])
             ]),
-            h('ol', { class: 'm-papers' }, lv.papers.map(function (p, i) {
+            h('p', { class: 'stage-note' }, [!m.isAdmin && lv.goal ? A.goalBadge() : null, h('span', { html: A.stageNote(info) })]),
+            h('ol', { class: 'm-papers' }, papers.map(function (p, i) {
                 return h('li', {}, [
                     h('span', { class: 'm-paper-no', text: String(i + 1) }),
                     h('span', { class: 'm-paper-name', html: p.name }),
@@ -128,8 +145,8 @@
                     h('span', { class: 'm-paper-num', html: (p.have < p.want ? p.have + ' / ' : '') + p.want + '{問|もん}' })
                 ]);
             })),
-            have < want ? h('p', { class: 'note', html: have === 0 ? 'このレベルの{問題|もんだい}は、まだありません。' : 'いまは ' + have + '{問|もん}だけです（{問題|もんだい}をふやしています）。いまある{問題|もんだい}だけで{受|う}けられます。' }) : null,
-            h('button', { type: 'button', class: 'pop-btn btn-pink btn-block', disabled: have === 0, html: '{模試|もし}を{始|はじ}める', onclick: function () { confirmStart(lv, saved); } })
+            have < want ? h('p', { class: 'note', html: have === 0 ? (stage === 'EASY' ? 'このレベルの{問題|もんだい}は、まだありません。' : stage + ' の{問題|もんだい}は、いま{準備中|じゅんびちゅう}です。もうしばらくお{待|ま}ちください。') : 'いまは ' + have + '{問|もん}だけです（{問題|もんだい}をふやしています）。いまある{問題|もんだい}だけで{受|う}けられます。' }) : null,
+            h('button', { type: 'button', class: 'pop-btn btn-pink btn-block', disabled: have === 0, html: '{模試|もし}を{始|はじ}める', onclick: function () { confirmStart(lv, saved, stage, papers); } })
         ]));
 
         // きまり
@@ -155,6 +172,7 @@
             box.append(h('ul', { class: 'm-history' }, hist.map(function (r) {
                 return h('li', {}, [h('button', { type: 'button', class: 'm-hist-btn', onclick: function () { openResult(r.resultId); } }, [
                     h('span', { class: 'm-hist-date', text: dateText(r.at) }),
+                    A.stagePill(r.stage),
                     h('span', { class: 'm-hist-score' }, [h('b', { text: String(r.total) }), document.createTextNode(' / 180')]),
                     h('span', { class: 'm-badge ' + resultClass(r.result), html: resultLabel(r.result) }),
                     A.icon('i-chev')
@@ -169,20 +187,22 @@
             .then(function (yes) { if (yes) { clearSaved(); drawMenu(main); } });
     }
 
-    function confirmStart(lv, saved) {
+    function confirmStart(lv, saved, stage, papers) {
+        papers = papers || lv.papers;
         var body = h('div', {}, [
-            h('p', { html: lv.level + 'の{模試|もし}を{始|はじ}めます。{最初|さいしょ}の{科目|かもく}は「' + lv.papers[0].name + '」（' + lv.papers[0].minutes + '{分|ふん}）です。' }),
+            h('p', { html: lv.level + '（' + (stage || 'EASY') + '）の{模試|もし}を{始|はじ}めます。{最初|さいしょ}の{科目|かもく}は「' + papers[0].name + '」（' + papers[0].minutes + '{分|ふん}）です。' }),
             saved ? h('p', { class: 'note', html: 'とちゅうの{模試|もし}は{消|き}えます。' }) : null,
             h('p', { class: 'note', html: '{聴解|ちょうかい}の{音声|おんせい}は1{回|かい}だけです。イヤホンを{用意|ようい}しておきましょう。' })
         ]);
         A.confirmBox({ title: '{模試|もし}を{始|はじ}めますか？', body: body, ok: '{始|はじ}める' }).then(function (yes) {
             if (!yes) return;
-            A.withLoading('<ruby>問題<rt>もんだい</rt></ruby>を<ruby>用意<rt>ようい</rt></ruby>しています', A.apiPost({ action: 'me.mockStart', level: lv.level }))
+            A.withLoading('<ruby>問題<rt>もんだい</rt></ruby>を<ruby>用意<rt>ようい</rt></ruby>しています', A.apiPost({ action: 'me.mockStart', level: lv.level, stage: stage }))
                 .then(function (res) {
                     if (A.authFailed(res)) return;
                     if (!res || !res.ok) { A.toast((res && res.message) || '{始|はじ}められませんでした。', true); return; }
                     M.exam = {
                         level: res.level,
+                        stage: res.stage || 'EASY',
                         papers: res.papers.map(function (p) { return { key: p.key, name: p.name, minutes: p.minutes, left: p.minutes * 60, questions: p.questions, done: false }; }),
                         p: 0, i: 0, phase: 'before', answers: {}, flags: {}, played: {}, startedAt: Date.now()
                     };
@@ -488,7 +508,7 @@
             pp.questions.forEach(function (q) { answers.push({ questionId: q.questionId, chosen: e.answers[q.questionId] ? String(e.answers[q.questionId]) : '' }); });
         });
         $('main').replaceChildren(h('section', { class: 'card soon' }, [h('p', { html: '{採点|さいてん}しています…' })]));
-        A.withLoading('<ruby>採点<rt>さいてん</rt></ruby>しています', A.apiPost({ action: 'me.mockSubmit', level: e.level, answers: answers }))
+        A.withLoading('<ruby>採点<rt>さいてん</rt></ruby>しています', A.apiPost({ action: 'me.mockSubmit', level: e.level, stage: e.stage || 'EASY', answers: answers }))
             .then(function (res) {
                 if (A.authFailed(res)) return;
                 if (!res || !res.ok) throw new Error((res && res.message) || 'submit failed');
@@ -523,7 +543,8 @@
         var main = $('main');
         main.replaceChildren();
         A.setTitle('{模試|もし}の{結果|けっか}');
-        if (fresh && r.result === '合格' && A.confetti) A.confetti();
+        var sr = r.stageResult;
+        if (fresh && A.confetti && (r.result === '合格' || (sr && (sr.unlocked || sr.goal)))) A.confetti();
 
         main.append(h('section', { class: 'card m-result ' + resultClass(r.result) }, [
             h('p', { class: 'result-title', html: r.level + ' {模擬|もぎ}{試験|しけん}・' + dateText(r.at) }),
@@ -531,6 +552,7 @@
             h('p', { class: 'm-badge m-badge-lg ' + resultClass(r.result), html: resultLabel(r.result) }),
             h('p', { class: 'm-result-sub', html: '{合格点|ごうかくてん} ' + r.pass + '{点|てん}・{正解|せいかい} ' + r.correct + ' / ' + r.count + '{問|もん}' })
         ]));
+        if (sr) main.append(stageResultCard(r, sr, fresh));
 
         main.append(h('section', { class: 'card' }, [
             h('h2', { class: 'card-title', html: '{区分|くぶん}ごとの{点数|てんすう}' }),
@@ -558,6 +580,35 @@
         ]));
         M.lastResult = r;
         window.scrollTo(0, 0);
+    }
+
+    // STAGE の判定（次の STAGE の解放・合格ライン到達）
+    function stageResultCard(r, sr, fresh) {
+        var title, body, cls = '';
+        var cond = sr.need + '{点|てん}（' + sr.rate + '%）{以上|いじょう}、かつ、どの{区分|くぶん}も{基準点|きじゅんてん}{以上|いじょう}';
+        if (sr.unlocked) {
+            cls = ' is-up';
+            title = sr.unlocked + ' が{解放|かいほう}されました！';
+            body = '「{問題|もんだい}」で ' + sr.unlocked + ' の{練習|れんしゅう}ができます。{次|つぎ}の{模試|もし}は ' + sr.unlocked + ' の{問題|もんだい}で{受|う}けます。';
+        } else if (sr.goal) {
+            cls = ' is-up';
+            title = '{合格|ごうかく}ラインに{到達|とうたつ}しました！';
+            body = 'HARD の{模試|もし}で ' + cond + 'をとりました。';
+        } else if (sr.ok) {
+            cls = ' is-up';
+            title = sr.stage + ' の{基準|きじゅん}をクリアしています';
+            body = sr.next ? (sr.current === sr.stage ? '' : 'すでに ' + sr.next + ' が{解放|かいほう}されています。') : (sr.goalAt ? 'すでに{合格|ごうかく}ラインに{到達|とうたつ}しています。' : '');
+        } else {
+            var left = Math.max(0, sr.need - r.total);
+            title = sr.next ? sr.next + ' の{解放|かいほう}まで、もう{少|すこ}し' : '{合格|ごうかく}ライン{到達|とうたつ}まで、もう{少|すこ}し';
+            body = '{条件|じょうけん}：' + cond + '。' + (left ? 'あと ' + left + '{点|てん}です。' : '') + (sr.lowBase ? '{基準点|きじゅんてん}に{足|た}りない{区分|くぶん}があります。' : '');
+            if (r.result === '判定なし') body = '{問題|もんだい}がない{区分|くぶん}があるので、STAGE の{判定|はんてい}はしていません。';
+        }
+        return h('section', { class: 'card stage-result' + cls }, [
+            h('p', { class: 'stage-result-head' }, [A.stagePill(sr.stage), (sr.goal || (!fresh && sr.ok && !sr.next && sr.goalAt)) ? A.goalBadge() : null]),
+            h('h2', { class: 'card-title', html: title }),
+            body ? h('p', { html: body }) : null
+        ]);
     }
 
     function drawReview(r, filter) {

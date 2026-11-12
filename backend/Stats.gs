@@ -92,7 +92,8 @@ function meStats_(token) {
       sections: rows,
       vocab: { known: lvCards.filter(function (c) { return mine[c.cardId] && mine[c.cardId].state === '覚えた'; }).length, total: lvCards.length },
       mistakes: mistakeLevels[lv] || 0,
-      lastMock: sum.lmv[lv] || null
+      lastMock: sum.lmv[lv] || null,
+      stage: stageInfo_(me.user, lv)
     };
   });
 

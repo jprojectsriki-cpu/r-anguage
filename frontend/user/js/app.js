@@ -336,6 +336,22 @@
         });
     }
 
+    /* ===================== STAGE（EASY → NORMAL → HARD） ===================== */
+    // info: { stage, rate, need, next, goal }（GAS の stageInfo_）
+    function goalBadge() {
+        return h('span', { class: 'goal-badge', html: '★ {合格|ごうかく}ライン{到達|とうたつ}' });
+    }
+    function stageNote(info) {
+        if (!info) return '';
+        var cond = '{模試|もし}で ' + info.need + '{点|てん}（' + info.rate + '%）{以上|いじょう}、かつ、どの{区分|くぶん}も{基準点|きじゅんてん}{以上|いじょう}';
+        if (info.next) return cond + 'で、' + info.next + ' が{解放|かいほう}されます。';
+        if (info.goal) return 'HARD の{模試|もし}で 90%{以上|いじょう}をとり、{合格|ごうかく}ラインに{到達|とうたつ}しました。';
+        return cond + 'で、「{合格|ごうかく}ライン{到達|とうたつ}」です。';
+    }
+    function stagePill(stage) {
+        return h('span', { class: 'stage-pill stage-' + String(stage || 'EASY').toLowerCase(), text: stage || 'EASY' });
+    }
+
     /** 問題のページを開いて、すぐに始める */
     function startPractice(params) {
         window.RPendingPractice = params;
@@ -463,8 +479,8 @@
             item = { st: 'st-redo', cls: 'cont-redo', title: (multi ? mkLevel + ' ' : '') + 'まちがい{復習|ふくしゅう} ' + mkCount + '{問|もん}', sub: 'まちがえた{問題|もんだい}を、もう{一度|いちど}', go: function () { startPractice({ mode: 'mistakes', level: mkLevel }); } };
         } else if (st.lastPractice) {
             var lp = st.lastPractice;
-            item = { st: 'st-' + (SECTION_ST[lp.section] || 'practice'), cls: 'cont-last', title: '{前回|ぜんかい}の{続|つづ}き', sub: lp.level + ' ' + (SECTION_RUBY[lp.section] || lp.section) + (lp.mode === 'form' ? '・' + lp.form : ''),
-                go: function () { startPractice(lp.mode === 'form' ? { mode: 'form', level: lp.level, section: lp.section, form: lp.form } : { mode: 'set', level: lp.level, section: lp.section }); } };
+            item = { st: 'st-' + (SECTION_ST[lp.section] || 'practice'), cls: 'cont-last', title: '{前回|ぜんかい}の{続|つづ}き', sub: lp.level + ' ' + (lp.stage ? lp.stage + ' ' : '') + (SECTION_RUBY[lp.section] || lp.section) + (lp.mode === 'form' ? '・' + lp.form : ''),
+                go: function () { startPractice(lp.mode === 'form' ? { mode: 'form', level: lp.level, section: lp.section, form: lp.form, stage: lp.stage || 'EASY' } : { mode: 'set', level: lp.level, section: lp.section, stage: lp.stage || 'EASY' }); } };
         }
         if (!item) { slot.replaceChildren(); return; }
         slot.replaceChildren(h('button', { type: 'button', class: 'card cont ' + item.cls, onclick: item.go }, [
@@ -533,6 +549,7 @@
             h('ul', { class: 'rate-foot' }, [
                 h('li', {}, [h('span', { class: 'rf-label', html: '{答|こた}えた{問題|もんだい}' }), h('span', { class: 'rf-val', html: total.answered + ' {問|もん}' })]),
                 h('li', {}, [h('span', { class: 'rf-label', html: '{覚|おぼ}えた{単語|たんご}' }), h('span', { class: 'rf-val', html: vocab.known + ' / ' + vocab.total + ' {枚|まい}' })]),
+                view && view.stage ? h('li', {}, [h('span', { class: 'rf-label', text: 'STAGE' }), h('span', { class: 'rf-val' }, [stagePill(view.stage.stage), view.stage.goal ? goalBadge() : null])]) : null,
                 h('li', {}, [h('span', { class: 'rf-label', html: '{最後|さいご}の{模試|もし}' }), h('span', { class: 'rf-val', html: lastMock ? lastMock.level + '　' + lastMock.total + ' / 180 {点|てん}' : 'まだ{受|う}けていません' })])
             ])
         ]);
@@ -899,6 +916,7 @@
     /* ほかのページ（js/practice.js など）から使う道具 */
     window.RApp = {
         studyLevel: studyLevel, setStudyLevel: setStudyLevel, chooseLevel: chooseLevel, levelBar: levelBar, askLevelIfNeeded: askLevelIfNeeded,
+        goalBadge: goalBadge, stageNote: stageNote, stagePill: stagePill,
         listenBox: listenBox, registerDrain: registerDrain, afterSaves: afterSaves, makeDrain: makeDrain,
         state: state, h: h, fg: fg, icon: icon, sticker: sticker, FORM_GUIDE: FORM_GUIDE, toast: toast, confirmBox: confirmBox,
         apiPost: apiPost, withLoading: withLoading, authFailed: authFailed, setTitle: function (t) { $('topTitle').innerHTML = fg(t); }

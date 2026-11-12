@@ -11,6 +11,7 @@
     var A = window.RApp;
     var h = function (t, a, c) { return A.h(t, a, c); };
     var LEVEL_KEY = 'ranguage_plevel';
+    var STAGE_KEY = 'ranguage_pstage_'; // ＋レベル（最後に選んだ STAGE）
     var SECTION_ICON = { '文字・語彙': 'moji', '文法': 'bunpo', '読解': 'dokkai', '聴解': 'choukai' };
     var SECTION_RUBY = { '文字・語彙': '{文字|もじ}・{語彙|ごい}', '文法': '{文法|ぶんぽう}', '読解': '{読解|どっかい}', '聴解': '{聴解|ちょうかい}' };
     var MODE_TITLE = { mistakes: 'まちがい{復習|ふくしゅう}', favorites: 'お{気|き}に{入|い}り', retry: 'まちがえた{問題|もんだい}をもう{一度|いちど}' };
@@ -100,14 +101,38 @@
             main.append(h('p', { class: 'admin-note', text: '管理者アカウントなので、すべてのレベルを解けます（確認用）。答えの記録も残ります。' + (m.extra ? '「問題形式」が問題数の表（QuestionCounts）にない公開問題が ' + m.extra + '問あります。この問題は出題されません。' : '') }));
         }
 
+        // STAGE（EASY → NORMAL → HARD）。解放した STAGE を選んで練習する
+        var stages = lv.stages || [{ stage: 'EASY', unlocked: true, sections: lv.sections || [] }];
+        var saved = load(STAGE_KEY + lv.level);
+        var cur = stages.filter(function (x) { return x.stage === saved && x.unlocked; })[0] ||
+            stages.filter(function (x) { return x.stage === (m.isAdmin ? 'EASY' : lv.stage); })[0] || stages[0];
+        main.append(h('section', { class: 'card stage-card' }, [
+            h('div', { class: 'stage-tabs', role: 'tablist', 'aria-label': 'STAGE' }, stages.map(function (x) {
+                var on = x.stage === cur.stage;
+                return h('button', {
+                    type: 'button', role: 'tab', class: 'stage-tab' + (on ? ' is-on' : '') + (x.unlocked ? '' : ' is-locked'), 'aria-selected': on ? 'true' : 'false',
+                    onclick: function () {
+                        if (!x.unlocked) { A.toast(x.stage + ' は、まだ{解放|かいほう}されていません。' + A.stageNote(lv)); return; }
+                        store(STAGE_KEY + lv.level, x.stage);
+                        drawMenu(main);
+                    }
+                }, [x.unlocked ? null : A.icon('i-lock'), h('span', { text: x.stage })]);
+            })),
+            h('p', { class: 'stage-note' }, [lv.goal ? A.goalBadge() : null, h('span', { html: A.stageNote(lv) })]),
+            lv.next ? h('a', { class: 'pop-btn btn-white btn-sm', href: '#mock', html: '{模試|もし}を{受|う}ける' }) : null
+        ]));
+
         // まちがい復習・お気に入り
         main.append(h('div', { class: 'review-row' }, [
             reviewButton('mistakes', 'まちがい{復習|ふくしゅう}', lv.mistakes, 'st-redo', lv.level),
             reviewButton('favorites', 'お{気|き}に{入|い}り', lv.favorites, 'st-star', lv.level)
         ]));
 
-        // 科目ごと
-        lv.sections.forEach(function (s) {
+        // 科目ごと（選んだ STAGE の問題）
+        if (cur.stage !== 'EASY' && !cur.sections.some(function (s) { return s.have > 0; })) {
+            main.append(h('section', { class: 'card soon' }, [h('p', { html: cur.stage + ' の{問題|もんだい}は、いま{準備中|じゅんびちゅう}です。もうしばらくお{待|ま}ちください。' })]));
+        }
+        cur.sections.forEach(function (s) {
             var card = h('section', { class: 'card sec-card sec-' + SECTION_ICON[s.section] }, [
                 h('div', { class: 'sec-head' }, [
                     A.sticker('st-' + SECTION_ICON[s.section], 'sec-st'),
@@ -116,7 +141,7 @@
             ]);
             var startBtn = h('button', {
                 type: 'button', class: 'pop-btn btn-purple btn-block', disabled: s.have === 0,
-                onclick: function () { start({ mode: 'set', level: lv.level, section: s.section }); }
+                onclick: function () { start({ mode: 'set', level: lv.level, section: s.section, stage: cur.stage }); }
             }, [h('span', { html: '{本番|ほんばん}と{同|おな}じ ' + s.want + '{問|もん}' })]);
             card.append(startBtn);
             if (s.have < s.want) {
@@ -127,7 +152,7 @@
                 list.append(h('li', {}, [
                     h('button', {
                         type: 'button', class: 'form-btn', disabled: f.have === 0,
-                        onclick: function () { start({ mode: 'form', level: lv.level, section: s.section, form: f.form }); }
+                        onclick: function () { start({ mode: 'form', level: lv.level, section: s.section, form: f.form, stage: cur.stage }); }
                     }, [
                         h('span', { class: 'form-name', text: f.form }),
                         h('span', { class: 'form-num', html: f.have === 0 ? 'まだありません' : (Math.min(f.have, f.want) < f.want ? Math.min(f.have, f.want) + ' / ' : '') + f.want + '{問|もん}' }),
@@ -181,7 +206,7 @@
         P.quiz = {
             params: params,
             title: params.mode === 'set' || params.mode === 'form'
-                ? params.level + ' ' + sectionTitle(params.section) + (params.mode === 'form' ? '・' + params.form : '')
+                ? params.level + ' ' + (params.stage || 'EASY') + ' ' + sectionTitle(params.section) + (params.mode === 'form' ? '・' + params.form : '')
                 : params.level + ' ' + MODE_TITLE[params.mode],
             list: res.questions,
             i: 0,

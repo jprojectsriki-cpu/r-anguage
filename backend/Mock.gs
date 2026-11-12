@@ -8,6 +8,8 @@
  * - 問題を出すときは、正解と解説は送らない。答えを出したあと（me.mockSubmit）に、サーバーで採点して返す
  * - 点数は「目安」：区分ごとの正答率 × 区分の満点（本番は尺度得点という特別な計算をする）
  * - MockResults シートに結果を残す。答えは Answers シートにも残す（解き方＝mock）ので、まちがい復習に入る
+ * - STAGE（Stage.gs）：模試は、受講生のいまの STAGE の問題から出す。結果で次の STAGE を解放する
+ *   （L列にその模試の STAGE を残す。前の結果は空＝EASY）
  */
 
 const SHEET_MOCK_RESULTS = 'MockResults';
@@ -82,7 +84,10 @@ function readMyMockResults_(userId) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_MOCK_RESULTS);
   if (!sheet || sheet.getLastRow() < 2) return [];
   // 「くわしい結果」（11列目・長い）は読まない。必要なときは readMockDetail_ で1行だけ読む
-  return sheet.getRange(2, 1, sheet.getLastRow() - 1, MR_HEADERS.length - 1).getValues()
+  const n = sheet.getLastRow() - 1;
+  const stages = sheet.getMaxColumns() >= MR_COL_STAGE ? sheet.getRange(2, MR_COL_STAGE, n, 1).getValues() : [];
+  return sheet.getRange(2, 1, n, MR_HEADERS.length - 1).getValues()
+    .map(function (r, i) { r.stage = cleanStage_(stages[i] ? stages[i][0] : ''); return r; })
     .filter(function (r) { return String(r[1]) === userId; })
     .map(function (r) {
       let divisions = [];
@@ -90,7 +95,7 @@ function readMyMockResults_(userId) {
       return {
         resultId: String(r[0]), level: String(r[2]), at: r[3] instanceof Date ? r[3].toISOString() : String(r[3]),
         total: Number(r[4]), pass: Number(r[5]), result: String(r[6]), divisions: divisions,
-        correct: Number(r[8]), count: Number(r[9])
+        correct: Number(r[8]), count: Number(r[9]), stage: r.stage
       };
     })
     .reverse();
@@ -105,42 +110,53 @@ function meMockMenu_(token) {
   const questions = readPublicQuestions_(levels);
   const have = {};
   questions.forEach(function (q) {
-    const k = q.level + '|' + q.section + '|' + q.form;
+    const k = qStage_(q) + '|' + q.level + '|' + q.section + '|' + q.form;
     have[k] = (have[k] || 0) + 1;
   });
+  const isAdmin = me.user.role === 'admin';
   return {
     ok: true,
-    isAdmin: me.user.role === 'admin',
+    isAdmin: isAdmin,
     levels: levels.map(function (lv) {
       const sc = MOCK_SCORING[lv];
-      return {
-        level: lv,
-        pass: sc.pass,
-        divisions: sc.divisions.map(function (d) { return { name: d.name, max: d.max, base: d.base }; }),
-        papers: MOCK_PAPERS[lv].map(function (p) {
+      function papersOf(stage) {
+        return MOCK_PAPERS[lv].map(function (p) {
           let want = 0, got = 0;
           counts.filter(function (c) { return c.level === lv && p.sections.indexOf(c.section) >= 0; }).forEach(function (c) {
             want += c.count;
-            got += Math.min(c.count, have[lv + '|' + c.section + '|' + c.form] || 0);
+            got += Math.min(c.count, have[stage + '|' + lv + '|' + c.section + '|' + c.form] || 0);
           });
           return { key: p.key, name: p.name, minutes: p.minutes, want: want, have: got };
-        })
-      };
+        });
+      }
+      const info = stageInfo_(me.user, lv);
+      return Object.assign({
+        level: lv,
+        pass: sc.pass,
+        divisions: sc.divisions.map(function (d) { return { name: d.name, max: d.max, base: d.base }; }),
+        papers: papersOf(info.stage),
+        // 管理者は STAGE を選んで受けられる（確認用）
+        stagePapers: isAdmin ? STAGES.map(function (st) { return { stage: st, rate: STAGE_RATE[st], need: stageNeed_(st), papers: papersOf(st) }; }) : null
+      }, info);
     }),
     history: readMyMockResults_(me.user.userId).slice(0, 20).map(function (r) {
-      return { resultId: r.resultId, level: r.level, at: r.at, total: r.total, pass: r.pass, result: r.result, divisions: r.divisions, correct: r.correct, count: r.count };
+      return { resultId: r.resultId, level: r.level, at: r.at, total: r.total, pass: r.pass, result: r.result, divisions: r.divisions, correct: r.correct, count: r.count,
+        stage: r.stage, stageOk: judgeStage_(r.stage, r).ok };
     })
   };
 }
 
 /** 模試を始める：科目ごとの問題（QuestionCounts の順番・数） */
-function meMockStart_(token, level) {
+function meMockStart_(token, level, wantStage) {
   const me = requireMe_(token);
   if (!me.ok) return me;
   level = String(level || '');
   if (practiceLevels_(me.user).indexOf(level) === -1) return { ok: false, message: 'このレベルは、まだ使えません。マイページから追加できます。' };
+  // いまの STAGE の問題から出す（管理者は、選んだ STAGE）
+  let stage = userStage_(me.user, level);
+  if (me.user.role === 'admin') stage = STAGES.indexOf(String(wantStage || '')) >= 0 ? String(wantStage) : 'EASY';
   const counts = readQuestionCounts_().filter(function (c) { return c.level === level; });
-  const all = readPublicQuestions_([level]);
+  const all = readPublicQuestions_([level]).filter(function (q) { return qStage_(q) === stage; });
   let total = 0;
   const lastAt = lastAnsweredMap_(me.user.userId); // まだ解いていない問題を先に
   const papers = MOCK_PAPERS[level].map(function (p) {
@@ -153,8 +169,8 @@ function meMockStart_(token, level) {
     total += list.length;
     return { key: p.key, name: p.name, minutes: p.minutes, questions: list.map(toMockQuestion_) };
   });
-  if (!total) return { ok: false, message: 'このレベルの問題は、まだ登録されていません。' };
-  return { ok: true, level: level, papers: papers };
+  if (!total) return { ok: false, message: stage === 'EASY' ? 'このレベルの問題は、まだ登録されていません。' : 'この STAGE（' + stage + '）の問題は、いま準備中です。' };
+  return { ok: true, level: level, stage: stage, papers: papers };
 }
 
 /**
@@ -183,6 +199,11 @@ function meMockSubmit_(token, input) {
   if (!items.length) return { ok: false, message: '採点できる問題がありません。' };
 
   const graded = gradeMock_(level, items);
+  // その模試の STAGE（出した問題の STAGE。ちがう STAGE がまざっているときは、判定しない）
+  const stage = cleanStage_(input.stage);
+  const judge = judgeStage_(stage, graded);
+  if (!stageUnlocked_(me.user, level, stage) || items.some(function (it) { return qStage_(it.q) !== stage; })) judge.ok = false;
+  let advanced = { unlocked: '', goal: false };
   const now = new Date();
   const resultId = 'M' + Utilities.formatDate(now, 'Asia/Tokyo', 'yyyyMMddHHmmss') + '-' + Math.floor(Math.random() * 900 + 100);
   const detail = items.map(function (it) { return [it.q.questionId, it.chosen, it.correct ? 1 : 0]; });
@@ -192,8 +213,9 @@ function meMockSubmit_(token, input) {
   try {
     getSheet_(SHEET_MOCK_RESULTS).appendRow([
       resultId, me.user.userId, level, now, graded.total, graded.pass, graded.result,
-      JSON.stringify(graded.divisions), graded.correct, items.length, JSON.stringify(detail)
+      JSON.stringify(graded.divisions), graded.correct, items.length, JSON.stringify(detail), stage
     ]);
+    advanced = advanceStage_(me, level, judge, now);
     // 答えた問題は、受講生ごとのまとめにも入れる（まちがい復習・正答率に入る）
     const answered = items.filter(function (it) { return it.chosen; });
     const uid = me.user.userId;
@@ -214,7 +236,10 @@ function meMockSubmit_(token, input) {
     lock.releaseLock();
   }
   writeAnswerLog_(logRows || [], now);
-  return Object.assign({ ok: true, resultId: resultId, level: level, at: now.toISOString() }, graded, { count: items.length, review: reviewItems_(items) });
+  return Object.assign({ ok: true, resultId: resultId, level: level, at: now.toISOString() }, graded, {
+    count: items.length, review: reviewItems_(items),
+    stageResult: Object.assign({}, judge, advanced, { goalAt: userGoal_(me.user, level), current: userStage_(me.user, level) })
+  });
 }
 
 /** 区分ごとの点数（目安）と合否 */
@@ -266,6 +291,7 @@ function meMockResult_(token, resultId) {
   return {
     ok: true, resultId: r.resultId, level: r.level, at: r.at, total: r.total, pass: r.pass, result: r.result,
     divisions: r.divisions, correct: r.correct, count: r.count, review: reviewItems_(items),
-    missing: detail.length - items.length
+    missing: detail.length - items.length,
+    stageResult: Object.assign({}, judgeStage_(r.stage, r), { unlocked: '', goal: false, goalAt: userGoal_(me.user, r.level), current: userStage_(me.user, r.level) })
   };
 }

@@ -203,7 +203,7 @@ function adminListUsers_(token) {
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return { ok: true, users: [] };
 
-  const users = sheet.getRange(2, 1, lastRow - 1, 11).getValues()
+  const users = sheet.getRange(2, 1, lastRow - 1, Math.min(USER_COL_STAGES, sheet.getMaxColumns())).getValues()
     .filter(function (r) { return String(r[5]) === 'user'; })
     .map(function (r) {
       return {
@@ -214,7 +214,8 @@ function adminListUsers_(token) {
         levels: String(r[7] || '').split(',').filter(String),
         createdAt: r[8] || null,
         activatedAt: r[9] || null,
-        lastLoginAt: r[10] || null
+        lastLoginAt: r[10] || null,
+        stages: parseStages_(r[USER_COL_STAGES - 1])
       };
     });
   return { ok: true, users: users };

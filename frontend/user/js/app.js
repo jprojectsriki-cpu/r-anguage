@@ -343,6 +343,7 @@
     }
     function stageNote(info) {
         if (!info) return '';
+        if (info.all) return '{管理者|かんりしゃ}アカウントなので、すべての STAGE を{使|つか}えます（{確認用|かくにんよう}）。{受講生|じゅこうせい}は、{模試|もし}の{結果|けっか}で{次|つぎ}の STAGE に{進|すす}みます。';
         var cond = '{模試|もし}で ' + info.need + '{点|てん}（' + info.rate + '%）{以上|いじょう}、かつ、どの{区分|くぶん}も{基準点|きじゅんてん}{以上|いじょう}';
         if (info.next) return cond + 'で、' + info.next + ' が{解放|かいほう}されます。';
         if (info.goal) return 'HARD の{模試|もし}で 90%{以上|いじょう}をとり、{合格|ごうかく}ラインに{到達|とうたつ}しました。';
@@ -549,7 +550,7 @@
             h('ul', { class: 'rate-foot' }, [
                 h('li', {}, [h('span', { class: 'rf-label', html: '{答|こた}えた{問題|もんだい}' }), h('span', { class: 'rf-val', html: total.answered + ' {問|もん}' })]),
                 h('li', {}, [h('span', { class: 'rf-label', html: '{覚|おぼ}えた{単語|たんご}' }), h('span', { class: 'rf-val', html: vocab.known + ' / ' + vocab.total + ' {枚|まい}' })]),
-                view && view.stage ? h('li', {}, [h('span', { class: 'rf-label', text: 'STAGE' }), h('span', { class: 'rf-val' }, [stagePill(view.stage.stage), view.stage.goal ? goalBadge() : null])]) : null,
+                view && view.stage ? h('li', {}, [h('span', { class: 'rf-label', text: 'STAGE' }), h('span', { class: 'rf-val' }, view.stage.all ? [h('span', { html: 'すべて（{管理者|かんりしゃ}）' })] : [stagePill(view.stage.stage), view.stage.goal ? goalBadge() : null])]) : null,
                 h('li', {}, [h('span', { class: 'rf-label', html: '{最後|さいご}の{模試|もし}' }), h('span', { class: 'rf-val', html: lastMock ? lastMock.level + '　' + lastMock.total + ' / 180 {点|てん}' : 'まだ{受|う}けていません' })])
             ])
         ]);

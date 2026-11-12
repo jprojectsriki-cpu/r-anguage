@@ -72,7 +72,8 @@ function stageInfo_(user, level) {
     rate: STAGE_RATE[stage],
     need: stageNeed_(stage),
     next: STAGES[STAGES.indexOf(stage) + 1] || '',
-    goal: userGoal_(user, level)
+    goal: userGoal_(user, level),
+    all: user.role === 'admin' // 管理者は、すべての STAGE を使える（画面では「すべて（管理者）」と出す）
   };
 }
 

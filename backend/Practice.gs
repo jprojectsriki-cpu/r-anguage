@@ -93,8 +93,9 @@ function readQuestionCounts_() {
 }
 
 /** 受講生に出せる問題（公開・入力ミスなし）だけ */
-function readPublicQuestions_() {
-  return cachedJson_('pubq', function () {   // Cache.gs（管理画面で変えると作り直す）
+/** 公開中の問題（levels を渡すと、そのレベルだけ。Cache.gs でレベルごとにためる。管理画面で変えると作り直す） */
+function readPublicQuestions_(levels) {
+  return cachedByLevel_('pubq', levels, function () {
     return readQuestions_().filter(function (q) {
       q.form = String(q.form || '').trim();
       return q.status === '公開' && validateQuestion_(q).length === 0;
@@ -158,7 +159,7 @@ function mePracticeMenu_(token) {
   if (!me.ok) return me;
   const levels = practiceLevels_(me.user);
   const counts = readQuestionCounts_();
-  const questions = readPublicQuestions_();
+  const questions = readPublicQuestions_(levels);
   const byId = {};
   questions.forEach(function (q) { byId[q.questionId] = q; });
   const mistakes = mistakeIdsOf_(udAns_(me.user.userId)).map(function (id) { return byId[id]; }).filter(Boolean);
@@ -268,7 +269,7 @@ function mePracticeStart_(token, input) {
   if (PRACTICE_MODES.indexOf(mode) === -1) return { ok: false, message: '解き方が正しくありません。' };
   if (practiceLevels_(me.user).indexOf(level) === -1) return { ok: false, message: 'このレベルは、まだ使えません。マイページから追加できます。' };
 
-  const all = readPublicQuestions_().filter(function (q) { return q.level === level; });
+  const all = readPublicQuestions_([level]);
   const favs = readMyFavorites_(me.user.userId);
   const byId = {};
   all.forEach(function (q) { byId[q.questionId] = q; });
@@ -360,7 +361,7 @@ function meFavorite_(token, questionId, on) {
   const me = requireMe_(token);
   if (!me.ok) return me;
   questionId = String(questionId || '');
-  if (!readPublicQuestions_().some(function (q) { return q.questionId === questionId; })) {
+  if (!readPublicQuestions_(practiceLevels_(me.user)).some(function (q) { return q.questionId === questionId; })) {
     return { ok: false, message: 'この問題は見つかりません。' };
   }
   const lock = LockService.getScriptLock();

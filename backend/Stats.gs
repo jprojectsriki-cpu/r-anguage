@@ -51,7 +51,7 @@ function meStats_(token) {
   });
 
   // 単語カード
-  const cards = readPublicCards_().filter(function (c) { return levels.indexOf(c.level) >= 0; });
+  const cards = readPublicCards_(levels);
   const mine = readMyVocab_(uid);
   const known = cards.filter(function (c) { return mine[c.cardId] && mine[c.cardId].state === '覚えた'; }).length;
 

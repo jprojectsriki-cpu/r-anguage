@@ -28,8 +28,9 @@ function setupVocabStudy() {
 }
 
 /** 受講生に出せるカード（公開・入力ミスなし）だけ */
-function readPublicCards_() {
-  return cachedJson_('pubc', function () {   // Cache.gs（管理画面で変えると作り直す）
+/** 公開中の単語カード（levels を渡すと、そのレベルだけ。Cache.gs でレベルごとにためる） */
+function readPublicCards_(levels) {
+  return cachedByLevel_('pubc', levels, function () {
     return readCards_().filter(function (c) { return c.status === '公開' && validateCard_(c).length === 0; });
   });
 }
@@ -57,7 +58,7 @@ function meVocabMenu_(token) {
   const me = requireMe_(token);
   if (!me.ok) return me;
   const levels = practiceLevels_(me.user);
-  const cards = readPublicCards_();
+  const cards = readPublicCards_(levels);
   const mine = readMyVocab_(me.user.userId);
   return {
     ok: true,
@@ -82,7 +83,7 @@ function meVocabStart_(token, input) {
   if (VOCAB_MODES.indexOf(mode) === -1) return { ok: false, message: '出し方が正しくありません。' };
   if (practiceLevels_(me.user).indexOf(level) === -1) return { ok: false, message: 'このレベルは、まだ使えません。マイページから追加できます。' };
 
-  const cards = readPublicCards_().filter(function (c) { return c.level === level; });
+  const cards = readPublicCards_([level]);
   const mine = readMyVocab_(me.user.userId);
   let list;
   if (mode === 'new') {
@@ -118,7 +119,7 @@ function meVocabMark_(token, input) {
   if (!marks.length) return { ok: true, saved: 0 };
   const levels = practiceLevels_(me.user);
   const byId = {};
-  readPublicCards_().forEach(function (c) { byId[c.cardId] = c; });
+  readPublicCards_(levels).forEach(function (c) { byId[c.cardId] = c; });
   const now = new Date();
 
   const uid = me.user.userId;

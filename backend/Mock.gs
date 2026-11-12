@@ -102,7 +102,7 @@ function meMockMenu_(token) {
   if (!me.ok) return me;
   const levels = practiceLevels_(me.user);
   const counts = readQuestionCounts_();
-  const questions = readPublicQuestions_();
+  const questions = readPublicQuestions_(levels);
   const have = {};
   questions.forEach(function (q) {
     const k = q.level + '|' + q.section + '|' + q.form;
@@ -140,7 +140,7 @@ function meMockStart_(token, level) {
   level = String(level || '');
   if (practiceLevels_(me.user).indexOf(level) === -1) return { ok: false, message: 'このレベルは、まだ使えません。マイページから追加できます。' };
   const counts = readQuestionCounts_().filter(function (c) { return c.level === level; });
-  const all = readPublicQuestions_().filter(function (q) { return q.level === level; });
+  const all = readPublicQuestions_([level]);
   let total = 0;
   const lastAt = lastAnsweredMap_(me.user.userId); // まだ解いていない問題を先に
   const papers = MOCK_PAPERS[level].map(function (p) {
@@ -169,7 +169,7 @@ function meMockSubmit_(token, input) {
   if (practiceLevels_(me.user).indexOf(level) === -1) return { ok: false, message: 'このレベルは、まだ使えません。' };
   const list = Array.isArray(input.answers) ? input.answers.slice(0, 400) : [];
   const byId = {};
-  readPublicQuestions_().forEach(function (q) { byId[q.questionId] = q; });
+  readPublicQuestions_([level]).forEach(function (q) { byId[q.questionId] = q; });
 
   const items = [];
   const seen = {};

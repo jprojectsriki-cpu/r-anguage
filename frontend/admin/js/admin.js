@@ -450,7 +450,7 @@
         }).then(function (r) {
             if (!r) return;
             runAction('アカウントを発行しています', { action: 'admin.issue', applicationId: a.applicationId }, function (res) {
-                var msg = a.applicationId + ' を発行しました（レベル：' + res.levels.join('、') + '）。発行メールを送信しました。';
+                var msg = a.applicationId + ' を発行しました（レベル：' + res.levels.join('、') + (res.validUntil && res.validUntil.length ? '／利用期限 ' + res.validUntil.join('、') : '') + '）。発行メールを送信しました。';
                 if (res.others && res.others.length) {
                     msg += '同じ受講生に、ほかの「入金待ち」の申込があります：' + res.others.join('、') + '。二重に入金されないよう、いらなければキャンセルしてください。';
                 }
@@ -500,6 +500,8 @@
                 lv.append(el('span', 'level-pill lv-' + l, l));
                 var st = userStageOf(u, l);
                 lv.append(el('span', 'cell-sub', l + '：' + st + (st === 'HARD' && ((u.stages || {}).goal || {})[l] ? '（合格ライン到達）' : '')));
+                var ex = validOf(u, l);
+                if (ex) lv.append(el('span', 'cell-sub' + (ex.getTime() <= Date.now() ? ' is-expired' : ''), '期限：' + fmt(ex.toISOString(), false) + (ex.getTime() <= Date.now() ? '（切れ）' : 'まで')));
             });
             if (!(u.levels || []).length) lv.textContent = '—';
             c3.append(lv);
@@ -511,9 +513,13 @@
                 c6.append(el('span', 'cell-sub', '申込から発行してください'));
             } else {
                 var acts = el('div', 'actions');
-                var missing = LEVELS.filter(function (l) { return (u.levels || []).indexOf(l) === -1; });
+                var missing = LEVELS.filter(function (l) {
+                    var ex = validOf(u, l);
+                    return (u.levels || []).indexOf(l) === -1 || (ex && ex.getTime() <= Date.now()); // 期限が切れたレベルも追加（1年）できる
+                });
                 if (missing.length) acts.append(button('レベル追加', 'btn btn-white btn-xs', function () { addLevel(u, missing); }));
                 if ((u.levels || []).length) acts.append(button('STAGE', 'btn btn-white btn-xs', function () { setStage(u); }));
+                if ((u.levels || []).length) acts.append(button('期限', 'btn btn-white btn-xs', function () { setValidity(u); }));
                 if (u.status === 'active') acts.append(button('停止', 'btn btn-white btn-xs', function () { setUserStatus(u, 'suspended'); }));
                 if (u.status === 'suspended') acts.append(button('再開', 'btn btn-pink btn-xs', function () { setUserStatus(u, 'active'); }));
                 c6.append(acts);
@@ -539,6 +545,34 @@
             if (!r) return;
             runAction(stop ? '停止しています' : '再開しています', { action: 'admin.userStatus', userId: u.userId, status: status }, function () {
                 return u.name + ' さんのアカウントを' + (stop ? '停止' : '再開') + 'しました。';
+            });
+        });
+    }
+
+    function validOf(u, level) {
+        var s = (u.validity || {})[level];
+        var d = s ? new Date(s) : null;
+        return d && !isNaN(d) ? d : null;
+    }
+    function ymdJst(d) {
+        var j = new Date(d.getTime() + 9 * 3600 * 1000);
+        return j.getUTCFullYear() + '-' + ('0' + (j.getUTCMonth() + 1)).slice(-2) + '-' + ('0' + j.getUTCDate()).slice(-2);
+    }
+
+    // レベルの利用期限を変える（問い合わせの対応用。ふつうは「発行」で1年のびる）
+    function setValidity(u) {
+        confirmAction({
+            title: '利用期限を変えますか？',
+            rows: userRows(u).concat((u.levels || []).map(function (l) { var d = validOf(u, l); return ['いまの期限（' + l + '）', d ? ymdJst(d) : '—']; })),
+            levels: u.levels,
+            levelLabel: 'レベル',
+            note: { label: '新しい期限（例：2027-11-13）。その日の23:59まで使えます' },
+            text: '受講生にメールは送られません。期限を過去の日にすると、そのレベルはすぐ使えなくなります。',
+            ok: '変える'
+        }).then(function (r) {
+            if (!r) return;
+            runAction('期限を変えています', { action: 'admin.setValidity', userId: u.userId, level: r.level, date: r.note }, function (res) {
+                return u.name + ' さんの ' + res.level + ' の期限を ' + ymdJst(new Date(res.expiresAt)) + ' にしました。';
             });
         });
     }
@@ -573,7 +607,7 @@
             title: 'レベルを追加しますか？',
             rows: userRows(u),
             levels: missing,
-            text: '申込なしでレベルを追加します（料金は発生しません）。受講生にメールは送られません。',
+            text: '申込なしでレベルを追加します（料金は発生しません）。利用期限は今日から1年です（期限が切れたレベルは、今日から1年にします）。受講生にメールは送られません。',
             ok: '追加する'
         }).then(function (r) {
             if (!r) return;

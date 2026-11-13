@@ -440,3 +440,4 @@ u.ul { text-decoration: underline; text-decoration-thickness: 2px; text-underlin
 
 /* STAGE */
 .stage-tag { font-family: inherit; font-weight: 900; }
+.cell-sub.is-expired { color: #E0245E; font-weight: 700; }

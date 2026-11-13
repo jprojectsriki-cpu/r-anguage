@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>R-ANGUAGE | JLPT N4〜N1 日本語学習システム</title>
-    <meta name="description" content="R-ANGUAGE（ランゲージ）は、JLPT N4〜N1に対応した日本語学習システムです。語彙・文法・聴解・模擬試験をスマホで。各レベル買い切り。ふりがな表示対応。">
+    <meta name="description" content="R-ANGUAGE（ランゲージ）は、JLPT N4〜N1に対応した日本語学習システムです。本番と同じ形式の問題3,500問以上・単語カード9,800語・模擬試験をスマホで。各レベル1年間使い放題。ふりがな表示対応。">
     <link rel="icon" href="img/favicon.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/lp.css?v=20261112a">
-    <link rel="stylesheet" href="css/loading.css?v=20261112a">
+    <link rel="stylesheet" href="css/lp.css?v=20261114a">
+    <link rel="stylesheet" href="css/loading.css?v=20261114a">
     <script>
         document.documentElement.classList.add('js');
         try { if (localStorage.getItem('ranguage_furigana') === 'off') document.documentElement.classList.add('furigana-off'); } catch (e) {}
@@ -135,6 +135,7 @@
             <nav class="nav-desktop" aria-label="メインメニュー">
                 <a href="#features"><ruby>特長<rt>とくちょう</rt></ruby></a>
                 <a href="#demo"><ruby>体験<rt>たいけん</rt></ruby>デモ</a>
+                <a href="#jobs"><ruby>業界別<rt>ぎょうかいべつ</rt></ruby></a>
                 <a href="#curriculum">レベル</a>
                 <a href="#flow">ご<ruby>利用<rt>りよう</rt></ruby>の<ruby>流<rt>なが</rt></ruby>れ</a>
                 <a href="#pricing"><ruby>料金<rt>りょうきん</rt></ruby></a>
@@ -159,6 +160,7 @@
         <nav class="mobile-menu" id="mobileMenu" aria-label="スマホ用メニュー" hidden>
             <a href="#features"><span class="mm-icon bg-yellow"><svg class="icon"><use href="#i-layers"/></svg></span><span><ruby>特長<rt>とくちょう</rt></ruby></span></a>
             <a href="#demo"><span class="mm-icon bg-mint"><svg class="icon"><use href="#i-cards"/></svg></span><span><ruby>体験<rt>たいけん</rt></ruby>デモ</span></a>
+            <a href="#jobs"><span class="mm-icon bg-orange"><svg class="icon"><use href="#i-chart"/></svg></span><span><ruby>業界別<rt>ぎょうかいべつ</rt></ruby>のレベル</span></a>
             <a href="#curriculum"><span class="mm-icon bg-teal"><svg class="icon"><use href="#i-book"/></svg></span><span>レベル</span></a>
             <a href="#flow"><span class="mm-icon bg-pink"><svg class="icon"><use href="#i-flow"/></svg></span><span>ご<ruby>利用<rt>りよう</rt></ruby>の<ruby>流<rt>なが</rt></ruby>れ</span></a>
             <a href="#pricing"><span class="mm-icon bg-purple"><svg class="icon"><use href="#i-tag"/></svg></span><span><ruby>料金<rt>りょうきん</rt></ruby>プラン</span></a>
@@ -184,22 +186,22 @@
         <section class="hero">
             <div class="container hero-grid">
                 <div class="hero-copy reveal reveal-left">
-                    <span class="hero-badge">JLPT N4〜N1 <ruby>対応<rt>たいおう</rt></ruby>・<ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>り</span>
+                    <span class="hero-badge">JLPT N4〜N1 <ruby>対応<rt>たいおう</rt></ruby>・1<ruby>年間<rt>ねんかん</rt></ruby><ruby>使<rt>つか</rt></ruby>い<ruby>放題<rt>ほうだい</rt></ruby></span>
                     <h1 class="hero-title">
                         <ruby>日本語<rt>にほんご</rt></ruby>ができれば、<br><ruby>就職<rt>しゅうしょく</rt></ruby>につながる！<br>
                         <span class="hero-name"><ruby>R-ANGUAGE<rt>ランゲージ</rt></ruby></span>
                     </h1>
                     <p class="hero-lead">
                         ことば（Language）の<ruby>力<rt>ちから</rt></ruby>で、<ruby>未来<rt>みらい</rt></ruby>をひらこう。<br class="br-pc">
-                        <ruby>単語<rt>たんご</rt></ruby>・<ruby>文法<rt>ぶんぽう</rt></ruby>・<ruby>聴解<rt>ちょうかい</rt></ruby>・<ruby>模試<rt>もし</rt></ruby>までそろったキャリア<ruby>直結型<rt>ちょっけつがた</rt></ruby>レッスンで、<br class="br-pc">
-                        <ruby>楽<rt>たの</rt></ruby>しく<ruby>日本語<rt>にほんご</rt></ruby>をマスターして、<ruby>日本<rt>にほん</rt></ruby><ruby>企業<rt>きぎょう</rt></ruby>への<ruby>就職<rt>しゅうしょく</rt></ruby>をつかもう！
+                        <ruby>本番<rt>ほんばん</rt></ruby>と<ruby>同<rt>おな</rt></ruby>じ<ruby>形式<rt>けいしき</rt></ruby>の<ruby>問題<rt>もんだい</rt></ruby><b>3,500<ruby>問<rt>もん</rt></ruby><ruby>以上<rt>いじょう</rt></ruby></b>・<ruby>単語<rt>たんご</rt></ruby>カード<b>9,800<ruby>語<rt>ご</rt></ruby></b>・<ruby>模擬<rt>もぎ</rt></ruby><ruby>試験<rt>しけん</rt></ruby>がそろった、キャリア<ruby>直結型<rt>ちょっけつがた</rt></ruby>の<ruby>学習<rt>がくしゅう</rt></ruby>システム。<br class="br-pc">
+                        <ruby>働<rt>はたら</rt></ruby>きたい<ruby>業界<rt>ぎょうかい</rt></ruby>に<ruby>必要<rt>ひつよう</rt></ruby>なJLPTに<ruby>合格<rt>ごうかく</rt></ruby>して、<ruby>日本<rt>にほん</rt></ruby><ruby>企業<rt>きぎょう</rt></ruby>への<ruby>就職<rt>しゅうしょく</rt></ruby>をつかもう！
                     </p>
                     <div class="hero-cta">
                         <a href="#demo" class="pop-btn btn-mint btn-lg"><span><ruby>体験<rt>たいけん</rt></ruby>してみる</span><svg class="icon"><use href="#i-arrow-right"/></svg></a>
                         <a href="#features" class="pop-btn btn-white btn-lg"><span><ruby>機能<rt>きのう</rt></ruby>を<ruby>見<rt>み</rt></ruby>る</span></a>
                     </div>
                     <ul class="trust-badges">
-                        <li><span class="tb-icon bg-mint"><svg class="icon"><use href="#i-tag"/></svg></span><span><ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>りで<ruby>月額<rt>げつがく</rt></ruby><ruby>料金<rt>りょうきん</rt></ruby>なし</span></li>
+                        <li><span class="tb-icon bg-mint"><svg class="icon"><use href="#i-tag"/></svg></span><span>1<ruby>年間<rt>ねんかん</rt></ruby><ruby>使<rt>つか</rt></ruby>い<ruby>放題<rt>ほうだい</rt></ruby>・<ruby>月額<rt>げつがく</rt></ruby><ruby>料金<rt>りょうきん</rt></ruby>なし</span></li>
                         <li><span class="tb-icon bg-purple"><svg class="icon"><use href="#i-bank"/></svg></span><span><ruby>銀行<rt>ぎんこう</rt></ruby><ruby>振込<rt>ふりこみ</rt></ruby>でお<ruby>支払<rt>しはら</rt></ruby>い</span></li>
                         <li><span class="tb-icon bg-pink"><svg class="icon"><use href="#i-phone"/></svg></span><span>スマホ・PC<ruby>対応<rt>たいおう</rt></ruby></span></li>
                     </ul>
@@ -270,6 +272,19 @@
             </div>
         </section>
 
+
+        <!-- ================= NUMBERS ================= -->
+        <section id="numbers" class="section section-tight">
+            <div class="container">
+                <div class="stat-grid">
+                    <div class="pop-card stat reveal"><p class="stat-num">3,500<small><ruby>問<rt>もん</rt></ruby><ruby>以上<rt>いじょう</rt></ruby></small></p><p class="stat-label"><ruby>本番<rt>ほんばん</rt></ruby>と<ruby>同<rt>おな</rt></ruby>じ<ruby>形式<rt>けいしき</rt></ruby>の<ruby>問題<rt>もんだい</rt></ruby></p><p class="stat-sub"><ruby>文字<rt>もじ</rt></ruby>・<ruby>語彙<rt>ごい</rt></ruby>／<ruby>文法<rt>ぶんぽう</rt></ruby>／<ruby>読解<rt>どっかい</rt></ruby>／<ruby>聴解<rt>ちょうかい</rt></ruby></p></div>
+                    <div class="pop-card stat reveal"><p class="stat-num">9,800<small><ruby>語<rt>ご</rt></ruby></small></p><p class="stat-label"><ruby>単語<rt>たんご</rt></ruby>カード</p><p class="stat-sub"><ruby>例文<rt>れいぶん</rt></ruby>・<ruby>英語<rt>えいご</rt></ruby>の<ruby>意味<rt>いみ</rt></ruby>・<ruby>読<rt>よ</rt></ruby>み<ruby>上<rt>あ</rt></ruby>げつき</p></div>
+                    <div class="pop-card stat reveal"><p class="stat-num">3<small>STAGE</small></p><p class="stat-label">EASY → NORMAL → HARD</p><p class="stat-sub"><ruby>模試<rt>もし</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>すると<ruby>次<rt>つぎ</rt></ruby>のSTAGEへ</p></div>
+                    <div class="pop-card stat reveal"><p class="stat-num">4<small>レベル</small></p><p class="stat-label">N4・N3・N2・N1</p><p class="stat-sub"><ruby>本番<rt>ほんばん</rt></ruby>と<ruby>同<rt>おな</rt></ruby>じ<ruby>時間<rt>じかん</rt></ruby>・<ruby>配点<rt>はいてん</rt></ruby>の<ruby>模擬<rt>もぎ</rt></ruby><ruby>試験<rt>しけん</rt></ruby></p></div>
+                </div>
+            </div>
+        </section>
+
         <!-- ================= FEATURES ================= -->
         <section id="features" class="section">
             <div class="container">
@@ -281,57 +296,57 @@
 
                 <div class="grid-3">
                     <article class="pop-card feature reveal reveal-flip">
-                        <div class="feature-icon bg-yellow"><svg class="icon"><use href="#i-chart"/></svg></div>
-                        <h3><ruby>学習<rt>がくしゅう</rt></ruby>ダッシュボード</h3>
-                        <p><ruby>学習<rt>がくしゅう</rt></ruby><ruby>時間<rt>じかん</rt></ruby>、<ruby>連続<rt>れんぞく</rt></ruby><ruby>日数<rt>にっすう</rt></ruby>、<ruby>苦手<rt>にがて</rt></ruby>な<ruby>分野<rt>ぶんや</rt></ruby>をひと<ruby>目<rt>め</rt></ruby>で<ruby>確認<rt>かくにん</rt></ruby>。<ruby>毎日<rt>まいにち</rt></ruby>のやる<ruby>気<rt>き</rt></ruby>を<ruby>支<rt>ささ</rt></ruby>えます。</p>
+                        <div class="feature-icon bg-yellow"><svg class="icon"><use href="#i-exam"/></svg></div>
+                        <h3><ruby>本番<rt>ほんばん</rt></ruby>と<ruby>同<rt>おな</rt></ruby>じ<ruby>問題<rt>もんだい</rt></ruby><ruby>数<rt>すう</rt></ruby>・<ruby>形式<rt>けいしき</rt></ruby></h3>
+                        <p><ruby>文字<rt>もじ</rt></ruby>・<ruby>語彙<rt>ごい</rt></ruby>、<ruby>文法<rt>ぶんぽう</rt></ruby>、<ruby>読解<rt>どっかい</rt></ruby>、<ruby>聴解<rt>ちょうかい</rt></ruby>の<ruby>大問<rt>だいもん</rt></ruby>を、<ruby>本番<rt>ほんばん</rt></ruby>の<ruby>問題用紙<rt>もんだいようし</rt></ruby>と<ruby>同<rt>おな</rt></ruby>じ<ruby>順番<rt>じゅんばん</rt></ruby>・<ruby>同<rt>おな</rt></ruby>じ<ruby>数<rt>かず</rt></ruby>で<ruby>練習<rt>れんしゅう</rt></ruby>できます。</p>
                         <ul class="check-list">
-                            <li>レベルアップの<ruby>演出<rt>えんしゅつ</rt></ruby></li>
-                            <li><ruby>連続<rt>れんぞく</rt></ruby><ruby>日数<rt>にっすう</rt></ruby>の<ruby>自動<rt>じどう</rt></ruby><ruby>記録<rt>きろく</rt></ruby></li>
+                            <li><ruby>各<rt>かく</rt></ruby>レベル<ruby>本番<rt>ほんばん</rt></ruby>3<ruby>回分<rt>かいぶん</rt></ruby>×3つのSTAGE</li>
+                            <li>すべての<ruby>問題<rt>もんだい</rt></ruby>に<ruby>解説<rt>かいせつ</rt></ruby>つき</li>
                         </ul>
                     </article>
                     <article class="pop-card feature reveal reveal-flip">
-                        <div class="feature-icon bg-mint"><svg class="icon"><use href="#i-book"/></svg></div>
-                        <h3><ruby>文法<rt>ぶんぽう</rt></ruby>マスター</h3>
-                        <p>N4からN1まで、イラスト<ruby>解説<rt>かいせつ</rt></ruby>でスッキリ<ruby>理解<rt>りかい</rt></ruby>。<ruby>接続<rt>せつぞく</rt></ruby>のルールや<ruby>使<rt>つか</rt></ruby>い<ruby>分<rt>わ</rt></ruby>けもひと<ruby>目<rt>め</rt></ruby>でわかります。</p>
+                        <div class="feature-icon bg-mint"><svg class="icon"><use href="#i-chart"/></svg></div>
+                        <h3>STAGE<ruby>制<rt>せい</rt></ruby>でレベルアップ</h3>
+                        <p>EASY（<ruby>本番<rt>ほんばん</rt></ruby>よりやさしい）→ NORMAL（<ruby>本番<rt>ほんばん</rt></ruby>と<ruby>同<rt>おな</rt></ruby>じくらい）→ HARD（<ruby>本番<rt>ほんばん</rt></ruby>より<ruby>難<rt>むずか</rt></ruby>しい）。<ruby>模試<rt>もし</rt></ruby>の<ruby>点数<rt>てんすう</rt></ruby>で<ruby>次<rt>つぎ</rt></ruby>のSTAGEが<ruby>開<rt>ひら</rt></ruby>きます。</p>
                         <ul class="check-list">
-                            <li><ruby>接続<rt>せつぞく</rt></ruby>ルール<ruby>表<rt>ひょう</rt></ruby></li>
-                            <li><ruby>例文<rt>れいぶん</rt></ruby>の<ruby>音声<rt>おんせい</rt></ruby><ruby>再生<rt>さいせい</rt></ruby></li>
+                            <li>HARDで90%<ruby>以上<rt>いじょう</rt></ruby>なら「<ruby>合格<rt>ごうかく</rt></ruby>ライン<ruby>到達<rt>とうたつ</rt></ruby>」</li>
+                            <li><ruby>本番<rt>ほんばん</rt></ruby>と<ruby>同<rt>おな</rt></ruby>じ<ruby>基準点<rt>きじゅんてん</rt></ruby>で<ruby>判定<rt>はんてい</rt></ruby></li>
                         </ul>
                     </article>
                     <article class="pop-card feature reveal reveal-flip">
                         <div class="feature-icon bg-pink"><svg class="icon"><use href="#i-cards"/></svg></div>
-                        <h3><ruby>語彙<rt>ごい</rt></ruby>フラッシュカード</h3>
-                        <p><ruby>忘<rt>わす</rt></ruby>れかけたころにもう<ruby>一度<rt>いちど</rt></ruby><ruby>出題<rt>しゅつだい</rt></ruby>。めくれるカードで、ゲームのように<ruby>単語<rt>たんご</rt></ruby>を<ruby>覚<rt>おぼ</rt></ruby>えられます。</p>
+                        <h3><ruby>単語<rt>たんご</rt></ruby>カード 9,800<ruby>語<rt>ご</rt></ruby></h3>
+                        <p>そのレベルでよく<ruby>出題<rt>しゅつだい</rt></ruby>される<ruby>単語<rt>たんご</rt></ruby>を、めくれるカードで<ruby>覚<rt>おぼ</rt></ruby>えられます。「まだ<ruby>覚<rt>おぼ</rt></ruby>えていない」カードだけをくり<ruby>返<rt>かえ</rt></ruby>し<ruby>練習<rt>れんしゅう</rt></ruby>できます。</p>
                         <ul class="check-list">
-                            <li><ruby>漢字<rt>かんじ</rt></ruby>・ふりがな・<ruby>英訳<rt>えいやく</rt></ruby>の<ruby>切<rt>き</rt></ruby>り<ruby>替<rt>か</rt></ruby>え</li>
-                            <li>くり<ruby>返<rt>かえ</rt></ruby>し<ruby>学習<rt>がくしゅう</rt></ruby>に<ruby>対応<rt>たいおう</rt></ruby></li>
+                            <li><ruby>例文<rt>れいぶん</rt></ruby>・<ruby>英語<rt>えいご</rt></ruby>の<ruby>意味<rt>いみ</rt></ruby>・<ruby>読<rt>よ</rt></ruby>み<ruby>上<rt>あ</rt></ruby>げ</li>
+                            <li>1<ruby>回<rt>かい</rt></ruby>30<ruby>枚<rt>まい</rt></ruby>で、すきま<ruby>時間<rt>じかん</rt></ruby>に</li>
                         </ul>
                     </article>
                     <article class="pop-card feature reveal reveal-flip">
                         <div class="feature-icon bg-teal"><svg class="icon"><use href="#i-headphones"/></svg></div>
                         <h3><ruby>聴解<rt>ちょうかい</rt></ruby>トレーニング</h3>
-                        <p><ruby>本番<rt>ほんばん</rt></ruby>と<ruby>同<rt>おな</rt></ruby>じ<ruby>形式<rt>けいしき</rt></ruby>のリスニング<ruby>問題<rt>もんだい</rt></ruby>。<ruby>速度<rt>そくど</rt></ruby><ruby>変更<rt>へんこう</rt></ruby>や<ruby>字幕<rt>じまく</rt></ruby>ON/OFFで<ruby>耳<rt>みみ</rt></ruby>を<ruby>鍛<rt>きた</rt></ruby>えます。</p>
+                        <p><ruby>本番<rt>ほんばん</rt></ruby>と<ruby>同<rt>おな</rt></ruby>じ<ruby>流<rt>なが</rt></ruby>れで<ruby>会話<rt>かいわ</rt></ruby>を<ruby>読<rt>よ</rt></ruby>み<ruby>上<rt>あ</rt></ruby>げます。<ruby>課題理解<rt>かだいりかい</rt></ruby>から<ruby>即時応答<rt>そくじおうとう</rt></ruby>まで、すべての<ruby>形式<rt>けいしき</rt></ruby>に<ruby>対応<rt>たいおう</rt></ruby>しています。</p>
                         <ul class="check-list">
-                            <li><ruby>倍速<rt>ばいそく</rt></ruby>・<ruby>巻<rt>ま</rt></ruby>き<ruby>戻<rt>もど</rt></ruby>し</li>
-                            <li>スクリプトの<ruby>表示<rt>ひょうじ</rt></ruby></li>
+                            <li><ruby>読<rt>よ</rt></ruby>み<ruby>上<rt>あ</rt></ruby>げの<ruby>速<rt>はや</rt></ruby>さを3<ruby>段階<rt>だんかい</rt></ruby>で<ruby>変更<rt>へんこう</rt></ruby></li>
+                            <li><ruby>練習<rt>れんしゅう</rt></ruby>は<ruby>何回<rt>なんかい</rt></ruby>でも<ruby>聞<rt>き</rt></ruby>き<ruby>直<rt>なお</rt></ruby>せる</li>
                         </ul>
                     </article>
                     <article class="pop-card feature reveal reveal-flip">
                         <div class="feature-icon bg-orange"><svg class="icon"><use href="#i-exam"/></svg></div>
                         <h3><ruby>本番<rt>ほんばん</rt></ruby><ruby>仕様<rt>しよう</rt></ruby>の<ruby>模擬<rt>もぎ</rt></ruby><ruby>試験<rt>しけん</rt></ruby></h3>
-                        <p>タイマー<ruby>付<rt>つ</rt></ruby>きで<ruby>本番<rt>ほんばん</rt></ruby>の<ruby>緊張感<rt>きんちょうかん</rt></ruby>を<ruby>体験<rt>たいけん</rt></ruby>。<ruby>終了<rt>しゅうりょう</rt></ruby><ruby>後<rt>ご</rt></ruby>はすぐに<ruby>採点<rt>さいてん</rt></ruby>と<ruby>解説<rt>かいせつ</rt></ruby>を<ruby>確認<rt>かくにん</rt></ruby>できます。</p>
+                        <p><ruby>本番<rt>ほんばん</rt></ruby>と<ruby>同<rt>おな</rt></ruby>じ<ruby>科目<rt>かもく</rt></ruby>・<ruby>時間<rt>じかん</rt></ruby>・<ruby>配点<rt>はいてん</rt></ruby>で、タイマーつき。<ruby>終<rt>お</rt></ruby>わるとすぐに<ruby>点数<rt>てんすう</rt></ruby>・<ruby>合否<rt>ごうひ</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>・<ruby>解説<rt>かいせつ</rt></ruby>を<ruby>確認<rt>かくにん</rt></ruby>できます。</p>
                         <ul class="check-list">
-                            <li><ruby>見直<rt>みなお</rt></ruby>しマーク＆タイマー</li>
-                            <li><ruby>合格<rt>ごうかく</rt></ruby><ruby>判定<rt>はんてい</rt></ruby>と<ruby>弱点<rt>じゃくてん</rt></ruby>の<ruby>分析<rt>ぶんせき</rt></ruby></li>
+                            <li>「あとで<ruby>見直<rt>みなお</rt></ruby>す」マーク</li>
+                            <li><ruby>区分<rt>くぶん</rt></ruby>ごとの<ruby>点数<rt>てんすう</rt></ruby>と<ruby>基準点<rt>きじゅんてん</rt></ruby></li>
                         </ul>
                     </article>
                     <article class="pop-card feature reveal reveal-flip">
                         <div class="feature-icon bg-purple"><svg class="icon"><use href="#i-user"/></svg></div>
-                        <h3>マイページ</h3>
-                        <p>メールアドレスとパスワードでかんたんログイン。スマホで<ruby>学習<rt>がくしゅう</rt></ruby>した<ruby>続<rt>つづ</rt></ruby>きを、PCからそのまま<ruby>再開<rt>さいかい</rt></ruby>できます。</p>
+                        <h3><ruby>学習<rt>がくしゅう</rt></ruby><ruby>記録<rt>きろく</rt></ruby>・まちがい<ruby>復習<rt>ふくしゅう</rt></ruby></h3>
+                        <p><ruby>正答率<rt>せいとうりつ</rt></ruby>・<ruby>連続<rt>れんぞく</rt></ruby><ruby>日数<rt>にっすう</rt></ruby>・<ruby>試験日<rt>しけんび</rt></ruby>までの<ruby>日数<rt>にっすう</rt></ruby>をホームで<ruby>確認<rt>かくにん</rt></ruby>。まちがえた<ruby>問題<rt>もんだい</rt></ruby>だけを<ruby>集<rt>あつ</rt></ruby>めて<ruby>復習<rt>ふくしゅう</rt></ruby>できます。</p>
                         <ul class="check-list">
-                            <li><ruby>学習<rt>がくしゅう</rt></ruby><ruby>記録<rt>きろく</rt></ruby>の<ruby>保存<rt>ほぞん</rt></ruby></li>
-                            <li><ruby>複数<rt>ふくすう</rt></ruby>レベルの<ruby>管理<rt>かんり</rt></ruby></li>
+                            <li>スマホとPCで<ruby>続<rt>つづ</rt></ruby>きから<ruby>学習<rt>がくしゅう</rt></ruby></li>
+                            <li>ふりがなの<ruby>表示<rt>ひょうじ</rt></ruby>・<ruby>文字<rt>もじ</rt></ruby>の<ruby>大<rt>おお</rt></ruby>きさを<ruby>変更<rt>へんこう</rt></ruby></li>
                         </ul>
                     </article>
                 </div>
@@ -424,6 +439,31 @@
             </div>
         </section>
 
+        <!-- ================= JOBS ================= -->
+        <section id="jobs" class="section section-cream">
+            <div class="container">
+                <div class="section-head reveal">
+                    <span class="label bg-orange">CAREER</span>
+                    <h2 class="section-title"><ruby>働<rt>はたら</rt></ruby>きたい<ruby>業界<rt>ぎょうかい</rt></ruby>に<br><span class="title-mark bg-yellow"><ruby>必要<rt>ひつよう</rt></ruby>なレベルは？</span></h2>
+                    <p class="section-lead"><ruby>就職<rt>しゅうしょく</rt></ruby>でよく<ruby>求<rt>もと</rt></ruby>められるJLPTのレベルの<ruby>目安<rt>めやす</rt></ruby>です。<br><ruby>目標<rt>もくひょう</rt></ruby>のレベルを<ruby>決<rt>き</rt></ruby>めて、<ruby>今日<rt>きょう</rt></ruby>から<ruby>準備<rt>じゅんび</rt></ruby>しよう。</p>
+                </div>
+                <div class="pop-card job-card reveal">
+                    <table class="job-table">
+                        <thead><tr><th scope="col"><ruby>業界<rt>ぎょうかい</rt></ruby>・<ruby>仕事<rt>しごと</rt></ruby></th><th scope="col"><ruby>目安<rt>めやす</rt></ruby>のレベル</th><th scope="col">R-ANGUAGE のおすすめ</th></tr></thead>
+                        <tbody>
+                            <tr><th scope="row">ホテル（<ruby>国内<rt>こくない</rt></ruby>）</th><td><span class="job-lv bg-pink">N2<ruby>以上<rt>いじょう</rt></ruby></span></td><td>N2プラン（<ruby>接客<rt>せっきゃく</rt></ruby>の<ruby>会話<rt>かいわ</rt></ruby>・<ruby>敬語<rt>けいご</rt></ruby>の<ruby>聴解<rt>ちょうかい</rt></ruby>も）</td></tr>
+                            <tr><th scope="row">スマホ<ruby>販売<rt>はんばい</rt></ruby></th><td><span class="job-lv bg-pink">N2<ruby>以上<rt>いじょう</rt></ruby></span></td><td>N2プラン</td></tr>
+                            <tr><th scope="row">レンタカー</th><td><span class="job-lv bg-pink">N2<ruby>以上<rt>いじょう</rt></ruby></span></td><td>N2プラン</td></tr>
+                            <tr><th scope="row">IT</th><td><span class="job-lv bg-pink">N2<ruby>以上<rt>いじょう</rt></ruby></span></td><td>N2プラン（<ruby>上<rt>うえ</rt></ruby>をめざすならN1も）</td></tr>
+                            <tr><th scope="row"><ruby>工場<rt>こうじょう</rt></ruby></th><td><span class="job-lv bg-yellow">N3<ruby>以上<rt>いじょう</rt></ruby></span></td><td>N3プラン</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="note-small reveal">※ <ruby>一般的<rt>いっぱんてき</rt></ruby>な<ruby>目安<rt>めやす</rt></ruby>です。<ruby>会社<rt>かいしゃ</rt></ruby>・<ruby>仕事<rt>しごと</rt></ruby>の<ruby>内容<rt>ないよう</rt></ruby>・<ruby>在留資格<rt>ざいりゅうしかく</rt></ruby>によって、<ruby>求<rt>もと</rt></ruby>められるレベルは<ruby>違<rt>ちが</rt></ruby>います。<ruby>応募<rt>おうぼ</rt></ruby>する<ruby>求人<rt>きゅうじん</rt></ruby>の<ruby>条件<rt>じょうけん</rt></ruby>を<ruby>必<rt>かなら</rt></ruby>ず<ruby>確<rt>たし</rt></ruby>かめてください。</p>
+                <div class="job-cta reveal"><a href="#pricing" class="pop-btn btn-pink btn-lg"><span><ruby>目標<rt>もくひょう</rt></ruby>のレベルを<ruby>選<rt>えら</rt></ruby>ぶ</span><svg class="icon"><use href="#i-arrow-right"/></svg></a></div>
+            </div>
+        </section>
+
         <!-- ================= CURRICULUM ================= -->
         <section id="curriculum" class="section">
             <div class="container">
@@ -437,28 +477,28 @@
                         <span class="level-badge bg-teal">N4 <ruby>初中級<rt>しょちゅうきゅう</rt></ruby></span>
                         <h3><ruby>日常<rt>にちじょう</rt></ruby><ruby>会話<rt>かいわ</rt></ruby></h3>
                         <p><ruby>身近<rt>みぢか</rt></ruby>な<ruby>話題<rt>わだい</rt></ruby>の<ruby>会話<rt>かいわ</rt></ruby>と、やさしい<ruby>文章<rt>ぶんしょう</rt></ruby>の<ruby>読解<rt>どっかい</rt></ruby>。</p>
-                        <dl class="level-meta"><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>単語<rt>たんご</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>1,500<ruby>語<rt>ご</rt></ruby></dd><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>漢字<rt>かんじ</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>300<ruby>字<rt>じ</rt></ruby></dd></dl>
+                        <dl class="level-meta"><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>単語<rt>たんご</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>1,500<ruby>語<rt>ご</rt></ruby></dd><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>漢字<rt>かんじ</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>300<ruby>字<rt>じ</rt></ruby></dd><dt class="dt-ra">R-ANGUAGE の<ruby>問題<rt>もんだい</rt></ruby></dt><dd class="dd-ra">765<ruby>問<rt>もん</rt></ruby></dd><dt class="dt-ra">R-ANGUAGE の<ruby>単語<rt>たんご</rt></ruby>カード</dt><dd class="dd-ra">1,500<ruby>語<rt>ご</rt></ruby></dd></dl>
                     </article>
                     <article class="pop-card level reveal">
                         <span class="level-badge bg-yellow">N3 <ruby>中級<rt>ちゅうきゅう</rt></ruby></span>
                         <h3>ステップアップ</h3>
                         <p><ruby>日常<rt>にちじょう</rt></ruby>の<ruby>話題<rt>わだい</rt></ruby>のリスニングと、<ruby>自然<rt>しぜん</rt></ruby>な<ruby>日本語<rt>にほんご</rt></ruby><ruby>表現<rt>ひょうげん</rt></ruby>。</p>
-                        <dl class="level-meta"><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>単語<rt>たんご</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>3,700<ruby>語<rt>ご</rt></ruby></dd><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>漢字<rt>かんじ</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>650<ruby>字<rt>じ</rt></ruby></dd></dl>
+                        <dl class="level-meta"><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>単語<rt>たんご</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>3,700<ruby>語<rt>ご</rt></ruby></dd><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>漢字<rt>かんじ</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>650<ruby>字<rt>じ</rt></ruby></dd><dt class="dt-ra">R-ANGUAGE の<ruby>問題<rt>もんだい</rt></ruby></dt><dd class="dd-ra">918<ruby>問<rt>もん</rt></ruby></dd><dt class="dt-ra">R-ANGUAGE の<ruby>単語<rt>たんご</rt></ruby>カード</dt><dd class="dd-ra">1,800<ruby>語<rt>ご</rt></ruby></dd></dl>
                     </article>
                     <article class="pop-card level reveal">
                         <span class="level-badge bg-pink">N2 <ruby>中上級<rt>ちゅうじょうきゅう</rt></ruby></span>
                         <h3>ビジネス</h3>
                         <p><ruby>新聞<rt>しんぶん</rt></ruby><ruby>記事<rt>きじ</rt></ruby>や、<ruby>仕事<rt>しごと</rt></ruby>の<ruby>場面<rt>ばめん</rt></ruby>での<ruby>高度<rt>こうど</rt></ruby>なやりとり。</p>
-                        <dl class="level-meta"><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>単語<rt>たんご</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>6,000<ruby>語<rt>ご</rt></ruby></dd><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>漢字<rt>かんじ</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>1,000<ruby>字<rt>じ</rt></ruby></dd></dl>
+                        <dl class="level-meta"><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>単語<rt>たんご</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>6,000<ruby>語<rt>ご</rt></ruby></dd><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>漢字<rt>かんじ</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>1,000<ruby>字<rt>じ</rt></ruby></dd><dt class="dt-ra">R-ANGUAGE の<ruby>問題<rt>もんだい</rt></ruby></dt><dd class="dd-ra">963<ruby>問<rt>もん</rt></ruby></dd><dt class="dt-ra">R-ANGUAGE の<ruby>単語<rt>たんご</rt></ruby>カード</dt><dd class="dd-ra">2,500<ruby>語<rt>ご</rt></ruby></dd></dl>
                     </article>
                     <article class="pop-card level reveal">
                         <span class="level-badge bg-purple">N1 <ruby>上級<rt>じょうきゅう</rt></ruby></span>
                         <h3>プロ<ruby>級<rt>きゅう</rt></ruby></h3>
                         <p><ruby>複雑<rt>ふくざつ</rt></ruby>な<ruby>論理<rt>ろんり</rt></ruby><ruby>展開<rt>てんかい</rt></ruby>の<ruby>理解<rt>りかい</rt></ruby>と、<ruby>幅広<rt>はばひろ</rt></ruby>い<ruby>表現力<rt>ひょうげんりょく</rt></ruby>。</p>
-                        <dl class="level-meta"><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>単語<rt>たんご</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>10,000<ruby>語<rt>ご</rt></ruby></dd><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>漢字<rt>かんじ</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>2,000<ruby>字<rt>じ</rt></ruby></dd></dl>
+                        <dl class="level-meta"><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>単語<rt>たんご</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>10,000<ruby>語<rt>ご</rt></ruby></dd><dt><ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>（<ruby>漢字<rt>かんじ</rt></ruby>）</dt><dd><ruby>約<rt>やく</rt></ruby>2,000<ruby>字<rt>じ</rt></ruby></dd><dt class="dt-ra">R-ANGUAGE の<ruby>問題<rt>もんだい</rt></ruby></dt><dd class="dd-ra">909<ruby>問<rt>もん</rt></ruby></dd><dt class="dt-ra">R-ANGUAGE の<ruby>単語<rt>たんご</rt></ruby>カード</dt><dd class="dd-ra">4,000<ruby>語<rt>ご</rt></ruby></dd></dl>
                     </article>
                 </div>
-                <p class="note-small reveal">※「<ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>」は、<ruby>各<rt>かく</rt></ruby>レベルの<ruby>合格<rt>ごうかく</rt></ruby>に<ruby>必要<rt>ひつよう</rt></ruby>とされる<ruby>一般的<rt>いっぱんてき</rt></ruby>な<ruby>数<rt>かず</rt></ruby>で、<ruby>下<rt>した</rt></ruby>のレベルの<ruby>単語<rt>たんご</rt></ruby>・<ruby>漢字<rt>かんじ</rt></ruby>もふくみます。R-ANGUAGE に<ruby>入<rt>はい</rt></ruby>っている<ruby>数<rt>かず</rt></ruby>ではありません。</p>
+                <p class="note-small reveal">※「<ruby>合格<rt>ごうかく</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>」は、<ruby>各<rt>かく</rt></ruby>レベルの<ruby>合格<rt>ごうかく</rt></ruby>に<ruby>必要<rt>ひつよう</rt></ruby>とされる<ruby>一般的<rt>いっぱんてき</rt></ruby>な<ruby>数<rt>かず</rt></ruby>で、<ruby>下<rt>した</rt></ruby>のレベルの<ruby>単語<rt>たんご</rt></ruby>・<ruby>漢字<rt>かんじ</rt></ruby>もふくみます。R-ANGUAGE に<ruby>入<rt>はい</rt></ruby>っている<ruby>数<rt>かず</rt></ruby>は「R-ANGUAGE の〜」の<ruby>行<rt>ぎょう</rt></ruby>です（<ruby>問題<rt>もんだい</rt></ruby>はEASY・NORMAL・HARDの<ruby>合計<rt>ごうけい</rt></ruby>）。</p>
             </div>
         </section>
 
@@ -504,8 +544,8 @@
             <div class="container">
                 <div class="section-head reveal">
                     <span class="label bg-purple">PRICING PLANS</span>
-                    <h2 class="section-title">シンプルな<ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>りプラン</h2>
-                    <p class="section-lead"><ruby>月額<rt>げつがく</rt></ruby><ruby>料金<rt>りょうきん</rt></ruby>も<ruby>追加<rt>ついか</rt></ruby><ruby>料金<rt>りょうきん</rt></ruby>もありません。<ruby>必要<rt>ひつよう</rt></ruby>なレベルだけを<ruby>選<rt>えら</rt></ruby>べます。</p>
+                    <h2 class="section-title">1<ruby>年間<rt>ねんかん</rt></ruby><ruby>使<rt>つか</rt></ruby>い<ruby>放題<rt>ほうだい</rt></ruby>プラン</h2>
+                    <p class="section-lead"><ruby>月額<rt>げつがく</rt></ruby><ruby>料金<rt>りょうきん</rt></ruby>はありません。1<ruby>年分<rt>ねんぶん</rt></ruby>をまとめてお<ruby>支払<rt>しはら</rt></ruby>い。<br><ruby>必要<rt>ひつよう</rt></ruby>なレベルだけを<ruby>選<rt>えら</rt></ruby>べて、<ruby>続<rt>つづ</rt></ruby>けるときは<ruby>同<rt>おな</rt></ruby>じ<ruby>料金<rt>りょうきん</rt></ruby>で<ruby>更新<rt>こうしん</rt></ruby>できます。</p>
                 </div>
 
                 <div class="grid-4 pricing-grid">
@@ -514,27 +554,29 @@
                         <span class="level-badge bg-dark">N4〜N1 まとめて</span>
                         <h3>まとめてプラン</h3>
                         <p class="plan-price">¥13,000<small>（<ruby>税込<rt>ぜいこみ</rt></ruby>）</small></p>
-                        <p class="plan-once"><ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>り・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い　<span class="plan-save">4つ<ruby>別々<rt>べつべつ</rt></ruby>より ¥2,000 お<ruby>得<rt>とく</rt></ruby></span></p>
+                        <p class="plan-once">1<ruby>年間<rt>ねんかん</rt></ruby>・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い　<span class="plan-save">4つ<ruby>別々<rt>べつべつ</rt></ruby>より ¥2,000 お<ruby>得<rt>とく</rt></ruby></span></p>
                         <ul class="check-list">
                             <li>N4・N3・N2・N1 の<ruby>全部<rt>ぜんぶ</rt></ruby>が<ruby>使<rt>つか</rt></ruby>える</li>
                             <li><ruby>全<rt>ぜん</rt></ruby>レベルの<ruby>語彙<rt>ごい</rt></ruby>・<ruby>文法<rt>ぶんぽう</rt></ruby>・<ruby>読解<rt>どっかい</rt></ruby>・<ruby>聴解<rt>ちょうかい</rt></ruby></li>
                             <li><ruby>全<rt>ぜん</rt></ruby>レベルの<ruby>模擬<rt>もぎ</rt></ruby><ruby>試験<rt>しけん</rt></ruby></li>
                             <li><ruby>単語<rt>たんご</rt></ruby>カード：<ruby>合計<rt>ごうけい</rt></ruby> <b>9,800<ruby>語<rt>ご</rt></ruby></b>を<ruby>搭載<rt>とうさい</rt></ruby></li>
+                            <li><ruby>問題<rt>もんだい</rt></ruby>：<ruby>合計<rt>ごうけい</rt></ruby> <b>3,555<ruby>問<rt>もん</rt></ruby></b></li>
                             <li><ruby>学習<rt>がくしゅう</rt></ruby>ダッシュボード</li>
                         </ul>
-                        <p class="plan-note">※ <ruby>新<rt>あたら</rt></ruby>しくお<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>みの<ruby>方<rt>かた</rt></ruby>だけのプランです。</p>
+                        <p class="plan-note">※ <ruby>新<rt>あたら</rt></ruby>しくお<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>みの<ruby>方<rt>かた</rt></ruby>と、N4〜N1をすべてお<ruby>持<rt>も</rt></ruby>ちの<ruby>方<rt>かた</rt></ruby>の<ruby>更新<rt>こうしん</rt></ruby>だけのプランです。</p>
                         <button type="button" class="pop-btn btn-pink btn-block" data-apply="ALL"><span>まとめてプランを<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>む</span></button>
                     </article>
                     <article class="pop-card plan reveal reveal-flip" data-level="N4">
                         <span class="level-badge bg-teal">N4 <ruby>初中級<rt>しょちゅうきゅう</rt></ruby></span>
                         <h3>N4プラン</h3>
                         <p class="plan-price">¥3,000<small>（<ruby>税込<rt>ぜいこみ</rt></ruby>）</small></p>
-                        <p class="plan-once"><ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>り・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い</p>
+                        <p class="plan-once">1<ruby>年間<rt>ねんかん</rt></ruby>・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い</p>
                         <ul class="check-list">
                             <li>N4の<ruby>語彙<rt>ごい</rt></ruby>・<ruby>文法<rt>ぶんぽう</rt></ruby>・<ruby>読解<rt>どっかい</rt></ruby>・<ruby>聴解<rt>ちょうかい</rt></ruby></li>
                             <li>N4<ruby>模擬<rt>もぎ</rt></ruby><ruby>試験<rt>しけん</rt></ruby></li>
                             <li>まちがい<ruby>復習<rt>ふくしゅう</rt></ruby>・お<ruby>気<rt>き</rt></ruby>に<ruby>入<rt>い</rt></ruby>り</li>
                             <li><ruby>単語<rt>たんご</rt></ruby>カード：N4でよく<ruby>出題<rt>しゅつだい</rt></ruby>される<ruby>単語<rt>たんご</rt></ruby> <b>1,500<ruby>語<rt>ご</rt></ruby></b>を<ruby>搭載<rt>とうさい</rt></ruby></li>
+                            <li><ruby>問題<rt>もんだい</rt></ruby>：<b>765<ruby>問<rt>もん</rt></ruby></b>（EASY・NORMAL・HARD）</li>
                             <li><ruby>学習<rt>がくしゅう</rt></ruby>ダッシュボード</li>
                         </ul>
                         <button type="button" class="pop-btn btn-cream btn-block" data-apply="N4"><span>N4を<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>む</span></button>
@@ -543,12 +585,13 @@
                         <span class="level-badge bg-yellow">N3 <ruby>中級<rt>ちゅうきゅう</rt></ruby></span>
                         <h3>N3プラン</h3>
                         <p class="plan-price">¥3,500<small>（<ruby>税込<rt>ぜいこみ</rt></ruby>）</small></p>
-                        <p class="plan-once"><ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>り・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い</p>
+                        <p class="plan-once">1<ruby>年間<rt>ねんかん</rt></ruby>・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い</p>
                         <ul class="check-list">
                             <li>N3の<ruby>語彙<rt>ごい</rt></ruby>・<ruby>文法<rt>ぶんぽう</rt></ruby>・<ruby>読解<rt>どっかい</rt></ruby>・<ruby>聴解<rt>ちょうかい</rt></ruby></li>
                             <li>N3<ruby>模擬<rt>もぎ</rt></ruby><ruby>試験<rt>しけん</rt></ruby></li>
                             <li>まちがい<ruby>復習<rt>ふくしゅう</rt></ruby>・お<ruby>気<rt>き</rt></ruby>に<ruby>入<rt>い</rt></ruby>り</li>
                             <li><ruby>単語<rt>たんご</rt></ruby>カード：N3でよく<ruby>出題<rt>しゅつだい</rt></ruby>される<ruby>単語<rt>たんご</rt></ruby> <b>1,800<ruby>語<rt>ご</rt></ruby></b>を<ruby>搭載<rt>とうさい</rt></ruby></li>
+                            <li><ruby>問題<rt>もんだい</rt></ruby>：<b>918<ruby>問<rt>もん</rt></ruby></b>（EASY・NORMAL・HARD）</li>
                             <li><ruby>学習<rt>がくしゅう</rt></ruby>ダッシュボード</li>
                         </ul>
                         <button type="button" class="pop-btn btn-cream btn-block" data-apply="N3"><span>N3を<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>む</span></button>
@@ -557,12 +600,13 @@
                         <span class="level-badge bg-pink">N2 <ruby>中上級<rt>ちゅうじょうきゅう</rt></ruby></span>
                         <h3>N2プラン</h3>
                         <p class="plan-price">¥4,000<small>（<ruby>税込<rt>ぜいこみ</rt></ruby>）</small></p>
-                        <p class="plan-once"><ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>り・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い</p>
+                        <p class="plan-once">1<ruby>年間<rt>ねんかん</rt></ruby>・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い</p>
                         <ul class="check-list">
                             <li>N2の<ruby>語彙<rt>ごい</rt></ruby>・<ruby>文法<rt>ぶんぽう</rt></ruby>・<ruby>読解<rt>どっかい</rt></ruby>・<ruby>聴解<rt>ちょうかい</rt></ruby></li>
                             <li>N2<ruby>模擬<rt>もぎ</rt></ruby><ruby>試験<rt>しけん</rt></ruby></li>
                             <li>まちがい<ruby>復習<rt>ふくしゅう</rt></ruby>・お<ruby>気<rt>き</rt></ruby>に<ruby>入<rt>い</rt></ruby>り</li>
                             <li><ruby>単語<rt>たんご</rt></ruby>カード：N2でよく<ruby>出題<rt>しゅつだい</rt></ruby>される<ruby>単語<rt>たんご</rt></ruby> <b>2,500<ruby>語<rt>ご</rt></ruby></b>を<ruby>搭載<rt>とうさい</rt></ruby></li>
+                            <li><ruby>問題<rt>もんだい</rt></ruby>：<b>963<ruby>問<rt>もん</rt></ruby></b>（EASY・NORMAL・HARD）</li>
                             <li><ruby>学習<rt>がくしゅう</rt></ruby>ダッシュボード</li>
                         </ul>
                         <button type="button" class="pop-btn btn-cream btn-block" data-apply="N2"><span>N2を<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>む</span></button>
@@ -571,12 +615,13 @@
                         <span class="level-badge bg-purple">N1 <ruby>上級<rt>じょうきゅう</rt></ruby></span>
                         <h3>N1プラン</h3>
                         <p class="plan-price">¥4,500<small>（<ruby>税込<rt>ぜいこみ</rt></ruby>）</small></p>
-                        <p class="plan-once"><ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>り・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い</p>
+                        <p class="plan-once">1<ruby>年間<rt>ねんかん</rt></ruby>・<ruby>一括<rt>いっかつ</rt></ruby><ruby>払<rt>ばら</rt></ruby>い</p>
                         <ul class="check-list">
                             <li>N1の<ruby>語彙<rt>ごい</rt></ruby>・<ruby>文法<rt>ぶんぽう</rt></ruby>・<ruby>読解<rt>どっかい</rt></ruby>・<ruby>聴解<rt>ちょうかい</rt></ruby></li>
                             <li>N1<ruby>模擬<rt>もぎ</rt></ruby><ruby>試験<rt>しけん</rt></ruby></li>
                             <li>まちがい<ruby>復習<rt>ふくしゅう</rt></ruby>・お<ruby>気<rt>き</rt></ruby>に<ruby>入<rt>い</rt></ruby>り</li>
                             <li><ruby>単語<rt>たんご</rt></ruby>カード：N1でよく<ruby>出題<rt>しゅつだい</rt></ruby>される<ruby>単語<rt>たんご</rt></ruby> <b>4,000<ruby>語<rt>ご</rt></ruby></b>を<ruby>搭載<rt>とうさい</rt></ruby></li>
+                            <li><ruby>問題<rt>もんだい</rt></ruby>：<b>909<ruby>問<rt>もん</rt></ruby></b>（EASY・NORMAL・HARD）</li>
                             <li><ruby>学習<rt>がくしゅう</rt></ruby>ダッシュボード</li>
                         </ul>
                         <button type="button" class="pop-btn btn-cream btn-block" data-apply="N1"><span>N1を<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>む</span></button>
@@ -616,8 +661,12 @@
                         </div>
                     </details>
                     <details class="pop-card faq reveal">
-                        <summary><span><ruby>月額<rt>げつがく</rt></ruby><ruby>料金<rt>りょうきん</rt></ruby>や<ruby>追加<rt>ついか</rt></ruby>の<ruby>料金<rt>りょうきん</rt></ruby>はかかりますか？</span><svg class="icon faq-plus"><use href="#i-plus"/></svg></summary>
-                        <p>かかりません。<ruby>各<rt>かく</rt></ruby>レベルとも<ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>りなので、<ruby>一度<rt>いちど</rt></ruby>のお<ruby>支払<rt>しはら</rt></ruby>いで、そのレベルの<ruby>機能<rt>きのう</rt></ruby>をすべて<ruby>使<rt>つか</rt></ruby>えます。</p>
+                        <summary><span><ruby>月額<rt>げつがく</rt></ruby><ruby>料金<rt>りょうきん</rt></ruby>はかかりますか？</span><svg class="icon faq-plus"><use href="#i-plus"/></svg></summary>
+                        <p>かかりません。<ruby>各<rt>かく</rt></ruby>レベルとも1<ruby>年分<rt>ねんぶん</rt></ruby>をまとめてお<ruby>支払<rt>しはら</rt></ruby>いいただくので、<ruby>期限<rt>きげん</rt></ruby>までそのレベルの<ruby>機能<rt>きのう</rt></ruby>をすべて<ruby>使<rt>つか</rt></ruby>えます。<ruby>自動<rt>じどう</rt></ruby>で<ruby>更新<rt>こうしん</rt></ruby>・<ruby>請求<rt>せいきゅう</rt></ruby>されることはありません。</p>
+                    </details>
+                    <details class="pop-card faq reveal">
+                        <summary><span>1<ruby>年<rt>ねん</rt></ruby>たったら、どうなりますか？</span><svg class="icon faq-plus"><use href="#i-plus"/></svg></summary>
+                        <p><ruby>利用期限<rt>りようきげん</rt></ruby>の30<ruby>日前<rt>にちまえ</rt></ruby>にメールでお<ruby>知<rt>し</rt></ruby>らせします。<ruby>続<rt>つづ</rt></ruby>けるときは、マイページから<ruby>同<rt>おな</rt></ruby>じ<ruby>料金<rt>りょうきん</rt></ruby>で<ruby>更新<rt>こうしん</rt></ruby>できます（いまの<ruby>期限<rt>きげん</rt></ruby>から1<ruby>年<rt>ねん</rt></ruby>のびます）。<ruby>更新<rt>こうしん</rt></ruby>しなかったレベルは<ruby>使<rt>つか</rt></ruby>えなくなりますが、<ruby>成績<rt>せいせき</rt></ruby>は<ruby>残<rt>のこ</rt></ruby>るので、あとから<ruby>更新<rt>こうしん</rt></ruby>しても<ruby>続<rt>つづ</rt></ruby>きから<ruby>学習<rt>がくしゅう</rt></ruby>できます。</p>
                     </details>
                     <details class="pop-card faq reveal">
                         <summary><span><ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>んだら、すぐに<ruby>使<rt>つか</rt></ruby>えますか？</span><svg class="icon faq-plus"><use href="#i-plus"/></svg></summary>
@@ -639,7 +688,7 @@
         <section class="cta">
             <div class="container cta-inner reveal reveal-zoom">
                 <h2>さあ！<br>ワクワクする<ruby>日本語<rt>にほんご</rt></ruby><ruby>学習<rt>がくしゅう</rt></ruby>を<br><ruby>始<rt>はじ</rt></ruby>めよう！</h2>
-                <p>N4〜N1、<ruby>必要<rt>ひつよう</rt></ruby>なレベルを<ruby>買<rt>か</rt></ruby>い<ruby>切<rt>き</rt></ruby>りで。</p>
+                <p>N4〜N1、<ruby>必要<rt>ひつよう</rt></ruby>なレベルを1<ruby>年間<rt>ねんかん</rt></ruby><ruby>使<rt>つか</rt></ruby>い<ruby>放題<rt>ほうだい</rt></ruby>で。<ruby>問題<rt>もんだい</rt></ruby>3,500<ruby>問<rt>もん</rt></ruby><ruby>以上<rt>いじょう</rt></ruby>・<ruby>単語<rt>たんご</rt></ruby>9,800<ruby>語<rt>ご</rt></ruby>。</p>
                 <a href="#pricing" class="pop-btn btn-yellow btn-lg"><span>プランを<ruby>選<rt>えら</rt></ruby>ぶ</span><svg class="icon"><use href="#i-arrow-right"/></svg></a>
             </div>
         </section>
@@ -750,11 +799,12 @@
                 <dt>所在地</dt><dd>〒902-0062<br>沖縄県那覇市字松川362番地9　シティテラス松川402号</dd>
                 <dt>電話番号</dt><dd>080-9107-4916<br>※お問い合わせは、なるべく下のお問い合わせフォームからお願いいたします。</dd>
                 <dt>お問い合わせ</dt><dd><a href="https://jprojectsriki-cpu.github.io/rikis_collection/#contact" target="_blank" rel="noopener">お問い合わせフォーム</a>からご連絡ください。</dd>
-                <dt>販売価格</dt><dd>N4プラン 3,000円／N3プラン 3,500円／N2プラン 4,000円／N1プラン 4,500円／N4〜N1 まとめてプラン 13,000円（新規のお申し込みのみ）（いずれも税込・買い切り）</dd>
+                <dt>販売価格</dt><dd>N4プラン 3,000円／N3プラン 3,500円／N2プラン 4,000円／N1プラン 4,500円／N4〜N1 まとめてプラン 13,000円（新規のお申し込み、またはN4〜N1をすべてお持ちの方の更新のみ）（いずれも税込・1年間）</dd>
                 <dt>商品代金以外の必要料金</dt><dd>・インターネット接続料金および通信費用（お客様ご負担）<br>・銀行振込の手数料（お客様ご負担）</dd>
                 <dt>お支払い方法</dt><dd>銀行振込（お申し込み後に、振込先の口座をメールでお知らせします）</dd>
                 <dt>代金の支払時期</dt><dd>お申し込み後、ご案内する期限までにお支払いください。期限までにお支払いが確認できない場合、お申し込みは自動的に取り消されます。</dd>
                 <dt>サービスの提供時期</dt><dd>入金を確認したのち、アカウントを発行し、その旨をメールでお知らせした時点からご利用いただけます。</dd>
+                <dt>サービスの提供期間</dt><dd>各レベルとも、入金を確認した日から1年間です。期限内に更新のお申し込み・お支払いをいただくと、その時点の期限から1年間延長します。自動更新・自動請求はありません。</dd>
                 <dt>返品・返金・キャンセル</dt><dd>アカウント発行前のキャンセルは、全額を返金いたします。デジタルコンテンツの特性上、アカウント発行後の返金には原則として応じられません。<br>※当方のシステム障害等により、サービスの利用が著しく困難であると判断した場合に限り、個別に対応いたします。</dd>
                 <dt>推奨動作環境</dt><dd>最新版の Google Chrome, Safari, Microsoft Edge, Mozilla Firefox（PC／スマートフォン）</dd>
             </dl>
@@ -792,7 +842,11 @@
                     <li>ユーザーは、いかなる場合にも、ユーザーIDおよびパスワードを第三者に譲渡または貸与し、もしくは第三者と共用することはできません。</li>
                 </ol>
                 <h3>第4条（利用料金および支払方法）</h3>
-                <p>ユーザーは、本サービスの有料対価として、当方が別途定め本ウェブサイトに表示する各レベルの利用料金（買い切り）を、当方が指定する方法（銀行振込）により支払うものとします。</p>
+                <ol>
+                    <li>ユーザーは、本サービスの有料対価として、当方が別途定め本ウェブサイトに表示する各レベルの利用料金（1年間）を、当方が指定する方法（銀行振込）により支払うものとします。</li>
+                    <li>各レベルの利用期間は、当方が入金を確認した日から1年間とします。利用期間が終了したレベルは、更新の利用料金を支払うまで利用できません。なお、学習の記録は利用期間の終了後も保持します。</li>
+                    <li>更新の利用料金は、新規の利用料金と同額とします。利用期間内に更新した場合、利用期間はその時点の終了日から1年間延長します。</li>
+                </ol>
                 <h3>第5条（禁止事項）</h3>
                 <p>ユーザーは、本サービスの利用にあたり、以下の行為をしてはなりません。</p>
                 <ul>
@@ -810,7 +864,7 @@
                     <li>当方は、ユーザーに通知することなく、本サービスの内容を変更しまたは本サービスの提供を中止することができるものとし、これによってユーザーに生じた損害について一切の責任を負いません。</li>
                     <li>本サービスは学習を支援するものであり、日本語能力試験の合格を保証するものではありません。</li>
                 </ol>
-                <p class="doc-date">最終改定日：2026年11月3日</p>
+                <p class="doc-date">最終改定日：2026年11月13日</p>
             </div>
         </div>
     </dialog>
@@ -859,8 +913,8 @@
     </dialog>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="js/config.js?v=20261112a"></script>
-    <script src="js/loading.js?v=20261112a"></script>
-    <script src="js/lp.js?v=20261112a"></script>
+    <script src="js/config.js?v=20261114a"></script>
+    <script src="js/loading.js?v=20261114a"></script>
+    <script src="js/lp.js?v=20261114a"></script>
 </body>
 </html>

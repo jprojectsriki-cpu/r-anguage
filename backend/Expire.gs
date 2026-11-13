@@ -82,6 +82,9 @@ function dailyPaymentCheck() {
   reminded.forEach(function (a) { sendReminderMail_(a, today); });
   if (expired.length || reminded.length) sendCheckSummaryMail_(expired, reminded);
 
+  // レベルの利用期限（30日前・期限切れ）のお知らせ
+  try { remindValidity_(now); } catch (e) { Logger.log('利用期限のお知らせでエラー：' + e); }
+
   Logger.log('期限切れ ' + expired.length + '件：' + expired.map(function (a) { return a.applicationId; }).join('、'));
   Logger.log('リマインド ' + reminded.length + '件：' + reminded.map(function (a) { return a.applicationId; }).join('、'));
   return { expired: expired.length, reminded: reminded.length };
@@ -134,7 +137,7 @@ function sendReminderMail_(a, today) {
       '',
       '■ 申込番号：' + a.applicationId,
       '■ レベル　：' + levelLabel_(a.level),
-      '■ 金額　　：' + Number(a.amount).toLocaleString('ja-JP') + '円（税込・買い切り）',
+      '■ 金額　　：' + Number(a.amount).toLocaleString('ja-JP') + '円（税込・1年間）',
       '■ お支払い：' + (PAYMENT_METHODS[a.paymentMethod] || a.paymentMethod),
       '■ 支払期限：' + formatLimit_(a.expiresAt),
       '',

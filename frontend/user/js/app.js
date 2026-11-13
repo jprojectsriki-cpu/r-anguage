@@ -252,6 +252,21 @@
         // 学習の記録（あとで読み込む）
         main.append(h('div', { id: 'statsSlot', class: 'stats-slot' }));
 
+        // 利用期限が近い・切れたレベル（マイページから更新できる）
+        var pendLv = {};
+        p.pending.forEach(function (a) { (a.level === 'ALL' ? LEVELS : [a.level]).forEach(function (x) { pendLv[x] = true; }); });
+        (p.validity || []).forEach(function (v) {
+            if (pendLv[v.level] || !(v.renewable || !v.active)) return;
+            main.append(h('a', { class: 'card pending renew-card', href: '#mypage' }, [
+                h('p', { class: 'pending-title', html: v.active
+                    ? v.level + '：{利用期限|りようきげん}まであと' + v.daysLeft + '{日|にち}'
+                    : v.level + '：{利用期限|りようきげん}が{過|す}ぎました' }),
+                h('p', { class: 'pending-text', html: v.active
+                    ? '{期限|きげん}は' + dateText(v.expiresAt) + 'までです。マイページから{更新|こうしん}できます（いまの{期限|きげん}から1{年|ねん}のびます）。'
+                    : '{成績|せいせき}は{残|のこ}っています。マイページから{更新|こうしん}すると、また{使|つか}えるようになります。' })
+            ]));
+        });
+
         // お支払い待ちの申込
         p.pending.forEach(function (a) {
             main.append(h('section', { class: 'card pending' }, [
@@ -580,25 +595,47 @@
             ])
         ]));
 
-        // レベル
+        // レベル（利用期限は、レベルごとに1年）
+        var vmap = {};
+        (p.validity || []).forEach(function (v) { vmap[v.level] = v; });
         var lvList = h('ul', { class: 'lv-list' });
         LEVELS.forEach(function (lv) {
-            var owned = u.levels.indexOf(lv) >= 0;
-            var pend = p.pending.filter(function (a) { return a.level === lv; })[0];
-            var right;
-            if (owned) right = h('span', { class: 'state state-on', html: '{利用中|りようちゅう}' });
-            else if (pend) right = h('span', { class: 'state state-wait', html: 'お{支払|しはら}い{待|ま}ち' });
-            else right = h('button', { type: 'button', class: 'pop-btn btn-pink btn-sm', html: '{追加|ついか}する', onclick: function () { applyLevel(lv); } });
+            var v = vmap[lv];
+            var owned = !!v || u.levels.indexOf(lv) >= 0;
+            var pend = p.pending.filter(function (a) { return a.level === lv || a.level === 'ALL'; })[0];
+            var right, sub = null;
+            if (pend) right = h('span', { class: 'state state-wait', html: 'お{支払|しはら}い{待|ま}ち' });
+            else if (owned && (!v || (v.active && !v.renewable))) right = h('span', { class: 'state state-on', html: '{利用中|りようちゅう}' });
+            else if (owned) right = h('button', { type: 'button', class: 'pop-btn btn-pink btn-sm', html: '{更新|こうしん}する', onclick: function () { applyLevel(lv, true); } });
+            else right = h('button', { type: 'button', class: 'pop-btn btn-pink btn-sm', html: '{追加|ついか}する', onclick: function () { applyLevel(lv, false); } });
+            if (v && v.expiresAt) {
+                sub = h('span', { class: 'lv-exp' + (v.active ? '' : ' is-expired'), html: v.active
+                    ? '{利用期限|りようきげん}：' + dateText(v.expiresAt) + 'まで'
+                    : '{期限切|きげんぎ}れ（' + dateText(v.expiresAt) + '）' });
+            }
             lvList.append(h('li', {}, [
                 h('span', { class: 'lv lv-' + lv, text: lv }),
-                h('span', { class: 'lv-price', text: '¥' + Number(p.prices[lv]).toLocaleString('ja-JP') }),
+                h('span', { class: 'lv-mid' }, [h('span', { class: 'lv-price', text: '¥' + Number(p.prices[lv]).toLocaleString('ja-JP') + ' / 1年' }), sub]),
                 right
             ]));
         });
+        // N4〜N1 をすべて持っている人は、まとめて更新できる
+        var bundle = p.bundle;
+        if (bundle && bundle.levels.every(function (lv) { return vmap[lv]; }) &&
+            bundle.levels.some(function (lv) { return vmap[lv].renewable; }) &&
+            !p.pending.some(function (a) { return a.level === 'ALL' || bundle.levels.indexOf(a.level) >= 0; })) {
+            lvList.append(h('li', {}, [
+                h('span', { class: 'lv lv-ALL', text: 'N4〜N1' }),
+                h('span', { class: 'lv-mid' }, [h('span', { class: 'lv-price', text: '¥' + Number(bundle.price).toLocaleString('ja-JP') + ' / 1年' }),
+                    h('span', { class: 'lv-exp', html: 'まとめて{更新|こうしん}（4つのレベル）' })]),
+                h('button', { type: 'button', class: 'pop-btn btn-pink btn-sm', html: '{更新|こうしん}する', onclick: function () { applyLevel('ALL', true); } })
+            ]));
+        }
         main.append(h('section', { class: 'card' }, [
             h('h2', { class: 'card-title', html: '{使|つか}えるレベル' }),
             lvList,
-            h('p', { class: 'note', html: '{追加|ついか}は、{新|あたら}しいお{申|もう}し{込|こ}みと{同|おな}じです。{振込先|ふりこみさき}をメールでお{送|おく}りします。{入金|にゅうきん}を{確認|かくにん}したら、そのレベルが{使|つか}えるようになります。' })
+            h('p', { class: 'note', html: '{利用期限|りようきげん}は、レベルごとにお{支払|しはら}いを{確認|かくにん}した{日|ひ}から1{年|ねん}です。{期限|きげん}の' + (p.renewDays || 30) + '{日前|にちまえ}から{更新|こうしん}できます（{新規|しんき}と{同|おな}じ{料金|りょうきん}で、いまの{期限|きげん}から1{年|ねん}のびます）。{期限|きげん}が{切|き}れても、{成績|せいせき}は{残|のこ}ります。' }),
+            h('p', { class: 'note', html: '{追加|ついか}・{更新|こうしん}は、{振込先|ふりこみさき}をメールでお{送|おく}りします。{入金|にゅうきん}を{確認|かくにん}したら、そのレベルが{使|つか}えるようになります。' })
         ]));
 
         // 試験日
@@ -765,13 +802,16 @@
         if (save.want) { e.preventDefault(); e.returnValue = ''; }
     });
 
-    function applyLevel(lv) {
-        var price = '¥' + Number(state.profile.prices[lv]).toLocaleString('ja-JP');
+    function applyLevel(lv, renew) {
+        var isAll = lv === 'ALL';
+        var name = isAll ? 'N4〜N1 まとめて' : lv;
+        var price = '¥' + Number(isAll ? state.profile.bundle.price : state.profile.prices[lv]).toLocaleString('ja-JP');
+        var verb = renew ? '{更新|こうしん}' : '{追加|ついか}';
         var body = h('div', {}, [
-            h('p', { html: lv + '（' + price + '・{買|か}い{切|き}り）を{追加|ついか}で{申|もう}し{込|こ}みます。' }),
+            h('p', { html: name + '（' + price + '・1{年間|ねんかん}）を' + verb + 'で{申|もう}し{込|こ}みます。' + (renew ? '{入金|にゅうきん}を{確認|かくにん}したら、いまの{期限|きげん}から1{年|ねん}のびます（{期限切|きげんぎ}れのときは、その{日|ひ}から1{年|ねん}）。' : '') }),
             h('p', { class: 'note', html: 'お{支払|しはら}いは{銀行|ぎんこう}{振込|ふりこみ}です。{振込先|ふりこみさき}とATMでの{振|ふ}り{込|こ}み{方|かた}を、メールでお{送|おく}りします。{支払期限|しはらいきげん}は7{日|か}です。' })
         ]);
-        confirmBox({ title: lv + 'を{追加|ついか}する', body: body, ok: '{申|もう}し{込|こ}む' }).then(function (yes) {
+        confirmBox({ title: name + 'を' + verb + 'する', body: body, ok: '{申|もう}し{込|こ}む' }).then(function (yes) {
             if (!yes) return;
             withLoading('お<ruby>申<rt>もう</rt></ruby>し<ruby>込<rt>こ</rt></ruby>みを<ruby>送信<rt>そうしん</rt></ruby>しています', apiPost({ action: 'me.applyLevel', level: lv }))
                 .then(function (res) {

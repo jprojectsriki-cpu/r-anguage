@@ -144,6 +144,12 @@ html.furigana-off rt { display: none; }
 .lv-list li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 2px dashed rgba(30, 27, 75, 0.2); }
 .lv-list li:first-child { border-top: none; }
 .lv-price { flex: 1; font-family: var(--font-en); font-size: 1rem; }
+.lv-mid { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.lv-mid .lv-price { flex: none; }
+.lv-exp { font-size: 0.78rem; color: var(--muted, #6b6b8a); line-height: 1.9; }
+.lv-exp.is-expired { color: #E0245E; font-weight: 700; }
+.lv-ALL { white-space: nowrap; background: #FFE066; font-size: 0.85rem; }
+.renew-card { display: block; color: inherit; text-decoration: none; }
 .state { padding: 2px 12px; border-radius: 999px; border: 2px solid var(--dark); font-size: 0.8rem; font-weight: 900; line-height: 1.9; }
 .state-on { background: var(--mint); }
 .state-wait { background: #FFE3EF; border-color: var(--pink); color: var(--pink); }

@@ -133,6 +133,8 @@ function doPost(e) {
         return json_(adminSetStage_(req.token, req.userId, req.level, req.stage));
       case 'admin.addLevel':
         return json_(adminAddLevel_(req.token, req.userId, req.level));
+      case 'admin.setValidity':
+        return json_(adminSetValidity_(req.token, req.userId, req.level, req.date));
       case 'admin.cancel':
         return json_(adminCancelApplication_(req.token, req.applicationId, req.note));
       case 'admin.questions':

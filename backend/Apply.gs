@@ -4,11 +4,11 @@
  * - 期限切れ・キャンセルで「入金待ち」のまま残ったアカウントは、同じメールアドレスで申し込み直せる
  */
 
-// レベルごとの料金（税込・買い切り）
+// レベルごとの料金（税込・1年間。更新も同じ料金）
 const PRICES = { N4: 3000, N3: 3500, N2: 4000, N1: 4500 };
 // N4〜N1 まとめてプラン（2026-11-10 追加・新規の申し込みだけ。発行すると N4〜N1 のすべてが使える）
 const BUNDLE = { code: 'ALL', price: 13000, levels: ['N4', 'N3', 'N2', 'N1'], label: 'N4〜N1 まとめて' };
-// 新規の申し込みで選べるプラン（マイページの追加申込は PRICES だけ）
+// 新規の申し込みで選べるプラン（マイページの追加申込は PRICES。まとめての更新は N4〜N1 をすべて持つ人だけ）
 const PLAN_PRICES = Object.assign({}, PRICES, { ALL: BUNDLE.price });
 /** 申込のレベルの表示名（ALL →「N4〜N1 まとめて」） */
 function levelLabel_(level) { return level === BUNDLE.code ? BUNDLE.label : String(level); }
@@ -195,7 +195,7 @@ function sendApplyMails_(name, email, a) {
       '',
       '■ 申込番号：' + a.applicationId,
       '■ レベル　：' + levelLabel_(a.level),
-      '■ 金額　　：' + amount + '円（税込・買い切り）',
+      '■ 金額　　：' + amount + '円（税込・1年間）',
       '■ お支払い：' + PAYMENT_METHODS[a.payment],
       '■ 支払期限：' + deadline,
       '',

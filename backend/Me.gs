@@ -44,12 +44,16 @@ function requireMe_(token) {
   const row = findUserRowById_(auth.user.userId);
   if (!row) return { ok: false, reason: 'expired', message: 'アカウントが見つかりません。もう一度ログインしてください。' };
   const sheet = getSheet_(SHEET_USERS);
-  const r = sheet.getRange(row, 1, 1, Math.min(USER_COL_STAGES, sheet.getMaxColumns())).getValues()[0]; // N列（STAGE）まで
+  const r = sheet.getRange(row, 1, 1, Math.min(USER_COL_VALID, sheet.getMaxColumns())).getValues()[0]; // O列（利用期限）まで
   if (String(r[6]) !== 'active') {
     return { ok: false, reason: 'suspended', message: 'このアカウントは現在ご利用いただけません。' };
   }
   let settings = {};
   try { settings = JSON.parse(String(r[USER_COL_SETTINGS - 1] || '{}')) || {}; } catch (e) { settings = {}; }
+  const allLevels = String(r[7] || '').split(',').filter(String);
+  const valid = parseValid_(r[USER_COL_VALID - 1]);
+  const now = new Date();
+  const isAdmin = String(r[5]) === 'admin';
   return {
     ok: true,
     session: auth.user,
@@ -61,7 +65,9 @@ function requireMe_(token) {
       salt: String(r[3]),
       name: String(r[4]),
       role: String(r[5]),
-      levels: String(r[7] || '').split(',').filter(String),
+      levels: isAdmin ? allLevels : allLevels.filter(function (lv) { return levelActive_(valid, lv, now); }), // 利用期限内のレベルだけ
+      allLevels: allLevels,   // 期限が切れたレベルも入れる（マイページの更新用）
+      valid: valid,
       examId: String(r[USER_COL_EXAM - 1] || ''),
       settings: cleanSettings_(settings),
       stages: parseStages_(r[USER_COL_STAGES - 1])
@@ -135,7 +141,10 @@ function meProfile_(token) {
     today: today,
     user: { name: u.name, email: u.email, levels: u.levels, examId: u.examId, settings: u.settings },
     studyLevels: practiceLevels_(u), // 問題などで使えるレベル（管理者はすべて）
+    validity: u.role === 'admin' ? [] : validityList_(u.allLevels, u.valid, new Date()), // レベルごとの利用期限
+    renewDays: RENEW_DAYS,
     prices: PRICES,
+    bundle: { code: BUNDLE.code, price: BUNDLE.price, levels: BUNDLE.levels },
     notices: notices,
     exams: exams,
     pending: pending
@@ -182,16 +191,30 @@ function sendMePasswordMail_(u) {
 }
 
 /**
- * レベルの追加申込（新規の申し込みと同じ流れ・料金）
+ * レベルの追加申込・更新の申込（新規の申し込みと同じ流れ・料金。どちらも1年間）
  * 申込番号を作って Applications に「入金待ち」で入れ、振込先とATMの手順をメールで送る
- * 入金を確かめて管理画面で「発行」すると、そのレベルが使えるようになる
+ * 入金を確かめて管理画面で「発行」すると、そのレベルが使えるようになる（更新は、いまの期限から1年のびる）
+ * - 更新：期限切れ、または期限の30日前から申し込める
+ * - まとめての更新（ALL）：N4〜N1 をすべて持っている人だけ
  */
 function meApplyLevel_(token, level) {
   const me = requireMe_(token);
   if (!me.ok) return me;
   level = String(level || '');
-  if (!PRICES[level]) return { ok: false, message: 'レベルを選んでください。' };
-  if (me.user.levels.indexOf(level) >= 0) return { ok: false, message: level + ' は、すでに使えるレベルです。' };
+  const isAll = level === BUNDLE.code;
+  if (!PRICES[level] && !isAll) return { ok: false, message: 'レベルを選んでください。' };
+  const nowCheck = new Date();
+  const owned = me.user.allLevels;
+  if (isAll) {
+    const hasAll = BUNDLE.levels.every(function (lv) { return owned.indexOf(lv) >= 0; });
+    if (!hasAll) return { ok: false, message: 'まとめての更新は、N4〜N1 をすべてお持ちの方だけお申し込みいただけます。' };
+    if (!BUNDLE.levels.some(function (lv) { return levelRenewable_(me.user.valid, lv, nowCheck); })) {
+      return { ok: false, message: '更新のお申し込みは、利用期限の' + RENEW_DAYS + '日前からできます。' };
+    }
+  } else if (owned.indexOf(level) >= 0 && !levelRenewable_(me.user.valid, level, nowCheck)) {
+    return { ok: false, message: level + ' は利用中です。更新のお申し込みは、利用期限の' + RENEW_DAYS + '日前からできます。' };
+  }
+  const renew = levelsOf_(level).some(function (lv) { return owned.indexOf(lv) >= 0; });
 
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
@@ -199,22 +222,22 @@ function meApplyLevel_(token, level) {
   try {
     const now = new Date();
     const open = readApplications_().filter(function (a) {
-      return a.userId === me.user.userId && a.level === level &&
+      return a.userId === me.user.userId && (a.level === level || (isAll && BUNDLE.levels.indexOf(a.level) >= 0) || a.level === BUNDLE.code) &&
         (a.status === 'paid' || (a.status === 'awaiting_payment' && a.expiresAt && new Date(a.expiresAt).getTime() > now.getTime()));
     });
     if (open.length) {
-      return { ok: false, message: level + ' は、お支払い待ちのお申し込み（' + open[0].applicationId + '）があります。受付メールに書かれた支払期限までにお支払いください。' };
+      return { ok: false, message: levelLabel_(open[0].level) + ' は、お支払い待ちのお申し込み（' + open[0].applicationId + '）があります。受付メールに書かれた支払期限までにお支払いください。' };
     }
     application = {
       applicationId: makeApplicationId_(),
       level: level,
-      amount: PRICES[level],
+      amount: isAll ? BUNDLE.price : PRICES[level],
       payment: PAYMENT_DEFAULT,
       expiresAt: new Date(now.getTime() + PAYMENT_DAYS * 24 * 60 * 60 * 1000)
     };
     getSheet_(SHEET_APPLICATIONS).appendRow([
       application.applicationId, me.user.userId, me.user.email, me.user.name, level, application.amount,
-      application.payment, 'awaiting_payment', now, application.expiresAt, '', '', '', 'マイページから追加申込'
+      application.payment, 'awaiting_payment', now, application.expiresAt, '', '', '', renew ? 'マイページから更新' : 'マイページから追加申込'
     ]);
   } finally {
     lock.releaseLock();
@@ -224,7 +247,7 @@ function meApplyLevel_(token, level) {
     ok: true,
     applicationId: application.applicationId,
     expiresAt: application.expiresAt.toISOString(),
-    message: level + ' の追加のお申し込みを受け付けました（申込番号：' + application.applicationId + '）。振込先をメールでお送りしました。'
+    message: levelLabel_(level) + (renew ? ' の更新' : ' の追加') + 'のお申し込みを受け付けました（申込番号：' + application.applicationId + '）。振込先をメールでお送りしました。'
   };
 }
 

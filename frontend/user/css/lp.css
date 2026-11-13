@@ -896,3 +896,33 @@ main, .site-footer { position: relative; z-index: 1; }
 .plan-save { display: block; color: var(--pink); }
 .plan-note { margin: -10px 0 16px; font-size: 0.72rem; color: var(--dark-60); line-height: 2; }
 .level-select .level-bundle { grid-column: 1 / -1; }
+
+/* ---------- 数字で見る R-ANGUAGE ---------- */
+.section-tight { padding-top: 24px; padding-bottom: 24px; }
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.stat { text-align: center; padding: 22px 16px; }
+.stat-num { font-family: var(--font-en); font-size: 2.4rem; font-weight: 700; line-height: 1.2; color: var(--pink); }
+.stat-num small { margin-left: 4px; font-family: var(--font); font-size: 0.95rem; color: var(--dark); }
+.stat-label { margin-top: 6px; font-weight: 900; line-height: 2; }
+.stat-sub { font-size: 0.75rem; color: var(--dark-60); line-height: 2; }
+
+/* ---------- 業界別の目安 ---------- */
+.job-card { padding: 8px 20px; overflow-x: auto; }
+.job-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.job-table th, .job-table td { padding: 14px 10px; text-align: left; border-bottom: 2px dashed rgba(30, 27, 75, 0.2); line-height: 2; vertical-align: middle; }
+.job-table thead th { font-size: 0.78rem; color: var(--dark-60); border-bottom: 3px solid var(--dark); }
+.job-table tbody tr:last-child th, .job-table tbody tr:last-child td { border-bottom: none; }
+.job-lv { display: inline-block; padding: 2px 12px; border: 2.5px solid var(--dark); border-radius: 999px; font-family: var(--font-en); font-weight: 700; white-space: nowrap; }
+.job-lv.bg-pink { color: #fff; }
+.job-cta { margin-top: 24px; text-align: center; }
+.level-meta .dt-ra, .level-meta .dd-ra { color: var(--pink); }
+
+@media (max-width: 900px) {
+    .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .stat-num { font-size: 2rem; }
+}
+@media (max-width: 600px) {
+    .job-table { font-size: 0.8rem; }
+    .job-table th, .job-table td { padding: 10px 6px; }
+    .job-table thead th:nth-child(3), .job-table td:nth-child(3) { display: none; }
+}

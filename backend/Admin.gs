@@ -113,6 +113,13 @@ function adminIssue_(token, applicationId) {
     users.getRange(userRow, 8).setValue(levels.join(','));      // levels
     if (!u[9]) users.getRange(userRow, 10).setValue(now);       // activatedAt（初回だけ）
 
+    // 利用期限：このお申し込みのレベルを1年のばす（期限内の更新なら、いまの期限から1年）
+    ensureCols_(users, USER_COL_VALID);
+    const valid = parseValid_(users.getRange(userRow, USER_COL_VALID).getValue());
+    extendLevels_(valid, levelsOf_(app.level), now);
+    writeValid_(userRow, valid);
+    app.validUntil = levelsOf_(app.level).map(function (lv) { return lv + '：' + formatValid_(valid.exp[lv]) + 'まで'; });
+
     app.levels = levels;
     // 同じアカウントに、ほかの「入金待ち」の申込がないか（申し込み直したあとなど。二重の入金に気づくため）
     app.others = readApplications_().filter(function (x) {
@@ -123,7 +130,7 @@ function adminIssue_(token, applicationId) {
   }
 
   sendIssueMail_(app);
-  return { ok: true, applicationId: app.applicationId, levels: app.levels, others: app.others };
+  return { ok: true, applicationId: app.applicationId, levels: app.levels, validUntil: app.validUntil, others: app.others };
 }
 
 /** 発行メールを送る */
@@ -141,12 +148,15 @@ function sendIssueMail_(app) {
       '■ 申込番号　　　：' + app.applicationId,
       '■ 追加したレベル：' + levelLabel_(app.level),
       '■ ご利用中のレベル：' + app.levels.join('、'),
+      '■ 利用期限　　：' + (app.validUntil || []).join('、'),
       '■ ログインID　　：' + app.email,
       '',
       'ログインには、お申し込み時に設定したパスワードをお使いください。',
       '下のログインページからお入りいただけます。',
       'https://jprojectsriki-cpu.github.io/r-anguage/frontend/user/login.html',
       '',
+      '※ 利用期限は、お支払いを確認した日から1年間です。期限の30日前になったら、メールでお知らせします。',
+      '　 マイページから更新のお申し込みができます（新規と同じ料金で、いまの期限から1年のびます）。',
       '※ 同じアカウントで、別の端末から同時にログインすることはできません。',
       '　 あとからログインした端末が優先され、前の端末は自動でログアウトします。',
       '',
@@ -203,7 +213,7 @@ function adminListUsers_(token) {
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return { ok: true, users: [] };
 
-  const users = sheet.getRange(2, 1, lastRow - 1, Math.min(USER_COL_STAGES, sheet.getMaxColumns())).getValues()
+  const users = sheet.getRange(2, 1, lastRow - 1, Math.min(USER_COL_VALID, sheet.getMaxColumns())).getValues()
     .filter(function (r) { return String(r[5]) === 'user'; })
     .map(function (r) {
       return {
@@ -215,7 +225,8 @@ function adminListUsers_(token) {
         createdAt: r[8] || null,
         activatedAt: r[9] || null,
         lastLoginAt: r[10] || null,
-        stages: parseStages_(r[USER_COL_STAGES - 1])
+        stages: parseStages_(r[USER_COL_STAGES - 1]),
+        validity: parseValid_(r[USER_COL_VALID - 1]).exp
       };
     });
   return { ok: true, users: users };
@@ -261,13 +272,20 @@ function adminAddLevel_(token, userId, level) {
 
     const sheet = getSheet_(SHEET_USERS);
     const levels = String(sheet.getRange(row, 8).getValue() || '').split(',').filter(String);
-    if (levels.indexOf(level) !== -1) return { ok: false, message: 'すでに ' + level + ' を持っています。' };
+    ensureCols_(sheet, USER_COL_VALID);
+    const valid = parseValid_(sheet.getRange(row, USER_COL_VALID).getValue());
+    const now = new Date();
+    if (levels.indexOf(level) !== -1 && levelActive_(valid, level, now)) {
+      return { ok: false, message: 'すでに ' + level + ' を持っています（利用期限内）。期限を変えるときは「期限」ボタンを使ってください。' };
+    }
 
-    levels.push(level);
+    if (levels.indexOf(level) === -1) levels.push(level);
     const order = ['N4', 'N3', 'N2', 'N1'];
     levels.sort(function (a, b) { return order.indexOf(a) - order.indexOf(b); });
     sheet.getRange(row, 8).setValue(levels.join(','));
-    return { ok: true, userId: userId, levels: levels };
+    extendLevels_(valid, [level], now);   // 今日から1年
+    writeValid_(row, valid);
+    return { ok: true, userId: userId, levels: levels, expiresAt: valid.exp[level] };
   } finally {
     lock.releaseLock();
   }

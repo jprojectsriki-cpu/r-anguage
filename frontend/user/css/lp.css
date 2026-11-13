@@ -907,22 +907,87 @@ main, .site-footer { position: relative; z-index: 1; }
 .stat-sub { font-size: 0.75rem; color: var(--dark-60); line-height: 2; }
 
 /* ---------- 業界別の目安 ---------- */
-.job-card { padding: 8px 20px; overflow-x: auto; }
-.job-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-.job-table th, .job-table td { padding: 14px 10px; text-align: left; border-bottom: 2px dashed rgba(30, 27, 75, 0.2); line-height: 2; vertical-align: middle; }
-.job-table thead th { font-size: 0.78rem; color: var(--dark-60); border-bottom: 3px solid var(--dark); }
-.job-table tbody tr:last-child th, .job-table tbody tr:last-child td { border-bottom: none; }
-.job-lv { display: inline-block; padding: 2px 12px; border: 2.5px solid var(--dark); border-radius: 999px; font-family: var(--font-en); font-weight: 700; white-space: nowrap; }
-.job-lv.bg-pink { color: #fff; }
+.job-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 28px; }
+.job-tile {
+    --accent: var(--pink);
+    --i: 0;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    flex: 0 1 calc((100% - 56px) / 3);
+    display: flex;
+    flex-direction: column;
+    padding: 26px 24px 22px;
+}
+.job-pink { --accent: var(--pink); }
+.job-blue { --accent: var(--blue); }
+.job-orange { --accent: var(--orange); }
+.job-purple { --accent: var(--purple); }
+.job-mint { --accent: var(--mint); }
+/* オーロラのにじみ */
+.job-aurora {
+    position: absolute; z-index: -1; top: -70px; right: -60px;
+    width: 220px; height: 220px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 40%, var(--accent), transparent 62%), radial-gradient(circle at 70% 70%, var(--yellow), transparent 58%);
+    filter: blur(28px); opacity: 0.32;
+    transition: opacity 0.5s, transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: job-drift 9s ease-in-out infinite alternate;
+}
+@keyframes job-drift { to { translate: -24px 18px; scale: 1.12; } }
+/* カーソルについてくる光 */
+.job-tile::after {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%);
+    opacity: 0; transition: opacity 0.35s;
+}
+.job-tile:hover::after { opacity: 1; }
+.job-tile:hover .job-aurora { opacity: 0.6; transform: scale(1.15); }
+.job-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+.job-icon {
+    position: relative; width: 60px; height: 60px; display: grid; place-items: center;
+    border-radius: 18px; border: 3px solid var(--dark); box-shadow: 4px 4px 0 var(--dark);
+    background: var(--accent); color: #fff; font-size: 1.65rem;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+}
+.job-mint .job-icon { color: var(--dark); }
+.job-spark { position: absolute; top: -10px; right: -10px; font-size: 1.1rem; fill: var(--yellow); stroke: var(--dark); stroke-width: 1.6; opacity: 0; transform: scale(0.3) rotate(-40deg); transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s; }
+.job-tile:hover .job-icon { transform: rotate(-8deg) scale(1.08); box-shadow: 6px 6px 0 var(--dark); }
+.job-tile:hover .job-spark { opacity: 1; transform: scale(1) rotate(0); }
+.job-en { padding: 3px 12px; border: 2px solid var(--dark); border-radius: 999px; background: #fff; font-family: var(--font-en); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; }
+.job-name { font-size: 1.25rem; font-weight: 900; line-height: 1.8; }
+.job-level { display: flex; align-items: flex-end; gap: 8px; margin: 4px 0 12px; }
+.job-lv-num {
+    font-family: var(--font-en); font-size: 3rem; font-weight: 700; line-height: 1; color: var(--accent);
+    -webkit-text-stroke: 2px var(--dark); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--dark);
+}
+.job-lv-sub { display: flex; flex-direction: column; font-weight: 900; line-height: 1.6; padding-bottom: 2px; }
+.job-lv-sub small { font-size: 0.68rem; font-weight: 700; color: var(--dark-60); }
+.job-meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 16px; list-style: none; padding: 0; }
+.job-meter li {
+    padding: 3px 0; border: 2px solid var(--dark); border-radius: 999px; text-align: center;
+    font-family: var(--font-en); font-size: 0.72rem; font-weight: 700; color: var(--dark-60); background: #fff;
+}
+.job-meter li.on { background: color-mix(in srgb, var(--accent) 22%, #fff); color: var(--dark); }
+.job-meter li.is-req { background: var(--accent); color: #fff; box-shadow: 2px 2px 0 var(--dark); }
+.job-mint .job-meter li.is-req { color: var(--dark); }
+.job-desc { font-size: 0.86rem; line-height: 2.1; color: var(--dark-80); flex: 1; }
+.job-plan { display: flex; align-items: flex-start; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 2px dashed rgba(30, 27, 75, 0.2); font-size: 0.82rem; line-height: 2; }
+.job-plan .icon { margin-top: 0.45em; color: var(--accent); stroke-width: 3; }
+.job-mint .job-plan .icon { color: #059b74; }
 .job-cta { margin-top: 24px; text-align: center; }
 .level-meta .dt-ra, .level-meta .dd-ra { color: var(--pink); }
 
 @media (max-width: 900px) {
+    .job-tile { flex-basis: calc((100% - 28px) / 2); }
     .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
     .stat-num { font-size: 2rem; }
 }
 @media (max-width: 600px) {
-    .job-table { font-size: 0.8rem; }
-    .job-table th, .job-table td { padding: 10px 6px; }
-    .job-table thead th:nth-child(3), .job-table td:nth-child(3) { display: none; }
+    .job-grid { gap: 20px; }
+    .job-tile { flex-basis: 100%; padding: 22px 20px 18px; }
+    .job-lv-num { font-size: 2.6rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .job-aurora { animation: none; }
+    .job-icon, .job-spark, .job-aurora { transition: none; }
 }

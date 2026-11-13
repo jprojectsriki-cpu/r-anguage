@@ -45,6 +45,18 @@
         window.addEventListener('resize', function () { if (window.innerWidth > 1100) setOpen(false); });
     }
 
+    /* ---------- 業界カード：カーソルについてくる光 ---------- */
+    function initJobSpotlight() {
+        if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+        document.querySelectorAll('.job-tile').forEach(function (card) {
+            card.addEventListener('pointermove', function (e) {
+                var r = card.getBoundingClientRect();
+                card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+                card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+            });
+        });
+    }
+
     /* ---------- スクロール表示 ---------- */
     function initReveal() {
         var items = document.querySelectorAll('.reveal');
@@ -594,6 +606,7 @@
         initMenu();
         initPlanSlider(); // initReveal より前に実行する
         initReveal();
+        initJobSpotlight();
         initBadgeMarquee();
         initFlashcards();
         initQuiz();

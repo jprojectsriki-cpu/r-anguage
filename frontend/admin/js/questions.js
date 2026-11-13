@@ -198,7 +198,9 @@
             if (q.status && x.status !== q.status) return false;
             if (q.stage && (x.stage || 'EASY') !== q.stage) return false;
             if (!word) return true;
-            return (x.questionId + ' ' + x.form + ' ' + plain(x.question) + ' ' + plain(x.passage)).toLowerCase().indexOf(word) !== -1;
+            // ふりがなを外した文字と、{漢字|かな} の書き方のままの文字の両方で、本文・問題文・選択肢・解説を探す
+            var raw = [x.question, x.passage, (x.choices || []).join(' '), x.explanation || ''].join(' ');
+            return (x.questionId + ' ' + x.form + ' ' + plain(raw) + ' ' + raw).toLowerCase().indexOf(word) !== -1;
         });
         rows.sort(function (a, b) { return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0); });
         drawBulk(rows);
@@ -358,6 +360,7 @@
         f.passage.value = d.passage || '';
         f.audio.value = d.audio || '';
         f.question.value = d.question || '';
+        f.explanation.value = d.explanation || ''; // 2026-11-13：解説が読み込まれず、保存すると消えていた不具合を修正
         ['choice1', 'choice2', 'choice3', 'choice4'].forEach(function (n, i) { f[n].value = (d.choices || [])[i] || ''; });
         form().querySelectorAll('input[name="answer"]').forEach(function (r) { r.checked = r.value === String(d.answer || ''); });
         form().querySelectorAll('input[name="status"]').forEach(function (r) { r.checked = r.value === (d.status || '下書き'); });

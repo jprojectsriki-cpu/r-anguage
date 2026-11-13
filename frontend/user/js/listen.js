@@ -21,17 +21,32 @@
     var POINT_READ_SEC = 10;  // ポイント理解：せんたくしを読む時間
 
     /* ---------- 声 ---------- */
-    var FEMALE = /female|kyoko|haruka|ayumi|sayaka|nanami|mizuki|o-?ren|aoi|mayu|shiori|女性|google\s*日本語/i;
-    var MALE = /\bmale\b|otoya|ichiro|keita|daichi|naoki|hattori|kenji|男性/i;
+    // 上にあるほど優先する（iPhone・Mac・Windows・Android・Chrome の日本語の声）
+    var FEMALE_RANK = [/kyoko/i, /o-?ren/i, /nanami/i, /haruka/i, /ayumi/i, /sayaka/i, /mizuki/i, /aoi/i, /mayu/i, /shiori/i,
+        /google\s*日本語/i, /shelley/i, /sandy/i, /\bflo\b/i, /grandma/i, /female|女性/i];
+    var MALE_RANK = [/otoya/i, /hattori/i, /keita/i, /ichiro/i, /daichi/i, /naoki/i, /kenji/i,
+        /eddy/i, /reed/i, /rocko/i, /grandpa/i, /\bmale\b|男性/i];
     var V = { list: [], f: null, m: null, any: null };
+
+    function pick(list, rank) {
+        for (var k = 0; k < rank.length; k++) {
+            var hit = list.filter(function (v) { return rank[k].test(v.name); });
+            if (hit.length) {
+                // 同じ名前なら、高音質（Enhanced・Premium・拡張）の声を選ぶ
+                var hq = hit.filter(function (v) { return /enhanced|premium|拡張|高品質/i.test(v.name); });
+                return hq[0] || hit[0];
+            }
+        }
+        return null;
+    }
 
     function loadVoices() {
         if (!can) return;
         var ja = window.speechSynthesis.getVoices().filter(function (v) { return /^ja(-|_|$)/i.test(v.lang); });
         V.list = ja;
-        V.f = ja.filter(function (v) { return FEMALE.test(v.name); })[0] || null;
-        V.m = ja.filter(function (v) { return !FEMALE.test(v.name) && MALE.test(v.name); })[0] || null;
-        V.any = ja[0] || null;
+        V.f = pick(ja, FEMALE_RANK);
+        V.m = pick(ja.filter(function (v) { return v !== V.f; }), MALE_RANK);
+        V.any = V.f || ja[0] || null;
     }
     if (can) {
         loadVoices();
@@ -43,16 +58,26 @@
     function voiceFor(g) {
         if (!V.list.length) loadVoices();
         var two = V.f && V.m && V.f !== V.m;
-        if (g === 'm') return two ? { voice: V.m, pitch: 1 } : { voice: V.m || V.any, pitch: V.m ? 1 : 0.75 };
-        if (g === 'f') return two ? { voice: V.f, pitch: 1 } : { voice: V.f || V.any, pitch: V.f ? 1 : 1.25 };
+        // 男女の声が両方あるときは、その声で読む。片方しかないときは、同じ声の高さを大きく変えて分ける
+        if (g === 'm') return two ? { voice: V.m, pitch: 0.95 } : { voice: V.m || V.any, pitch: V.m ? 0.95 : 0.55 };
+        if (g === 'f') return two ? { voice: V.f, pitch: 1.1 } : { voice: V.f || V.any, pitch: V.f ? 1.15 : 1.4 };
         return { voice: V.f || V.any, pitch: 1 };
     }
 
     /* ---------- 文字 ---------- */
-    /** ふりがな {漢字|よみ} は「よみ」で読む。下線や空欄の記号は読まない */
+    /** ふりがな {漢字|よみ} は「よみ」にする。下線や空欄の記号は消す（表示や確認用） */
     function plain(text) {
+        return clean(String(text || '').replace(/\{([^{}|]+)\|([^{}|]+)\}/g, '$2'));
+    }
+    /**
+     * 読み上げ用：ふりがなは付けずに、漢字のまま音声合成に渡す。
+     * ひらがなだけにすると、助詞の「は」を「ハ」、「話し（はなし）」を「わなし」のように読みまちがえるため
+     */
+    function speakable(text) {
+        return clean(String(text || '').replace(/\{([^{}|]+)\|([^{}|]+)\}/g, '$1'));
+    }
+    function clean(text) {
         return String(text || '')
-            .replace(/\{([^{}|]+)\|([^{}|]+)\}/g, '$2')
             .replace(/__/g, '')
             .replace(/［\s*[0-9０-９]{1,2}\s*］/g, '')
             .replace(/<[^>]*>/g, '')
@@ -67,8 +92,8 @@
             var t = line.trim();
             if (!t) return;
             var m = t.match(/^([^：:「」。、\s]{1,10})\s*[：:]\s*(.+)$/);
-            if (m) rows.push({ role: m[1], text: plain(m[2]) });
-            else rows.push({ role: '', text: plain(t) });
+            if (m) rows.push({ role: m[1], text: speakable(m[2]) });
+            else rows.push({ role: '', text: speakable(t) });
         });
         // 声を決める：まず「男」「女」が入った名前、そのあとほかの名前
         var map = {}, hasM = false, hasF = false, last = '';
@@ -95,12 +120,12 @@
     function segments(q) {
         var gap = { pause: 1.2 };
         var script = parseScript(q.passage);
-        var Q = plain(q.question) ? [{ text: plain(q.question), g: 'n' }] : [];
+        var Q = speakable(q.question) ? [{ text: speakable(q.question), g: 'n' }] : [];
         var chG = 'n';
         if (q.form === '即時応答' && script.length) chG = script[script.length - 1].g === 'm' ? 'f' : 'm'; // 返事は、もう一人が言う
         var ch = [];
         (q.choices || []).forEach(function (c, i) {
-            var t = plain(c);
+            var t = speakable(c);
             if (!t) return;
             if (ch.length) ch.push({ pause: 0.8 });
             ch.push({ text: NUM[i] + '、' + t, g: chG });
@@ -190,7 +215,7 @@
     window.addEventListener('pagehide', stop);
 
     window.RListen = {
-        can: can, plain: plain, parseScript: parseScript, segments: segments, play: play, stop: stop,
+        can: can, plain: plain, speakable: speakable, parseScript: parseScript, segments: segments, play: play, stop: stop,
         isListening: isListening, hideChoices: hideChoices, showQuestion: showQuestion,
         playQuestion: function (q, opts) { return play(segments(q), opts); }
     };

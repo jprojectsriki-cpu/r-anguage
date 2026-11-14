@@ -74,7 +74,23 @@
      * ひらがなだけにすると、助詞の「は」を「ハ」、「話し（はなし）」を「わなし」のように読みまちがえるため
      */
     function speakable(text) {
-        return clean(String(text || '').replace(/\{([^{}|]+)\|([^{}|]+)\}/g, '$1'));
+        return clean(String(text || '').replace(/\{([^{}|]+)\|([^{}|]+)\}/g, function (all, base, yomi) {
+            return needYomi(base) ? toKatakana(yomi) : base;
+        }));
+    }
+    /**
+     * 漢字のままだと読み方が決まらない語は、ふりがなの読みで読ませる。
+     * 数字の入った語（一日＝いちにち／ついたち、五日、十分＝じゅっぷん／じゅうぶん、七＝しち／なな など）と、
+     * 何（なに／なん）、間・後・方・日など読み方が場面で変わる語。
+     * カタカナにして渡すのは、ひらがなだと「は」で始まる語（八時・二十日など）を助詞の「わ」と読むことがあるため
+     */
+    var YOMI_WORDS = ['間', '後', '方', '日', '中', '明日', '今日', '昨日', '人気', '上手', '下手', '大家', '一行', '生物', '金', '角', '風', '気', '色紙', '市場', '工場', '寒気', '大事', '最中'];
+    function needYomi(base) {
+        if (/[〇一二三四五六七八九十百千万億何半0-9０-９]/.test(base)) return true;
+        return YOMI_WORDS.indexOf(base) >= 0;
+    }
+    function toKatakana(s) {
+        return String(s).replace(/[\u3041-\u3096]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) + 0x60); });
     }
     function clean(text) {
         return String(text || '')

@@ -1,7 +1,7 @@
 /* R-ANGUAGE 受講生の画面：単語カード（R-10c）
  * - メニュー：レベル → まだ覚えていない／すべて／覚えた（見直し）。1回 30枚
  * - カード：おもて＝単語、うら＝読み・英語の意味・例文（押すとうらがえる）
- * - うらを見たら「覚えた」「まだ」を押して次へ（左右にスワイプしてもよい）
+ * - うらを見たら「覚えた」「まだ」を押して次へ（画面には書かないが、うらを見たあとは左右のスワイプでも進める）
  * - 「覚えた／まだ」はまとめて GAS に送る（送るのを待たずに次へ進める）
  * - 読み上げはブラウザの機能（speechSynthesis）。速さはマイページの「聴解の速さ」
  * ※ app.js のあとに読み込むこと（window.RApp を使う）
@@ -211,7 +211,7 @@
         var still = h('button', { type: 'button', class: 'pop-btn v-still', disabled: true, onclick: function () { mark(false); } }, [A.icon('i-redo'), h('span', { text: 'まだ' })]);
         var known = h('button', { type: 'button', class: 'pop-btn v-known', disabled: true, onclick: function () { mark(true); } }, [A.icon('i-check'), h('span', { html: '{覚|おぼ}えた！' })]);
         main.append(h('div', { class: 'v-actions' }, [still, known]));
-        main.append(h('p', { class: 'note center v-swipe-note', html: 'うらを{見|み}たら、ボタンを{押|お}してください（{左右|さゆう}にスワイプしてもOK）' }));
+        main.append(h('p', { class: 'note center v-swipe-note', html: 'カードをタップしてうらを{見|み}たら、「{覚|おぼ}えた」か「まだ」を{押|お}してください' }));
         window.scrollTo(0, 0);
 
         function flip() {

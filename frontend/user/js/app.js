@@ -912,7 +912,8 @@
         var s = ((state.profile || {}).user || {}).settings || {};
         return Number(s.speed) || 1;
     }
-    function listenBox(q) {
+    function listenBox(q, opts) {
+        opts = opts || {};
         var speed = userSpeed();
         if (q.audio) {
             var audio = h('audio', { controls: true, preload: 'auto', src: 'audio/' + encodeURIComponent(q.audio), class: 'quiz-audio' });
@@ -926,7 +927,7 @@
         var L = window.RListen;
         var wrap = h('div', { class: 'listen-wrap' });
         var box = h('div', { class: 'listen-box' });
-        var help = listenHelp(q);
+        var help = listenHelp(q, opts);
         if (!L || !L.can) {
             box.append(h('p', { class: 'note listen-warn', html: 'この{端末|たんまつ}では{音声|おんせい}の{読|よ}み{上|あ}げが{使|つか}えません。スクリプトを{読|よ}んで{答|こた}えてください。' }));
             wrap.append(box, help.el);
@@ -966,7 +967,8 @@
      * 聴解：「スクリプトを見る」ボタンと「音が出ないとき」の案内（練習・模試で使う）
      * スクリプトには、本文（会話）と、答える前は見せない問題文・せんたくしも出す
      */
-    function listenHelp(q) {
+    function listenHelp(q, opts) {
+        opts = opts || {};
         var L = window.RListen;
         var panel = h('div', { class: 'listen-script', hidden: true });
         var showQ = !L || !L.showQuestion || !L.showQuestion(q);
@@ -986,10 +988,9 @@
             btn.querySelector('span').innerHTML = fg(on ? 'スクリプトを{閉|と}じる' : 'スクリプトを{見|み}る');
         }
         btn.addEventListener('click', function () { setOpen(panel.hidden); });
-        var el = h('div', { class: 'listen-help' }, [
-            h('div', { class: 'listen-help-row' }, [btn, soundHelp()]),
-            panel
-        ]);
+        var el = h('div', { class: 'listen-help' }, opts.noScript
+            ? [h('div', { class: 'listen-help-row' }, [soundHelp()])]
+            : [h('div', { class: 'listen-help-row' }, [btn, soundHelp()]), panel]);
         return { el: el, open: function () { setOpen(true); } };
     }
 

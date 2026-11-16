@@ -641,7 +641,7 @@
                 h('span', { class: 'm-rv-mark', html: x.correct ? '{正解|せいかい}' : x.chosen ? '{不正解|ふせいかい}' : '{答|こた}えなし' })
             ]));
             var xl = x.section === '聴解';
-            if (xl) card.append(A.listenBox(x));
+            if (xl) card.append(A.listenBox(x, { noScript: true })); // 見直しでは、下の「スクリプトを見る」を使う
             if (String(x.passage || '').trim()) card.append(h('details', { class: 'm-rv-passage', open: xl }, [h('summary', { html: xl ? 'スクリプトを{見|み}る' : '{本文|ほんぶん}を{見|み}る' }), h('div', { class: 'quiz-passage', html: x.passage })]));
             card.append(h('p', { class: 'quiz-question', html: x.question }));
             card.append(h('ol', { class: 'm-rv-choices' }, x.choices.map(function (c, k) {

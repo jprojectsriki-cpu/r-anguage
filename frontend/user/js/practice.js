@@ -316,6 +316,8 @@
         // 聴解：答えたら、スクリプト・問題文・せんたくしを見せる
         var reveal = null;
         if (q.section === '聴解') {
+            // 答えたら下にスクリプトを出すので、「スクリプトを見る」のスクリプトは消す（同じ文が2つ出ないように）
+            document.querySelectorAll('.listen-script, .listen-script-btn').forEach(function (el) { el.remove(); });
             var list = document.querySelector('.choices.is-num');
             if (list) list.classList.remove('is-num');
             document.querySelectorAll('.choice .choice-text').forEach(function (t) { t.hidden = false; });

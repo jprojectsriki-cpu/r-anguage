@@ -971,14 +971,14 @@
         var panel = h('div', { class: 'listen-script', hidden: true });
         var showQ = !L || !L.showQuestion || !L.showQuestion(q);
         var hideCh = L && L.hideChoices && L.hideChoices(q);
-        panel.append(
+        [
             String(q.passage || '').trim() ? h('div', { class: 'quiz-passage', html: q.passage }) : null,
             showQ && String(q.question || '').trim() ? h('p', { class: 'quiz-question', html: q.question }) : null,
             hideCh ? h('ol', { class: 'listen-script-choices' }, (q.choices || []).map(function (c, k) {
                 if (!String(c || '').trim()) return null;
                 return h('li', {}, [h('span', { class: 'choice-num', text: String(k + 1) }), h('span', { html: c })]);
             })) : null
-        );
+        ].forEach(function (c) { if (c) panel.append(c); });
         var btn = h('button', { type: 'button', class: 'listen-script-btn', 'aria-expanded': 'false' }, [icon('i-doc'), h('span', { html: 'スクリプトを{見|み}る' })]);
         function setOpen(on) {
             panel.hidden = !on;
@@ -998,10 +998,10 @@
         return h('details', { class: 'sound-help' }, [
             h('summary', { html: '{音|おと}が{出|で}ない・とちゅうで{止|と}まるとき' }),
             h('ul', {}, [
-                h('li', { html: '<b>iPhone</b>：{横|よこ}の{消音|しょうおん}スイッチ（マナーモード）をオフにして、{音量|おんりょう}を{上|あ}げてください。{消音|しょうおん}のままだと{音|おと}が{出|で}ません。' }),
-                h('li', { html: '<b>LINE などのアプリから{開|ひら}いたとき</b>：{右上|みぎうえ}のメニューから「Safari で{開|ひら}く」「ブラウザで{開|ひら}く」を{選|えら}んでください。' }),
-                h('li', { html: '<b>Android</b>：「{設定|せってい}」→「ユーザー{補助|ほじょ}」→「テキスト{読|よ}み{上|あ}げ」で、{日本語|にほんご}の{音声|おんせい}が{入|はい}っているか{確|たし}かめてください。' }),
-                h('li', { html: '<b>とちゅうで{止|と}まるとき</b>：{聞|き}いている{間|あいだ}は、{画面|がめん}を{消|け}したり、ほかのアプリに{切|き}りかえたりしないでください。' }),
+                h('li', {}, [h('b', { html: 'iPhone' }), h('span', { html: '：{横|よこ}の{消音|しょうおん}スイッチ（マナーモード）をオフにして、{音量|おんりょう}を{上|あ}げてください。{消音|しょうおん}のままだと{音|おと}が{出|で}ません。' })]),
+                h('li', {}, [h('b', { html: 'LINE などのアプリから{開|ひら}いたとき' }), h('span', { html: '：{右上|みぎうえ}のメニューから「Safari で{開|ひら}く」「ブラウザで{開|ひら}く」を{選|えら}んでください。' })]),
+                h('li', {}, [h('b', { html: 'Android' }), h('span', { html: '：「{設定|せってい}」→「ユーザー{補助|ほじょ}」→「テキスト{読|よ}み{上|あ}げ」で、{日本語|にほんご}の{音声|おんせい}が{入|はい}っているか{確|たし}かめてください。' })]),
+                h('li', {}, [h('b', { html: 'とちゅうで{止|と}まるとき' }), h('span', { html: '：{聞|き}いている{間|あいだ}は、{画面|がめん}を{消|け}したり、ほかのアプリに{切|き}りかえたりしないでください。' })]),
                 h('li', { html: 'それでも{聞|き}こえないときは、「スクリプトを{見|み}る」で{読|よ}んで{答|こた}えられます。マイページの「{音声|おんせい}テスト」で{確|たし}かめることもできます。' })
             ])
         ]);

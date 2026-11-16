@@ -6,7 +6,7 @@
  * - 答えの記録：受講生ごとのまとめは UserData シート、1問1行の記録は月ごとのスプレッドシート（UserData.gs）
  *   ※ 本体の Answers シートは、前の記録（2026年11月まで）。いまは読み書きしない
  * - Favorites シート：お気に入り（☆）の問題
- * - まちがい復習：いちばん新しい答えが不正解の問題（次に正解すると、復習から外れる）
+ * - まちがい復習：まちがえた問題（2回続けて正解すると、復習から外れる。UserData.gs の reviewLeftOf_）
  * - 管理者のアカウントは、すべてのレベルを解ける（画面の確認用。記録は残る）
  */
 
@@ -259,7 +259,8 @@ function toClientQuestion_(q, favs) {
   return {
     questionId: q.questionId, level: q.level, section: q.section, form: q.form,
     passage: q.passage, audio: q.audio, question: q.question, choices: q.choices,
-    answer: Number(q.answer), explanation: q.explanation, favorite: favs.indexOf(q.questionId) >= 0
+    answer: Number(q.answer), explanation: q.explanation, favorite: favs.indexOf(q.questionId) >= 0,
+    reviewLeft: q.reviewLeft || 0
   };
 }
 
@@ -301,8 +302,8 @@ function mePracticeStart_(token, input) {
       Array.prototype.push.apply(picked, got);
     });
   } else {
-    let ids;
-    if (mode === 'mistakes') ids = mistakeIdsOf_(udAns_(me.user.userId));
+    let ids, reviewAns = null;
+    if (mode === 'mistakes') { reviewAns = udAns_(me.user.userId); ids = mistakeIdsOf_(reviewAns); }
     else if (mode === 'favorites') ids = favs.slice();
     else ids = (Array.isArray(input.ids) ? input.ids : []).map(String);
     picked = ids.map(function (id) { return byId[id]; }).filter(Boolean);
@@ -316,6 +317,7 @@ function mePracticeStart_(token, input) {
     });
     picked = [];
     units.forEach(function (u) { if (picked.length + u.length <= REVIEW_MAX || !picked.length) Array.prototype.push.apply(picked, u); });
+    if (reviewAns) picked = picked.map(function (q) { return Object.assign({}, q, { reviewLeft: reviewLeftOf_(reviewAns[q.questionId]) }); });
   }
 
   if (!picked.length) {

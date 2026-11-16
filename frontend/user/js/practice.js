@@ -208,12 +208,37 @@
             title: params.mode === 'set' || params.mode === 'form'
                 ? params.level + ' ' + (params.stage || 'EASY') + ' ' + sectionTitle(params.section) + (params.mode === 'form' ? '・' + params.form : '')
                 : params.level + ' ' + MODE_TITLE[params.mode],
-            list: res.questions,
+            // まちがい復習・お気に入り・もう一度：番号を覚えてしまわないように、せんたくしの順番を入れかえる
+            list: SHUFFLE_MODES.indexOf(params.mode) >= 0 ? res.questions.map(shuffleChoices) : res.questions,
             i: 0,
             results: [] // { q, chosen, correct }
         };
         document.body.classList.add('is-quiz');
         drawQuestion();
+    }
+
+    var SHUFFLE_MODES = ['mistakes', 'favorites', 'retry'];
+    /**
+     * せんたくしの順番を入れかえた問題を返す。q.order[表示の番号-1] ＝ もとの番号-1
+     * 解説に「1は〜」のように番号が書いてある問題は、入れかえない
+     */
+    function shuffleChoices(q) {
+        var plainExp = String(q.explanation || '').replace(/\{([^{}|]+)\|[^{}|]+\}/g, '').replace(/<[^>]*>/g, '');
+        if (/[1-4１-４]/.test(plainExp)) return q;
+        var idx = [];
+        (q.choices || []).forEach(function (c, i) { if (String(c || '').trim()) idx.push(i); });
+        if (idx.length < 2) return q;
+        var order = idx.slice();
+        for (var tries = 0; tries < 5; tries++) {
+            for (var i = order.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var t = order[i]; order[i] = order[j]; order[j] = t;
+            }
+            if (order.join() !== idx.join()) break;
+        }
+        var choices = order.map(function (k) { return q.choices[k]; });
+        while (choices.length < (q.choices || []).length) choices.push('');
+        return Object.assign({}, q, { choices: choices, answer: order.indexOf(q.answer - 1) + 1, order: order });
     }
 
     /* ===================== 1問ずつ ===================== */
@@ -237,6 +262,7 @@
             h('span', { text: q.form || q.section })
         ]));
 
+        if (q.order) card.append(h('p', { class: 'note shuffle-note', html: 'せんたくしの{順番|じゅんばん}を{入|い}れかえています' }));
         if (A.FORM_GUIDE[q.form]) card.append(h('p', { class: 'form-guide', html: A.FORM_GUIDE[q.form] }));
         var L = window.RListen;
         if (L) L.stop();
@@ -271,7 +297,7 @@
         if (z.results[z.i]) return; // 2回押さない
         var correct = n === q.answer;
         z.results[z.i] = { q: q, chosen: n, correct: correct };
-        queueAnswer({ questionId: q.questionId, chosen: String(n), mode: z.params.mode });
+        queueAnswer({ questionId: q.questionId, chosen: String(q.order ? q.order[n - 1] + 1 : n), mode: z.params.mode }); // 記録は、もとの番号で
 
         document.querySelectorAll('.choice').forEach(function (b) {
             var k = Number(b.getAttribute('data-n'));
@@ -304,7 +330,8 @@
             reveal || '',
             h('div', { class: 'feedback ' + (correct ? 'is-correct' : 'is-wrong') }, [
                 h('p', { class: 'feedback-title' }, [A.icon(correct ? 'i-check' : 'i-x'), h('span', { html: correct ? '{正解|せいかい}！' : '{不正解|ふせいかい}　{正解|せいかい}は ' + q.answer + ' です' })]),
-                q.explanation ? h('div', { class: 'feedback-body', html: q.explanation }) : null
+                q.explanation ? h('div', { class: 'feedback-body', html: q.explanation }) : null,
+                reviewNote(q, correct)
             ]),
             h('div', { class: 'quiz-actions' }, [
                 star,
@@ -312,6 +339,16 @@
             ])
         );
         after.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    /** まちがい復習：あと何回正解すると外れるか */
+    function reviewNote(q, correct) {
+        if (P.quiz.params.mode !== 'mistakes' || !q.reviewLeft) return null;
+        var left = correct ? q.reviewLeft - 1 : 2;
+        return h('p', { class: 'review-note' + (left ? '' : ' is-done'), html: !correct
+            ? '2{回|かい}{続|つづ}けて{正解|せいかい}すると、まちがい{復習|ふくしゅう}から{外|はず}れます'
+            : left ? 'あと1{回|かい}{正解|せいかい}すると、まちがい{復習|ふくしゅう}から{外|はず}れます'
+            : 'まちがい{復習|ふくしゅう}から{外|はず}れました' });
     }
 
     function next() {
@@ -405,7 +442,7 @@
             }));
         }
         acts.append(h('button', { type: 'button', class: 'pop-btn btn-white btn-block', html: '{問題|もんだい}のメニューへ', onclick: function () { renderMenu(main); } }));
-        acts.append(h('p', { class: 'note', html: 'まちがえた{問題|もんだい}は「まちがい{復習|ふくしゅう}」に{入|はい}ります。{次|つぎ}に{正解|せいかい}すると、{復習|ふくしゅう}から{外|はず}れます。' }));
+        acts.append(h('p', { class: 'note', html: 'まちがえた{問題|もんだい}は「まちがい{復習|ふくしゅう}」に{入|はい}ります。2{回|かい}{続|つづ}けて{正解|せいかい}すると、{復習|ふくしゅう}から{外|はず}れます（{解|と}き{直|なお}すときは、せんたくしの{順番|じゅんばん}が{変|か}わります）。' }));
         main.append(acts);
         window.scrollTo(0, 0);
     }

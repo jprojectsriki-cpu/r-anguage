@@ -368,6 +368,9 @@ body.is-exam .tabbar { display: none; }
 .feedback-title { display: flex; align-items: center; gap: 8px; font-size: 1.05rem; font-weight: 900; line-height: 2; }
 .feedback-title .icon { width: 1.4em; height: 1.4em; stroke-width: 3; }
 .feedback-body { margin-top: 6px; font-size: 0.9rem; font-weight: 500; line-height: 2.1; }
+.review-note { margin-top: 10px; padding: 6px 12px; border: 2px dashed rgba(30, 27, 75, 0.35); border-radius: 12px; background: rgba(255, 255, 255, 0.7); font-size: 0.8rem; font-weight: 700; line-height: 2; }
+.review-note.is-done { border-style: solid; border-color: #038C69; background: #fff; color: #03684F; }
+.shuffle-note { display: inline-block; margin: 0 0 8px; padding: 0 10px; border: 2px solid var(--dark); border-radius: 999px; background: #FFF1C2; color: var(--dark); font-size: 0.72rem; font-weight: 700; line-height: 2; }
 .quiz-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
 .quiz-actions .pop-btn { flex: 1 1 140px; }
 .star-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 4px 14px; border: 2.5px solid var(--dark); border-radius: 999px; background: #fff; font-size: 0.8rem; font-weight: 900; line-height: 1.8; }

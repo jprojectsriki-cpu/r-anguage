@@ -8,7 +8,8 @@
  * - UserData シート：1人につき3行（A列のキーで探す）
  *     A キー（userId|ans・userId|voc・userId|sum） / B 更新日時 / C 使っている列の数 / D列〜 データ（JSON）
  *     ※ 1つのセルには 5万文字までしか入らないので、45,000文字ずつ D・E・F… の列に分けて入れる
- *   ans … 問題ごとの最後の答え         { 問題ID: [最後に答えた時刻（秒）, 正解なら1] }
+ *   ans … 問題ごとの最後の答え         { 問題ID: [最後に答えた時刻（秒）, 正解なら1, まちがい復習から外れるまでの正解の回数（0なら省略）] }
+ *         まちがえると 3つ目が 2 になり、続けて2回正解すると 0（復習から外れる）。3つ目のない古い不正解の記録は 2 とみなす
  *   voc … 単語カードごとの記録         { カードID: [覚えたなら1, 覚えた回数, まだの回数, 時刻（秒）] }
  *   sum … 学習記録                    { days: {日付: 回数}, sec: {科目: [答えた数, 正解数]}, tot: [答えた数, 正解数],
  *                                       lp: 前回の問題, lm: 最後の模試,
@@ -111,8 +112,10 @@ function udMarkDay_(sum, d, n) {
 function udAddAnswers_(uid, items, mode, now, ans, sum) {
   const t = Math.floor(now.getTime() / 1000);
   items.forEach(function (it) {
+    const left = reviewLeftOf_(ans[it.questionId]);
+    const nextLeft = it.correct ? Math.max(0, left - 1) : REVIEW_STREAK;
     delete ans[it.questionId]; // 入れ直して、答えた順に並べる
-    ans[it.questionId] = [t, it.correct ? 1 : 0];
+    ans[it.questionId] = nextLeft > 0 ? [t, it.correct ? 1 : 0, nextLeft] : [t, it.correct ? 1 : 0];
     const s = sum.sec[it.section] || [0, 0];
     s[0]++;
     if (it.correct) s[1]++;
@@ -141,10 +144,19 @@ function lastAnsweredMap_(userId) {
   return map;
 }
 
-/** まちがい復習の問題ID（いちばん新しい答えが不正解のもの。まちがえた順） */
+const REVIEW_STREAK = 2; // まちがい復習から外れるのに必要な、続けての正解の回数
+
+/** まちがい復習から外れるまで、あと何回正解が必要か（0＝復習に入っていない） */
+function reviewLeftOf_(a) {
+  if (!a) return 0;
+  if (a.length > 2) return Math.max(0, Number(a[2]) || 0);
+  return Number(a[1]) === 1 ? 0 : REVIEW_STREAK; // 3つ目のない古い記録
+}
+
+/** まちがい復習の問題ID（まちがえてから、まだ2回続けて正解していないもの。古い順） */
 function mistakeIdsOf_(ans) {
   return Object.keys(ans)
-    .filter(function (id) { return Number(ans[id][1]) !== 1; })
+    .filter(function (id) { return reviewLeftOf_(ans[id]) > 0; })
     .sort(function (a, b) { return (Number(ans[a][0]) || 0) - (Number(ans[b][0]) || 0); });
 }
 

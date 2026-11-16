@@ -340,7 +340,24 @@ body.is-exam .tabbar { display: none; }
 .quiz-form .sec-icon { width: 28px; height: 28px; font-size: 0.85rem; border-radius: 8px; }
 .quiz-audio-box { margin-bottom: 14px; }
 .quiz-audio { width: 100%; }
-.listen-box { margin-bottom: 14px; }
+.listen-box { margin-bottom: 10px; }
+.listen-warn { color: #B4235F; font-weight: 700; }
+.listen-help { margin-bottom: 14px; }
+.listen-help-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 12px; }
+.listen-script-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 2px 14px; border: 2.5px solid var(--dark); border-radius: 999px; background: #fff; font-size: 0.8rem; font-weight: 900; line-height: 1.8; }
+.listen-script-btn .icon { width: 20px; height: 20px; }
+.listen-script-btn[aria-expanded="true"] { background: #FFF1C2; }
+.listen-script { margin-top: 10px; }
+.listen-script-choices { display: grid; gap: 6px; margin: 0 0 6px; padding: 0; list-style: none; }
+.listen-script-choices li { display: flex; align-items: flex-start; gap: 8px; font-weight: 500; line-height: 2; }
+.listen-script-choices .choice-num { width: 26px; height: 26px; border-width: 2px; font-size: 0.85rem; margin-top: 0.25em; }
+.sound-help { flex: 1 1 200px; font-size: 0.8rem; line-height: 2; }
+.sound-help summary { min-height: 40px; display: flex; align-items: center; cursor: pointer; font-weight: 700; color: var(--dark-70); text-decoration: underline; text-underline-offset: 3px; list-style: none; }
+.sound-help summary::-webkit-details-marker { display: none; }
+.sound-help ul { margin: 6px 0 0; padding: 10px 12px 10px 28px; border: 2px dashed rgba(30, 27, 75, 0.3); border-radius: 12px; background: #fff; }
+.sound-help li + li { margin-top: 4px; }
+.sound-test { margin-top: 14px; }
+.sound-test .sound-help summary { min-height: 32px; }
 .listen-btn { display: flex; align-items: center; justify-content: center; gap: 8px; }
 .listen-bar { margin-top: 10px; }
 .listen-scene { padding: 12px 14px; border: 2.5px dashed var(--dark); border-radius: 16px; background: #FFF8E6; }

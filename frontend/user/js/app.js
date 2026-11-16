@@ -683,7 +683,8 @@
             seg('fontSize', '{文字|もじ}の{大|おお}きさ', [{ value: 's', label: '{小|しょう}' }, { value: 'm', label: '{中|ちゅう}' }, { value: 'l', label: '{大|だい}' }], s.fontSize,
                 function (v) { saveSettings({ settings: { fontSize: v } }); }),
             seg('speed', '{聴解|ちょうかい}の{速|はや}さ', [{ value: 0.75, label: 'ゆっくり' }, { value: 1, label: 'ふつう' }, { value: 1.25, label: 'はやい' }], s.speed,
-                function (v) { saveSettings({ settings: { speed: v } }); })
+                function (v) { saveSettings({ settings: { speed: v } }); }),
+            soundTestRow()
         ]));
 
         // 成績のリセット（ホームの正答率を、その科目だけ 0 からにする）
@@ -923,13 +924,17 @@
             return h('div', { class: 'quiz-audio-box' }, [audio, miss]);
         }
         var L = window.RListen;
+        var wrap = h('div', { class: 'listen-wrap' });
         var box = h('div', { class: 'listen-box' });
+        var help = listenHelp(q);
         if (!L || !L.can) {
-            box.append(h('p', { class: 'note', html: 'この{端末|たんまつ}では{音声|おんせい}の{読|よ}み{上|あ}げが{使|つか}えません。Chrome や Safari で{開|ひら}いてください。' }));
-            return box;
+            box.append(h('p', { class: 'note listen-warn', html: 'この{端末|たんまつ}では{音声|おんせい}の{読|よ}み{上|あ}げが{使|つか}えません。スクリプトを{読|よ}んで{答|こた}えてください。' }));
+            wrap.append(box, help.el);
+            help.open();
+            return wrap;
         }
         var ctl = null;
-        function draw(playing) {
+        function draw(playing, stalled) {
             box.replaceChildren(
                 h('button', {
                     type: 'button', class: 'pop-btn ' + (playing ? 'btn-white' : 'btn-pink') + ' btn-block listen-btn',
@@ -937,7 +942,9 @@
                 }, [icon('i-sound'), h('span', { html: playing ? '{止|と}める' : '{音声|おんせい}を{聞|き}く' })]),
                 playing
                     ? h('div', { class: 'quiz-bar listen-bar' }, [h('span', { style: 'width:0%' })])
-                    : h('p', { class: 'note', html: '{何回|なんかい}でも{聞|き}けます（{速|はや}さ ' + speed + '{倍|ばい}・マイページで{変|か}えられます）' })
+                    : stalled
+                        ? h('p', { class: 'note listen-warn', html: '{音声|おんせい}がとちゅうで{止|と}まりました。もう{一度|いちど}{聞|き}くか、「スクリプトを{見|み}る」で{読|よ}んでください。' })
+                        : h('p', { class: 'note', html: '{何回|なんかい}でも{聞|き}けます（{速|はや}さ ' + speed + '{倍|ばい}・マイページで{変|か}えられます）' })
             );
         }
         function startIt() {
@@ -946,19 +953,87 @@
             ctl = L.playQuestion(q, {
                 rate: speed,
                 onProgress: function (f) { if (bar) bar.style.width = Math.round(f * 100) + '%'; },
-                onEnd: function () { ctl = null; if (box.isConnected) draw(false); }
+                onEnd: function (info) { ctl = null; if (box.isConnected) draw(false, info && info.stalled); }
             });
         }
         function stopIt() { if (ctl) ctl.stop(); ctl = null; draw(false); }
         draw(false);
-        return box;
+        wrap.append(box, help.el);
+        return wrap;
+    }
+
+    /**
+     * 聴解：「スクリプトを見る」ボタンと「音が出ないとき」の案内（練習・模試で使う）
+     * スクリプトには、本文（会話）と、答える前は見せない問題文・せんたくしも出す
+     */
+    function listenHelp(q) {
+        var L = window.RListen;
+        var panel = h('div', { class: 'listen-script', hidden: true });
+        var showQ = !L || !L.showQuestion || !L.showQuestion(q);
+        var hideCh = L && L.hideChoices && L.hideChoices(q);
+        panel.append(
+            String(q.passage || '').trim() ? h('div', { class: 'quiz-passage', html: q.passage }) : null,
+            showQ && String(q.question || '').trim() ? h('p', { class: 'quiz-question', html: q.question }) : null,
+            hideCh ? h('ol', { class: 'listen-script-choices' }, (q.choices || []).map(function (c, k) {
+                if (!String(c || '').trim()) return null;
+                return h('li', {}, [h('span', { class: 'choice-num', text: String(k + 1) }), h('span', { html: c })]);
+            })) : null
+        );
+        var btn = h('button', { type: 'button', class: 'listen-script-btn', 'aria-expanded': 'false' }, [icon('i-doc'), h('span', { html: 'スクリプトを{見|み}る' })]);
+        function setOpen(on) {
+            panel.hidden = !on;
+            btn.setAttribute('aria-expanded', String(on));
+            btn.querySelector('span').innerHTML = fg(on ? 'スクリプトを{閉|と}じる' : 'スクリプトを{見|み}る');
+        }
+        btn.addEventListener('click', function () { setOpen(panel.hidden); });
+        var el = h('div', { class: 'listen-help' }, [
+            h('div', { class: 'listen-help-row' }, [btn, soundHelp()]),
+            panel
+        ]);
+        return { el: el, open: function () { setOpen(true); } };
+    }
+
+    /** 「音が出ないとき」の案内 */
+    function soundHelp() {
+        return h('details', { class: 'sound-help' }, [
+            h('summary', { html: '{音|おと}が{出|で}ない・とちゅうで{止|と}まるとき' }),
+            h('ul', {}, [
+                h('li', { html: '<b>iPhone</b>：{横|よこ}の{消音|しょうおん}スイッチ（マナーモード）をオフにして、{音量|おんりょう}を{上|あ}げてください。{消音|しょうおん}のままだと{音|おと}が{出|で}ません。' }),
+                h('li', { html: '<b>LINE などのアプリから{開|ひら}いたとき</b>：{右上|みぎうえ}のメニューから「Safari で{開|ひら}く」「ブラウザで{開|ひら}く」を{選|えら}んでください。' }),
+                h('li', { html: '<b>Android</b>：「{設定|せってい}」→「ユーザー{補助|ほじょ}」→「テキスト{読|よ}み{上|あ}げ」で、{日本語|にほんご}の{音声|おんせい}が{入|はい}っているか{確|たし}かめてください。' }),
+                h('li', { html: '<b>とちゅうで{止|と}まるとき</b>：{聞|き}いている{間|あいだ}は、{画面|がめん}を{消|け}したり、ほかのアプリに{切|き}りかえたりしないでください。' }),
+                h('li', { html: 'それでも{聞|き}こえないときは、「スクリプトを{見|み}る」で{読|よ}んで{答|こた}えられます。マイページの「{音声|おんせい}テスト」で{確|たし}かめることもできます。' })
+            ])
+        ]);
+    }
+
+    /** マイページ：音声テスト */
+    function soundTestRow() {
+        var L = window.RListen;
+        var msg = h('p', { class: 'note' });
+        var btn = h('button', { type: 'button', class: 'pop-btn btn-white btn-block listen-btn' }, [icon('i-sound'), h('span', { html: '{音声|おんせい}テスト' })]);
+        btn.addEventListener('click', function () {
+            if (!L || !L.can) { msg.innerHTML = fg('この{端末|たんまつ}では{音声|おんせい}の{読|よ}み{上|あ}げが{使|つか}えません。{聴解|ちょうかい}は「スクリプトを{見|み}る」で{読|よ}んで{答|こた}えてください。'); return; }
+            btn.disabled = true;
+            msg.innerHTML = fg('{再生中|さいせいちゅう}…「{男|おとこ}の{人|ひと}の{声|こえ}」「{女|おんな}の{人|ひと}の{声|こえ}」が{聞|き}こえますか。');
+            L.playTest({
+                rate: userSpeed(),
+                onEnd: function (info) {
+                    btn.disabled = false;
+                    msg.innerHTML = fg(info && info.stalled
+                        ? '{音声|おんせい}がとちゅうで{止|と}まりました。{下|した}の{案内|あんない}を{見|み}てください。'
+                        : '{聞|き}こえなかったときは、{下|した}の{案内|あんない}を{見|み}てください。');
+                }
+            });
+        });
+        return h('div', { class: 'sound-test' }, [btn, msg, soundHelp()]);
     }
 
     /* ほかのページ（js/practice.js など）から使う道具 */
     window.RApp = {
         studyLevel: studyLevel, setStudyLevel: setStudyLevel, chooseLevel: chooseLevel, levelBar: levelBar, askLevelIfNeeded: askLevelIfNeeded,
         goalBadge: goalBadge, stageNote: stageNote, stagePill: stagePill,
-        listenBox: listenBox, registerDrain: registerDrain, afterSaves: afterSaves, makeDrain: makeDrain,
+        listenBox: listenBox, listenHelp: listenHelp, registerDrain: registerDrain, afterSaves: afterSaves, makeDrain: makeDrain,
         state: state, h: h, fg: fg, icon: icon, sticker: sticker, FORM_GUIDE: FORM_GUIDE, toast: toast, confirmBox: confirmBox,
         apiPost: apiPost, withLoading: withLoading, authFailed: authFailed, setTitle: function (t) { $('topTitle').innerHTML = fg(t); }
     };

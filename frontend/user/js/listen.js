@@ -159,66 +159,148 @@
 
     /* ---------- 再生 ---------- */
     var current = null;
+    var CHUNK = 45; // 1回に読ませる文字数のめやす（長いと Android の Chrome などで途中で止まるため）
 
     function est(sg, rate) { return sg.pause ? sg.pause : sg.text.length * 0.17 / rate + 0.4; }
 
+    /** 長いせりふを「。」「！」「？」、それでも長ければ「、」で区切る */
+    function chunkText(text) {
+        if (text.length <= CHUNK) return [text];
+        var out = [];
+        (text.match(/[^。！？!?]+[。！？!?」』）]*|[。！？!?」』）]+/g) || [text]).forEach(function (sent) {
+            if (!sent) return;
+            if (sent.length <= CHUNK) { out.push(sent); return; }
+            var buf = '';
+            (sent.match(/[^、，,]+[、，,]*|[、，,]+/g) || [sent]).forEach(function (part) {
+                if (buf && (buf + part).length > CHUNK) { out.push(buf); buf = ''; }
+                buf += part;
+            });
+            if (buf) out.push(buf);
+        });
+        // 短すぎるかけらは前とつなぐ
+        var merged = [];
+        out.forEach(function (t) {
+            if (merged.length && (t.length < 6 || merged[merged.length - 1].length < 6) && (merged[merged.length - 1] + t).length <= CHUNK + 10) merged[merged.length - 1] += t;
+            else merged.push(t);
+        });
+        return merged;
+    }
+    function expand(segs) {
+        var out = [];
+        segs.forEach(function (sg) {
+            if (sg.pause || !sg.text) { out.push(sg); return; }
+            chunkText(sg.text).forEach(function (t) { out.push({ text: t, g: sg.g }); });
+        });
+        return out;
+    }
+
+    /* 再生中は、画面が自動で消えないようにする（対応しているブラウザだけ） */
+    var wakeLock = null;
+    function holdScreen() {
+        try {
+            if (navigator.wakeLock && !wakeLock) navigator.wakeLock.request('screen').then(function (w) { wakeLock = w; }).catch(function () { /* 無視 */ });
+        } catch (e) { /* 無視 */ }
+    }
+    function releaseScreen() {
+        try { if (wakeLock) wakeLock.release(); } catch (e) { /* 無視 */ }
+        wakeLock = null;
+    }
+
     /**
-     * 順番に読む。opts: { rate, onProgress(0〜1), onEnd() }
-     * もどり値の stop()（pause() でも同じ）で止める
+     * 順番に読む。opts: { rate, onProgress(0〜1), onEnd(info) }
+     * info.stalled が true のとき：音声が途中で止まって、最後まで読めなかった
+     * もどり値の stop()（pause() でも同じ）で止める（このときは onEnd を呼ばない）
      */
     function play(segs, opts) {
         opts = opts || {};
         stop();
+        segs = expand(segs);
         var rate = Number(opts.rate) || 1;
         var total = segs.reduce(function (a, s) { return a + est(s, rate); }, 0) || 1;
-        var i = -1, done = 0, timer = null, fb = null, stopped = false;
+        var i = -1, done = 0, timer = null, wd = null, stopped = false, stalled = false;
+        var keep = []; // iPhone で、読んでいる途中の文が消えて「読み終わり」の知らせが来なくなるのを防ぐ
         var ctl = {
             stop: function () {
                 if (stopped) return;
                 stopped = true;
-                window.clearTimeout(timer); window.clearTimeout(fb);
+                window.clearTimeout(timer); window.clearTimeout(wd);
                 try { window.speechSynthesis.cancel(); } catch (e) { /* 無視 */ }
+                releaseScreen();
                 if (current === ctl) current = null;
+            },
+            /** 画面を離れたときなど：止めて、途中で止まったことを知らせる */
+            abort: function () {
+                if (stopped) return;
+                stalled = true;
+                ctl.stop();
+                if (opts.onEnd) opts.onEnd({ stalled: true });
             }
         };
         ctl.pause = ctl.stop;
         function progress() { if (opts.onProgress) opts.onProgress(Math.min(1, done / total)); }
+        function finish() {
+            stopped = true;
+            releaseScreen();
+            if (current === ctl) current = null;
+            if (opts.onEnd) opts.onEnd({ stalled: stalled });
+        }
         function nextSeg() {
-            window.clearTimeout(timer); window.clearTimeout(fb);
+            window.clearTimeout(timer); window.clearTimeout(wd);
             if (stopped) return;
             if (i >= 0) { done += est(segs[i], rate); progress(); }
             i++;
-            if (i >= segs.length) {
-                stopped = true;
-                if (current === ctl) current = null;
-                if (opts.onEnd) opts.onEnd();
-                return;
-            }
+            if (i >= segs.length) { finish(); return; }
             var sg = segs[i];
             if (sg.pause) { timer = window.setTimeout(nextSeg, sg.pause * 1000); return; }
+            speakSeg(sg, 0);
+        }
+        function speakSeg(sg, retry) {
             var u = new SpeechSynthesisUtterance(sg.text);
             var vv = voiceFor(sg.g);
             u.lang = 'ja-JP';
             u.rate = rate;
             u.pitch = vv.pitch;
             if (vv.voice) u.voice = vv.voice;
-            var my = i, fired = false;
+            keep = [u];
+            var my = i, fired = false, waited = 0, started = false;
             var fin = function () {
                 if (fired || stopped || my !== i) return;
                 fired = true;
-                window.clearTimeout(fb);
+                window.clearTimeout(wd);
                 timer = window.setTimeout(nextSeg, 350);
             };
+            u.onstart = function () { started = true; };
             u.onend = fin;
-            u.onerror = fin;
-            // 読み終わりの知らせが来ないブラウザのために、めやすの時間を過ぎたら次へ進む
-            fb = window.setTimeout(fin, (est(sg, rate) * 2.5 + 5) * 1000);
+            u.onerror = function (ev) {
+                if (fired || stopped || my !== i) return;
+                if (ev && (ev.error === 'interrupted' || ev.error === 'canceled')) return; // こちらで止めたとき
+                again();
+            };
+            // 止まったときの見張り：めやすの時間を過ぎても読み終わらないとき
+            function watch() {
+                if (fired || stopped || my !== i) return;
+                var ss = window.speechSynthesis;
+                if (ss.speaking && !ss.paused && waited < 2) { waited++; wd = window.setTimeout(watch, (est(sg, rate) + 2) * 1000); return; } // まだ読んでいる
+                again();
+            }
+            // 同じ文をもう一度読む（1回まで）。それでもだめなら、途中で止まったことを知らせる
+            function again() {
+                if (fired || stopped || my !== i) return;
+                fired = true;
+                window.clearTimeout(wd);
+                try { window.speechSynthesis.cancel(); } catch (e) { /* 無視 */ }
+                if (retry < 1) { timer = window.setTimeout(function () { if (!stopped && my === i) speakSeg(sg, retry + 1); }, 300); return; }
+                // 2回ともだめなときは、無音のまま待たせないように、ここで止めて知らせる
+                ctl.abort();
+            }
+            wd = window.setTimeout(watch, (est(sg, rate) * 1.6 + 3) * 1000);
             try { window.speechSynthesis.resume(); } catch (e) { /* 無視 */ }
             window.speechSynthesis.speak(u);
         }
         current = ctl;
-        if (!can) { stopped = true; current = null; return ctl; }
+        if (!can) { stopped = true; current = null; if (opts.onEnd) window.setTimeout(function () { opts.onEnd({ stalled: true }); }, 0); return ctl; }
         try { window.speechSynthesis.cancel(); } catch (e) { /* 無視 */ }
+        holdScreen();
         progress();
         timer = window.setTimeout(nextSeg, 120);
         return ctl;
@@ -229,10 +311,20 @@
     // ページを移ったら止める
     window.addEventListener('hashchange', stop);
     window.addEventListener('pagehide', stop);
+    // ほかのアプリに切りかえる・画面が消えると、読み上げが止まる。止まったことを画面に知らせる
+    document.addEventListener('visibilitychange', function () { if (document.hidden && current) current.abort(); });
 
     window.RListen = {
         can: can, plain: plain, speakable: speakable, parseScript: parseScript, segments: segments, play: play, stop: stop,
         isListening: isListening, hideChoices: hideChoices, showQuestion: showQuestion,
-        playQuestion: function (q, opts) { return play(segments(q), opts); }
+        playQuestion: function (q, opts) { return play(segments(q), opts); },
+        /** マイページの音声テスト */
+        playTest: function (opts) {
+            return play([
+                { text: 'これは、音声のテストです。', g: 'n' }, { pause: 0.6 },
+                { text: '男の人の声です。', g: 'm' }, { pause: 0.6 },
+                { text: '女の人の声です。', g: 'f' }
+            ], opts);
+        }
     };
 })();

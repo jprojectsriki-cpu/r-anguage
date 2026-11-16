@@ -309,7 +309,7 @@
         var L = window.RListen;
         var isL = q.section === '聴解';
         var numOnly = isL && L && L.hideChoices(q);
-        if (isL) card.append(audioBlock(q));
+        if (isL) { card.append(audioBlock(q)); card.append(A.listenHelp(q).el); }
         // 聴解は、スクリプトを見せない。問題文は発話表現（場面の文）だけ見せる
         if (!isL && String(q.passage || '').trim()) card.append(h('div', { class: 'quiz-passage', html: q.passage }));
         if (!isL || (L && L.showQuestion(q))) card.append(h('p', { class: 'quiz-question' + (isL ? ' listen-scene' : ''), html: q.question }));
@@ -401,7 +401,7 @@
         }
         function playTts() {
             if (!L || !L.can) {
-                A.toast('この{端末|たんまつ}では{音声|おんせい}の{読|よ}み{上|あ}げが{使|つか}えません。Chrome や Safari で{開|ひら}いてください。', true);
+                A.toast('この{端末|たんまつ}では{音声|おんせい}の{読|よ}み{上|あ}げが{使|つか}えません。「スクリプトを{見|み}る」で{読|よ}んで{答|こた}えてください。', true);
                 return;
             }
             e.played[key] = true;
@@ -411,7 +411,17 @@
             M.audioEl = L.playQuestion(q, {
                 rate: 1, // 本番と同じ速さ
                 onProgress: function (f) { var bar = $('mAudioBar'); if (bar) bar.style.width = Math.round(f * 100) + '%'; },
-                onEnd: function () { M.playing = false; M.audioEl = null; if (box.isConnected) drawState('played'); }
+                onEnd: function (info) {
+                    M.playing = false; M.audioEl = null;
+                    if (info && info.stalled) {
+                        // 途中で止まったときは、回数に数えない（もう一度流せる）
+                        delete e.played[key]; save();
+                        if (box.isConnected) drawState('ready');
+                        A.toast('{音声|おんせい}がとちゅうで{止|と}まりました。もう{一度|いちど}{流|なが}せます。{聞|き}こえないときは「スクリプトを{見|み}る」で{読|よ}んでください。', true);
+                        return;
+                    }
+                    if (box.isConnected) drawState('played');
+                }
             });
         }
         function play() {
